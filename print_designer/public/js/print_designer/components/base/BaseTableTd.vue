@@ -1,0 +1,71 @@
+<template>
+	<td
+		v-for="column in columns"
+		:key="column.fieldname"
+		:style="style"
+		@click.self="setSelectedDyanmicText(null)"
+	>
+		<template
+			v-for="field in column?.dynamicContent"
+			:key="`${field?.parentField}${field?.fieldname}`"
+		>
+			<BaseDynamicTextSpanTag
+				v-bind="{
+					field,
+					labelStyle,
+					index: row.idx,
+					selectedDyanmicText,
+					setSelectedDyanmicText,
+					parentClass: 'printTable',
+					table,
+				}"
+			/>
+		</template>
+	</td>
+</template>
+
+<script setup>
+import BaseDynamicTextSpanTag from "./BaseDynamicTextSpanTag.vue";
+const props = defineProps({
+	table: {
+		type: Object,
+		required: true,
+	},
+	row: {
+		type: Object,
+		required: true,
+	},
+	columns: {
+		type: Object,
+		required: true,
+	},
+	style: {
+		type: Object,
+		required: true,
+	},
+	labelStyle: {
+		type: Object,
+		required: true,
+	},
+	selectedDyanmicText: {
+		type: Object,
+		required: false,
+	},
+	setSelectedDyanmicText: {
+		type: Function,
+		required: false,
+	},
+});
+</script>
+
+<style lang="scss" scoped>
+tr:last-child td {
+	border-bottom-style: solid !important;
+}
+tr td:first-child {
+	border-left-style: solid !important;
+}
+tr td:last-child {
+	border-right-style: solid !important;
+}
+</style>

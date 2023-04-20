@@ -1,0 +1,12 @@
+{
+  "name": "print_designer",
+  "author": "Frappe Technologies Pvt. Ltd.",
+  "license": "AGPL-3.0-or-later",
+  "dependencies": {
+    "@interactjs/interact": "^1.10.17",
+    "@interactjs/actions": "^1.10.17",
+    "@interactjs/auto-start": "^1.10.17",
+    "@interactjs/modifiers": "^1.10.17",
+    "pdfjs-dist": "v3.4.120"
+  }
+}

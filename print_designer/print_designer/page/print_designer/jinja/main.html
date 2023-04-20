@@ -1,0 +1,223 @@
+{% macro render_statictext(element) -%}
+<div style="position: absolute; top:{% if 'printY' in element %}{{ element.printY }}{% else %}{{ element.startY }}{% endif %}px; left:{% if 'printX' in element %}{{ element.printX }}{% else %}{{ element.startX }}{% endif %}px;{% if element.isFixedSize %}width:{{ element.width }}px;height:{{ element.height }}px;{% else %}width:fit-content; height:fit-content;{%endif%}" class="
+    {{ element.classes | join(' ') }}">
+    <p style="{% if element.isFixedSize %}width:{{ element.width }}px;height:{{ element.height }}px;{% else %}width:fit-content; height:fit-content;{%endif%} {{convert_css(element.style)}}"
+        class="staticText {{ element.classes | join(' ') }}">
+        {{element.content}}
+    </p>
+</div>
+{%- endmacro %}
+{% macro render_dynamictext(element) -%}
+<div style="position: absolute; top:{% if 'printY' in element %}{{ element.printY }}{% else %}{{ element.startY }}{% endif %}px; left:{% if 'printX' in element %}{{ element.printX }}{% else %}{{ element.startX }}{% endif %}px;{% if element.isFixedSize %}width:{{ element.width }}px;height:{{ element.height }}px;{% else %}width:fit-content; height:fit-content;{%endif%}" class="
+    {{ element.classes | join(' ') }}">
+        <p style="{% if element.isFixedSize %}width:{{ element.width }}px;height:{{ element.height }}px;{% else %}width:fit-content; height:fit-content;{%endif%} {{convert_css(element.style)}}"
+            class="dynamicText {{ element.classes | join(' ') }}">
+            {% for field in element.dynamicContent %}
+            {{ render_spantag(field, element)}}
+            {% endfor %}
+        </p>
+</div>
+{%- endmacro %}
+{% macro render_rectangle(element) -%}
+<div id="{{ element.id }}" style="position: absolute; top:{% if 'printY' in element %}{{ element.printY }}{% else %}{{ element.startY }}{% endif %}px; left:{% if 'printX' in element %}{{ element.printX }}{% else %}{{ element.startX }}{% endif %}px; width:{{ element.width }}px;height:{{ element.height }}px; {{convert_css(element.style)}}"
+    class="rectangle {{ element.classes | join(' ') }}">
+    {% if element.childrens %}
+    {% for object in element.childrens %}
+    {{ render_element(object)}}
+    {% endfor %}
+    {% endif %}
+</div>
+{%- endmacro %}
+{% macro render_image(element) -%}
+<div
+    style="position: absolute; top:{% if 'printY' in element %}{{ element.printY }}{% else %}{{ element.startY }}{% endif %}px; left:{% if 'printX' in element %}{{ element.printX }}{% else %}{{ element.startX }}{% endif %}px;width:{{ element.width }}px;height:{{ element.height }}px;
+{{convert_css(element.style)}}"
+    class="image {{ element.classes | join(' ') }}"
+>
+<div
+    style="width:100%;height:100%;
+background-image: url('{{frappe.get_url()}}{%if element.isDynamic %}{{element.image.value}}{% elif not element.isDynamic%}{{element.image.file_url}}{% endif %}');
+"
+    class="image {{ element.classes | join(' ') }}"
+></div>
+</div>
+{%- endmacro %}
+{% macro render_table(element) -%}
+<div style="position: absolute; top:{% if 'printY' in element %}{{ element.printY }}{% else %}{{ element.startY }}{% endif %}px; left:{%if element.startX >= 1%}{{ element.startX }}{%else%}{{element.startX}}{%endif%}px;width:{{ element.width }}px;height:{{ element.height }}px;" class="
+    table-container {{ element.classes | join(' ') }}">
+    <table class="printTable" style="position: relative; width:100%; max-width:{{ element.width }}px;">
+        <thead>
+        {% if element.columns %}
+            <tr>
+        {% for column in element.columns%}
+                <th style="{% if column.width %}width: {{column.width}}%; max-width: {{column.width}}%;{%endif%} {{convert_css(element.headerStyle)}}border-top-style: solid !important;border-bottom-style: solid !important;{%if loop.first%}border-left-style: solid !important;{%elif loop.last%}border-right-style: solid !important;{%endif%}">
+                {{ column.label }}
+                </th>
+        {% endfor %}
+            </tr>
+        {% endif %}
+        </thead>
+        <tbody>
+        {% if element.columns %}
+         {% for row in doc.get(element.table.fieldname)%}
+            <tr>
+                {% set isLastRow = loop.last %}
+            {% for column in element.columns%}
+                <td style="{{convert_css(element.style)}}{%if isLastRow%}border-bottom-style: solid !important;{%endif%}{%if loop.first%}border-left-style: solid !important;{%elif loop.last%}border-right-style: solid !important;{%endif%}">
+            {% if column is mapping %}
+            {% for field in column.dynamicContent%}
+                {{ render_spantag(field, element, row) }}
+            {% endfor %}
+        {% endif %}
+                </td>
+            {% endfor %}
+            </tr>
+            {% endfor %}
+        {% endif %}
+        </tbody>
+    </table>
+    {% set renderAfterTableElement =  render_element(afterTableElement) %}
+    {% if renderAfterTableElement %}<div style="position: relative; top:0px; left: 0px;">{{ renderAfterTableElement }}</div>{% endif %}
+</div>
+{%- endmacro %}
+{%- macro render_spanvalue(field, element, row) -%}
+{%- if field.is_static -%}
+{{ field.value }}
+{%- elif field.doctype -%}
+{%- set value = frappe.db.get_value(field.doctype, doc[field.parentField], field.fieldname) -%}
+{{ frappe.format(value, {'fieldtype': field.fieldtype, 'options': field.options}) }}
+{%- elif row -%}
+{{row.get_formatted(field.fieldname)}}
+{%- else -%}
+{{doc.get_formatted(field.fieldname)}}
+{%- endif -%}{%- endmacro -%}
+{% macro render_spantag(field, element, row = None) -%}
+{% set span_value = render_spanvalue(field, element, row) %}
+<span class="{% if not field.is_static and field.is_labelled %}baseSpanTag{% endif %}">
+    {% if not field.is_static and field.is_labelled and span_value %}
+    <span class="{% if row %}printTable{% else %}dyanmicText{% endif %} label-text labelSpanTag" style="user-select:auto;{%if element.labelStyle %}{{convert_css(element.labelStyle)}}{%endif%}{%if field.labelStyle %}{{convert_css(field.labelStyle)}}{%endif%}">
+        {{ field.label }}
+    </span>
+    {% endif %}
+    <span class="dynamic-span {% if not field.is_static and field.is_labelled %}valueSpanTag{%endif%}"
+        style="{{convert_css(field.style)}} user-select:auto;">
+        {{ span_value }}
+    </span>
+    {% if field.nextLine %}
+    <br/>
+    {% endif %}
+</span>
+{%- endmacro %}
+{% macro render_element(element) -%}
+{% if element is iterable and (element is not string and element is not mapping) %}
+{% for object in element %}
+{{ render_element(object)}}
+{% endfor %}
+{% elif element.type == "rectangle" %}
+{{ render_rectangle(element) }}
+{% elif element.type == "image" %}
+{{render_image(element)}}
+{% elif element.type == "table" %}
+{{render_table(element)}}
+{% elif element.type == "text" %}
+{% if element.isDynamic %}
+{{render_dynamictext(element)}}
+{% else%}
+{{render_statictext(element)}}
+{% endif %}
+{% endif %}
+{%- endmacro %}
+{% macro getFontStyles(fonts) -%}{%for key, value in fonts.items()%}{{key ~ ':ital,wght@'}}{%for index, size in enumerate(value.weight)%}{%if index > 0%};{%endif%}0,{{size}}{%endfor%}{%for index, size in enumerate(value.italic)%}{%if index > 0%};{%endif%}1,{{size}}{%endfor%}{% if not loop.last %}{{'&display=swap&family='}}{%endif%}{%endfor%}{%- endmacro %}
+    {% set renderHeader = render_element(headerElement) %}
+    {% set renderBody =  render_element(bodyElement) %}
+    {% set renderFooter = render_element(footerElement) %}
+    <link rel="preconnect" href="https://fonts.gstatic.com" />
+        {% if settings.printHeaderFonts %}
+    {% set printHeaderFonts = getFontStyles(settings.printHeaderFonts) %}
+        <link     
+            href="https://fonts.googleapis.com/css2?family={{printHeaderFonts}}"
+            rel="stylesheet"
+            id="headerFontsLinkTag"      
+        />
+    {%endif%}
+        {% if settings.printFooterFonts %}
+    {% set printFooterFonts = getFontStyles(settings.printFooterFonts) %}
+        <link      
+            href="https://fonts.googleapis.com/css2?family={{printFooterFonts}}"
+            rel="stylesheet"
+            id="footerFontsLinkTag"
+            />
+    {%endif%}
+        {% if settings.printBodyFonts %}
+    {% set printBodyFonts = getFontStyles(settings.printBodyFonts) %}
+        <link     
+            href="https://fonts.googleapis.com/css2?family={{printBodyFonts}}"
+            rel="stylesheet"
+        />
+    {%endif%}
+    <div id="__print_designer">
+        <div id="header-html">
+            <div style="position: relative; top:0px; left: 0px; width: 100%; height:{{ settings.page.headerHeightWithMargin }}px;">{% if headerElement %}{{ renderHeader }}{%endif%}</div>
+            </div>
+            {% if bodyElement %}{{ renderBody }}{%endif%}
+            <div id="footer-html">
+            <div style="width: 100%; position: relative; top:0px; left: 0px; height:{{ settings.page.footerHeightWithMargin }}px; ">{% if footerElement %}{{ renderFooter }}{%endif%}</div>
+            </div>
+    </div>
+<style>
+    .print-format {
+        box-sizing: border-box;
+        padding: 0in;
+        dpi: {{settings.PDFPrintDPI or 96}}mm;
+        page-width: {{convert_uom(number=settings.page.width, to_uom="mm")}};
+        page-height:{{convert_uom(number=settings.page.height, to_uom="mm")}};
+        margin-top:{{convert_uom(number=settings.page.headerHeightWithMargin or settings.page.marginTop, to_uom='mm')}};
+        margin-bottom:{{convert_uom(number=settings.page.footerHeightWithMargin or settings.page.marginBottom, to_uom='mm')}};
+        margin-left:{{convert_uom(number=settings.page.marginLeft, to_uom='mm')}};
+        margin-right:{{convert_uom(number=settings.page.marginRight, to_uom='mm')}};
+    }
+    .print-designer-container {
+        position: absolute;
+    }
+	.print-format p {
+        margin: 0 !important;
+    }
+    tr:first-child th {
+        border-top-style: solid !important;
+    }
+    tr th:first-child {
+        border-left-style: solid !important;
+    }
+    tr th:last-child {
+        border-right-style: solid !important;
+    }
+    tr:last-child td {
+        border-bottom-style: solid !important;
+    }
+    tr td:first-child {
+        border-left-style: solid !important;
+    }
+    tr td:last-child {
+        border-right-style: solid !important;
+    }
+    .flexDyanmicText .baseSpanTag {
+		 display: block;
+    }
+	.flexDyanmicText .baseSpanTag .labelSpanTag {
+			display: inline-block;
+			vertical-align: top;
+    }
+	.flexDyanmicText .baseSpanTag .valueSpanTag {
+        display: inline-block;
+			vertical-align: top;
+		}
+.flexDirectionColumn .baseSpanTag {
+		display: block;
+	}
+.flexDirectionColumn .baseSpanTag .labelSpanTag {
+		display: block;
+	}
+.flexDirectionColumn .baseSpanTag .valueSpanTag {
+		display: block;
+	}
+</style>

@@ -1,0 +1,409 @@
+<template>
+	<div v-if="isTable" style=" display: flex; align-items: baseline; height: 26px; margin: 0.8rem 0;">
+		<label for="column-name" style="padding-right: 1rem; padding-left: 0.5rem;">Label :  </label>
+		<input
+				type="text"
+				id="column-name"
+				class="form-control input-sm col-4 my-2"
+				:placeholder="__('Enter Label')"
+				v-model="label"
+			/>
+	</div>
+	<div
+		class="preview-container"
+		@click.self.stop="selectedEl = null"
+		@dragover="allowDrop"
+		@drop.self="drop($event, fieldnames.length)"
+	>
+		<template v-for="(field, index) in fieldnames" :key="index">
+			<div
+				:class="[
+					'dynamic-field',
+					field.fieldtype == 'StaticText' && 'static-text',
+					selectedEl?.field == field &&
+						(field.fieldtype == 'StaticText'
+							? 'static-text-selected'
+							: 'dynamic-field-selected'),
+				]"
+				:value="field.fieldname"
+				draggable="true"
+				@click.stop="handleClick($event, field, index)"
+				@dragstart="dragstart($event, index)"
+				@dragover="allowDrop"
+				@dragleave="dragleave"
+				@drop="drop($event, index)"
+			>
+				<span
+					v-if="!field.is_static && field.is_labelled"
+					:contenteditable="contenteditable"
+					:class="['label-text', selectedEl?.field == field && 'label-text-selected']"
+					:ref="(el) => (field.labelRef = el)"
+					@dblclick="handleDblClick($event, field)"
+					@blur="handleBlur($event, field)"
+					v-html="
+						`${field.label}` ||
+						`{{ ${field.parentField ? field.parentField + '.' : ''}${
+							field.fieldname
+						} }}`
+					"
+				></span>
+				<span
+					:ref="(el) => (field.spanRef = el)"
+					class="preview-text"
+					:class="{ 'preview-text-selected': selectedEl?.field == field }"
+					:contenteditable="contenteditable"
+					@dblclick="handleDblClick($event, field)"
+					@blur="handleBlur($event, field)"
+					v-html="
+						field.value ||
+						(field.is_static
+							? 'Add Text'
+							: `{{ ${field.parentField ? field.parentField + '.' : ''}${
+									field.fieldname
+							  } }}`)
+					"
+				></span>
+				<span v-if="field.nextLine" class="next-line fa fa-level-down"></span>
+			</div>
+			<br v-if="field.nextLine" />
+		</template>
+	</div>
+	<div class="footer">
+		<div class="icons">
+			<div @click="addStaticText">
+				<em style="font-weight: 900">T</em>
+				<sub style="font-weight: 600; font-size: 1em bottom:-0.15em">+</sub>
+				<span style="font-size: 12px; padding: 0px 5px;">Add Text</span>
+			</div>
+			<div v-if="selectedEl && !selectedEl.field.is_static"
+				@click="selectedEl.field.is_labelled = !selectedEl.field.is_labelled">
+				<span
+				class="fa fa-tag"
+				:style="[selectedEl.field.is_labelled && 'color:var(--primary)']"
+				></span>
+				<span style="font-size: 12px; padding: 0px 5px;">{{ selectedEl.field.is_labelled ? "Remove Label" : "Add Label" }}</span>
+			</div>
+			<div v-if="selectedEl"
+					@click="selectedEl.field.nextLine = !selectedEl.field.nextLine">
+				<span
+					class="next-line fa fa-level-down"
+					:style="[selectedEl.field.nextLine && 'color:var(--primary)']"
+				></span>
+				<span style="font-size: 12px; padding: 0px 5px;">New Line</span>
+			</div>
+		</div>
+		<div
+			class="deleteIcon"
+			v-if="fieldnames.length"
+			@click.stop="handleDeleteClick"
+			@dragover="allowDeleteDrop"
+			@dragleave="dragleave"
+			@drop="(ev) => deleteField(ev)"
+		>
+			<span class="fa fa-trash"></span> <span style="font-size: 12px; padding: 0px 5px;">Delete</span>
+		</div>
+		<!-- <div class="help-legend-container">
+			<div class="legend">
+				<div>
+					<span class="fa fa-square" style="color: var(--primary)"></span
+					><span> Editable Text</span>
+				</div>
+				<div>
+					<span class="fa fa-square" style="color: var(--success)"></span
+					><span> Dynamic Text</span>
+				</div>
+			</div>
+		</div> -->
+		<!-- <div
+			class="deleteIcon"
+			v-if="fieldnames.length"
+			@click.stop="handleDeleteClick"
+			@dragover="allowDeleteDrop"
+			@dragleave="dragleave"
+			@drop="(ev) => deleteField(ev)"
+		>
+			<span class="fa fa-trash"></span>
+		</div> -->
+	</div>
+</template>
+
+<script setup>
+import { ref, nextTick, onMounted } from "vue";
+import { useMainStore } from "../../store/MainStore";
+const MainStore = useMainStore();
+const props = defineProps({
+	fieldnames: {
+		type: Array,
+		required: true,
+	},
+	modalLabel: {
+		type: String,
+		default: "",
+	},
+	isTable: {
+		type: Boolean,
+		default: false,
+	},
+});
+const draggableEl = ref(-1);
+const label = ref("");
+const setLabel = (value) => {
+	if (label.value != value) {
+		label.value = value;
+	}
+};
+onMounted(() => {
+	label.value = props.modalLabel;
+});
+
+const parentField = ref("");
+const setParentField = (value) => {
+	if (parentField.value != value) {
+		parentField.value = value;
+	}
+};
+const selectedEl = ref(null);
+const setSelectedEl = (value) => {
+	if (selectedEl.value != value) {
+		selectedEl.value = value;
+	}
+};
+const contenteditable = ref(false);
+defineExpose({ parentField, setParentField, selectedEl, setSelectedEl, label, setLabel });
+
+const handleClick = (event, field, index) => {
+	selectedEl.value = { index, field };
+	parentField.value = field.parentField;
+};
+
+const selectElementContents = (el) => {
+	const range = document.createRange();
+	range.selectNodeContents(el);
+	const sel = window.getSelection();
+	sel.removeAllRanges();
+	sel.addRange(range);
+};
+
+const handleDblClick = (event, field) => {
+	if (field.fieldtype != "StaticText" && !field.is_labelled) return;
+	contenteditable.value = true;
+	setTimeout(() => {
+		event.target.focus();
+		selectElementContents(field.labelRef || field.spanRef);
+	}, 0);
+};
+
+const handleBlur = (event, field) => {
+	contenteditable.value = false;
+	if (event.target == field.spanRef) {
+		field.value = event.target.innerHTML;
+	} else {
+		field.label = event.target.innerHTML;
+	}
+};
+
+const addStaticText = (event) => {
+	let index = props.fieldnames.length;
+	let newText = {
+		doctype: "",
+		parentField: "",
+		fieldname: frappe.utils.get_random(10),
+		value: "Add Text",
+		fieldtype: "StaticText",
+		is_static: true,
+		is_labelled: false,
+		nextLine: false,
+		style: {},
+	};
+	if (selectedEl.value) {
+		index = selectedEl.value.index + 1;
+		props.fieldnames.splice(index, 0, newText);
+	} else {
+		props.fieldnames.push(newText);
+	}
+	contenteditable.value = true;
+	nextTick(() => {
+		props.fieldnames.at(index).spanRef.focus();
+		selectElementContents(props.fieldnames.at(index).spanRef);
+		selectedEl.value = { index, field: newText };
+	});
+};
+
+const dragstart = (ev, index) => {
+	ev.dataTransfer.dropEffect = "move";
+	draggableEl.value = index;
+};
+
+const allowDrop = (ev) => {
+	ev.dataTransfer.dropEffect = "move";
+	ev.target.classList.contains("dynamic-field") || ev.target.classList.contains("deleteIcon")
+		? ev.target.classList.add("dropzone")
+		: ev.target.parentElement.classList.add("dropzone");
+	ev.preventDefault();
+};
+
+const dragleave = (ev) => {
+	ev.target.classList.contains("dynamic-field") || ev.target.classList.contains("deleteIcon")
+		? ev.target.classList.remove("dropzone")
+		: ev.target.parentElement.classList.remove("dropzone");
+};
+
+const drop = (ev, index) => {
+	ev.target.classList.contains("dynamic-field") || ev.target.classList.contains("deleteIcon")
+		? ev.target.classList.remove("dropzone")
+		: ev.target.parentElement.classList.remove("dropzone");
+	let dragField = props.fieldnames.splice(draggableEl.value, 1);
+	props.fieldnames.splice(index, 0, dragField[0]);
+	ev.preventDefault();
+	selectedEl.value = null;
+};
+
+const allowDeleteDrop = (ev) => {
+	ev.dataTransfer.dropEffect = "move";
+	ev.target.classList.contains("dynamic-field") || ev.target.classList.contains("deleteIcon")
+		? ev.target.classList.add("dropzone")
+		: ev.target.parentElement.classList.add("dropzone");
+	ev.preventDefault();
+};
+
+const handleDeleteClick = () => {
+	if (selectedEl.value) {
+		let el = props.fieldnames.splice(selectedEl.value.index, 1);
+		MainStore.dynamicData.splice(MainStore.dynamicData.indexOf(el), 1);
+		selectedEl.value = null;
+	}
+};
+
+const deleteField = (ev) => {
+	ev.target.classList.contains("dynamic-field") || ev.target.classList.contains("deleteIcon")
+		? ev.target.classList.remove("dropzone")
+		: ev.target.parentElement.classList.remove("dropzone");
+	let el = props.fieldnames.splice(draggableEl.value, 1);
+	MainStore.dynamicData.splice(MainStore.dynamicData.indexOf(el), 1);
+	if (draggableEl.value == selectedEl.value?.index) {
+		selectedEl.value = null;
+	}
+	draggableEl.value = -1;
+};
+</script>
+
+<style lang="scss" scoped>
+.preview-container {
+	flex: 1;
+	padding: 0px 15px;
+	border: 1px solid var(--gray-200);
+	border-radius: var(--border-radius);
+	height: calc(23vh - 45px);
+	min-height: 100px;
+	width: 100%;
+	background-color: var(--bg-color);
+	overflow: auto;
+	margin-top: 15px;
+	padding-top: 10px;
+
+	.dynamic-field {
+		width: fit-content;
+		display: inline-block;
+		vertical-align: top;
+		box-sizing: border-box;
+		padding: 8px 1px;
+		color: var(--text-light);
+
+		&:hover,
+		&.dynamic-field-selected {
+			border: 1px solid var(--primary);
+			padding: 7px 0;
+			border-radius: var(--border-radius);
+		}
+
+		.label-text {
+			padding: 6px 1px;
+			margin: 0px 3px;
+			&:hover,
+			&.label-text-selected {
+				border: 1px solid var(--gray-900);
+				padding: 6px 1px;
+				margin: 0px 2px;
+				border-radius: var(--border-radius);
+			}
+		}
+
+		&.static-text:hover,
+		&.static-text-selected {
+			border: 1px solid var(--gray-900);
+			padding: 7px 0;
+			border-radius: var(--border-radius);
+		}
+
+		.preview-text {
+			padding: 0;
+			padding-left: 2px;
+			&:hover,
+			&.preview-text-selected {
+				color: var(--dark);
+			}
+		}
+
+		.next-line {
+			margin: 0px 7px;
+			color: var(--text-light);
+		}
+	}
+}
+.footer {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	.icons {
+		display: flex;
+		flex: 1;
+		align-items: center;
+		font-size: 16px;
+		justify-content: flex-start;
+		padding: 10px;
+		color: var(--text-light);
+
+		& > * {
+			font-weight: 500;
+			padding: 0px 10px;
+			border-left: 1px solid var(--gray-300);
+			&:first-child {
+				padding-left: 0px;
+				border-left: 0px;
+			}
+		}
+	}
+	.help-legend-container {
+		flex: auto;
+		display: flex;
+		font-size: small;
+		justify-content: flex-start;
+		align-items: center;
+		padding-left: 24px;
+		.legend {
+			display: flex;
+			justify-content: space-around;
+			align-items: center;
+			span {
+				padding-left: 10px;
+			}
+		}
+	}
+	.deleteIcon {
+		display: flex;
+		flex: 1;
+		max-width: 60px;
+		margin-right: 20px;
+		align-items: center;
+		font-size: medium;
+		justify-content: center;
+		padding: 10px 20px;
+		margin-right: 6px;
+		color: var(--danger);
+	}
+}
+
+.dropzone {
+	background-color: var(--gray-200);
+}
+</style>
