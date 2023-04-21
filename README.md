@@ -3,7 +3,6 @@
 ## Frappe App to Design Print Formats using interactive UI.
 
 <div align="center" markdown="1">
-
 <img src=".github/logo.png" alt="Frappe Print Designer logo" width="384"/>
 
 *Free and Open Source App to **Design Print Formats** using **Interactive UI** for your Frappe Apps*
@@ -36,14 +35,9 @@ bench get-app https://github.com/frappe/print_designer
 ```
 bench --site print-designer.test install-app print_designer
 ```
-7.  Open in your browser and go through the setup wizard. 
-```
-http://print-designer.test:8000/
-```
-8.  After the setup is complete now open the URL
-```
-http://print-designer.test:8000/app/print-designer/
-```
+7.  Open [http://print-designer.test:8000/](http://print-designer.test:8000/) in your browser and go through the setup wizard. 
+
+8.  After the setup is complete now open [http://print-designer.test:8000/app/print-designer/](http://print-designer.test:8000/app/print-designer/)
 ---
 ## Contributions and Community
 
@@ -53,6 +47,13 @@ There are many ways you can contribute even if you don't code:
 1. If you find any issues, even if it is a typo, you can [raise an issue](https://github.com/frappe/print_designer/issues/new) to inform us.
 
 ---
+
+## FAQ
+1. Mac Installation Error
+    - If error has `npm ERR! node-pre-gyp WARN Pre-built binaries not found for canvas@x.x.x` it means that there aren't any pre-built binaries for your system so it will try to compile them and in order to do that you need 
+    - Xcode Command Line Tools `xcode-select --install`
+    - [HomeBrew](https://brew.sh/) and `brew install pkg-config cairo pango libpng jpeg giflib librsvg pixman`
+    - If you have **xcode 10.0 or higher** installed, in order to build from source you need **NPM 6.4.1 or higher** `npm install -g npm@latest`.
 
 ## License
 
