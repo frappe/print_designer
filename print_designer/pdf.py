@@ -1,5 +1,9 @@
-import json, frappe
+import json
+
+import frappe
 from frappe.utils.jinja_globals import is_rtl
+
+
 def pdf_header_footer_html(soup, head, content, styles, html_id, css):
 	if soup.find(id="__print_designer"):
 		return frappe.render_template(
@@ -14,13 +18,19 @@ def pdf_header_footer_html(soup, head, content, styles, html_id, css):
 				"footerFonts": soup.find(id="footerFontsLinkTag"),
 				"lang": frappe.local.lang,
 				"layout_direction": "rtl" if is_rtl() else "ltr",
-			},)
+			},
+		)
 	else:
-		from frappe.utils.pdf import pdf_header_html, pdf_footer_html
+		from frappe.utils.pdf import pdf_footer_html, pdf_header_html
+
 		if html_id == "header-html":
-			return pdf_header_html(soup=soup, head=head, content=content, styles=styles, html_id=html_id, css=css)
+			return pdf_header_html(
+				soup=soup, head=head, content=content, styles=styles, html_id=html_id, css=css
+			)
 		elif html_id == "footer-html":
-			return pdf_footer_html(soup=soup, head=head, content=content, styles=styles, html_id=html_id, css=css)
+			return pdf_footer_html(
+				soup=soup, head=head, content=content, styles=styles, html_id=html_id, css=css
+			)
 
 
 def pdf_body_html(print_format, jenv, args, template):

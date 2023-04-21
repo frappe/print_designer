@@ -189,8 +189,12 @@ export const useElementStore = defineStore("ElementStore", {
 				} else {
 					newElement.printY = newElement.startY - MainStore.page.headerHeight;
 					MainStore.printBodyFonts = printFonts;
-					if (tableElement.length == 1 && tableElement[0].startY + tableElement[0].height <= newElement.startY + 2) {
-						newElement.printY = newElement.startY - (tableElement[0].startY + tableElement[0].height);
+					if (
+						tableElement.length == 1 &&
+						tableElement[0].startY + tableElement[0].height <= newElement.startY + 2
+					) {
+						newElement.printY =
+							newElement.startY - (tableElement[0].startY + tableElement[0].height);
 						newElement.printX = newElement.startX - tableElement[0].startX;
 
 						afterTableElements.push(newElement);
@@ -359,34 +363,34 @@ export const useElementStore = defineStore("ElementStore", {
 					isDropZone: false,
 					table: null,
 					columns: [
-							{
-								"id": 0,
-								"label": "",
-							},
-							{
-								"id": 1,
-								"label": "",
-							},
-							{
-								"id": 2,
-								"label": "",
-							},
-							{
-								"id": 3,
-								"label": "",
-							},
-							{
-								"id": 4,
-								"label": "",
-							},
-							{
-								"id": 5,
-								"label": "",
-							},
-							{
-								"id": 6,
-								"label": "",
-							}
+						{
+							id: 0,
+							label: "",
+						},
+						{
+							id: 1,
+							label: "",
+						},
+						{
+							id: 2,
+							label: "",
+						},
+						{
+							id: 3,
+							label: "",
+						},
+						{
+							id: 4,
+							label: "",
+						},
+						{
+							id: 5,
+							label: "",
+						},
+						{
+							id: 6,
+							label: "",
+						},
 					],
 					PreviewRowNo: 1,
 					selectedDyanmicText: null,
@@ -401,8 +405,8 @@ export const useElementStore = defineStore("ElementStore", {
 					labelStyle: {},
 					headerStyle: {},
 					classes: [],
-						};
-						this.Elements.push(newTable);
+				};
+				this.Elements.push(newTable);
 			}
 			this.Elements.map((element) => {
 				element.DOMRef = null;

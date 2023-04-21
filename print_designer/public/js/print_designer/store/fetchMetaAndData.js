@@ -1,4 +1,4 @@
-import { watch, markRaw} from "vue";
+import { watch, markRaw } from "vue";
 import { useMainStore } from "./MainStore";
 export const fetchMeta = () => {
 	const MainStore = useMainStore();

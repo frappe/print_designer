@@ -283,141 +283,142 @@ const size = {
 };
 </script>
 <style scoped lang="scss">
-	.modal-body {
-		height: 90%;
-		overflow: auto;
-		padding: 0;
-		background-color: var(--fg-color);
+.modal-body {
+	height: 90%;
+	overflow: auto;
+	padding: 0;
+	background-color: var(--fg-color);
+}
+.modal-body::-webkit-scrollbar {
+	width: 5px;
+	height: 5px;
+}
+.modal-body::-webkit-scrollbar-thumb {
+	background: "var(--gray-200)";
+	border-radius: 6px;
+}
+.modal-body::-webkit-scrollbar-track,
+.modal-body::-webkit-scrollbar-corner {
+	background: var(--fg-color);
+}
+.icon-show {
+	display: none;
+}
+.image-filter {
+	display: flex;
+	justify-content: space-around;
+	align-items: center;
+	margin: 10px;
+
+	button {
+		margin-right: 1rem;
 	}
-	.modal-body::-webkit-scrollbar {
-		width: 5px;
-		height: 5px;
-	}
-	.modal-body::-webkit-scrollbar-thumb {
-		background: "var(--gray-200)";
-		border-radius: 6px;
-	}
-	.modal-body::-webkit-scrollbar-track,
-	.modal-body::-webkit-scrollbar-corner {
-		background: var(--fg-color);
-	}
-	.icon-show {
-		display: none;
-	}
-	.image-filter {
+}
+.image-file-grid {
+	padding: var(--padding-sm);
+	display: grid;
+	grid-template-rows: repeat(auto-fill, minmax(150px, 1fr));
+	grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+	grid-gap: var(--margin-md);
+	max-width: 100%;
+
+	.file-wrapper {
+		position: relative;
+		height: 170px;
+		max-height: 170px;
 		display: flex;
-		justify-content: space-around;
-		align-items: center;
-		margin: 10px;
-	
-		button {
-			margin-right: 1rem;
+		justify-content: space-between;
+		flex-direction: column;
+		width: 100%;
+		border: 1px solid var(--border-color);
+		border-radius: var(--border-radius);
+		text-decoration: none;
+
+		.file-body {
+			height: 105px;
+			min-height: 105px;
+			max-height: 105px;
+			display: flex;
+			align-items: center;
+			flex-direction: row;
+			background: var(--bg-color);
+
+			.file-image {
+				max-height: 100%;
+				display: flex;
+				width: 100%;
+				min-width: 100%;
+			}
 		}
-	}
-	.image-file-grid {
-		padding: var(--padding-sm);
-		display: grid;
-		grid-template-rows: repeat(auto-fill, minmax(150px, 1fr));
-		grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-		grid-gap: var(--margin-md);
-		max-width: 100%;
-	
-		.file-wrapper {
-			position: relative;
-			height: 170px;
-			max-height: 170px;
+		.file-footer {
 			display: flex;
 			justify-content: space-between;
-			flex-direction: column;
-			width: 100%;
-			border: 1px solid var(--border-color);
-			border-radius: var(--border-radius);
-			text-decoration: none;
-	
-			.file-body {
-				height: 105px;
-				min-height: 105px;
-				max-height: 105px;
-				display: flex;
-				align-items: center;
-				flex-direction: row;
-				background: var(--bg-color);
-	
-				.file-image {
-					max-height: 100%;
-					display: flex;
-					width: 100%;
-					min-width: 100%;
-				}
+			align-items: center;
+			padding: var(--padding-sm);
+			background-color: var(--fg-color);
+			.file-title {
+				font-size: var(--text-md);
+				font-weight: 500;
 			}
-			.file-footer {
-				display: flex;
-				justify-content: space-between;
-				align-items: center;
-				padding: var(--padding-sm);
-				background-color: var(--fg-color);
-				.file-title {
-					font-size: var(--text-md);
-					font-weight: 500;
-				}
-				.file-modified {
-					font-size: var(--text-xs);
-					word-wrap: break-word;
-					color: var(--text-on-gray);
-				}
-			}
-		}
-		.file-wrapper:hover {
-			img {
-				filter: opacity(75%);
-			}
-		}
-		.selected-image {
-			border: 1px solid var(--success);
-			border-radius: var(--border-radius);
-	
-			.icon-show {
-				display: unset;
-				font-size: 0.9rem;
-				color: var(--success);
+			.file-modified {
+				font-size: var(--text-xs);
+				word-wrap: break-word;
+				color: var(--text-on-gray);
 			}
 		}
 	}
-	.fallback-image {
-		width: 100%;
-		user-select: none;
-		height: 100%;
+	.file-wrapper:hover {
+		img {
+			filter: opacity(75%);
+		}
+	}
+	.selected-image {
+		border: 1px solid var(--success);
+		border-radius: var(--border-radius);
+
+		.icon-show {
+			display: unset;
+			font-size: 0.9rem;
+			color: var(--success);
+		}
+	}
+}
+.fallback-image {
+	width: 100%;
+	user-select: none;
+	height: 100%;
+	display: flex;
+	word-wrap: break-word;
+	align-items: center;
+	justify-content: center;
+	background-color: var(--bg-color);
+	.content {
 		display: flex;
-		word-wrap: break-word;
+		flex-direction: column;
 		align-items: center;
 		justify-content: center;
-		background-color: var(--bg-color);
-		.content {
-			display: flex;
-			flex-direction: column;
-			align-items: center;
-			justify-content: center;
-	
-			span {
-				font-size: smaller;
-				text-align: center;
-			}
+
+		span {
+			font-size: smaller;
+			text-align: center;
 		}
 	}
+}
 </style>
 <style lang="scss" deep>
 .footer-control-container {
-		position: absolute;
-		flex-direction: row;
-		bottom: 0px;
-		background-color: var(--gray-50);
-		border-radius: var(--border-radius);
-		width: 97%;
-		form {
-			display: flex;
-			align-items: end;
-			button {
-				margin-left: 10px;
-			}
+	position: absolute;
+	flex-direction: row;
+	bottom: 0px;
+	background-color: var(--gray-50);
+	border-radius: var(--border-radius);
+	width: 97%;
+	form {
+		display: flex;
+		align-items: end;
+		button {
+			margin-left: 10px;
 		}
-	}</style>
+	}
+}
+</style>

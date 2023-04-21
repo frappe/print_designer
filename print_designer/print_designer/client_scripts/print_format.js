@@ -44,4 +44,4 @@ frappe.ui.form.on("Print Format", {
 			}
 		}
 	},
-})
+});

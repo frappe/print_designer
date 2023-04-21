@@ -59,7 +59,11 @@
 				{{ Math.abs(Math.round(layer.height)) }} px *
 				{{ Math.abs(Math.round(layer.width)) }} px
 			</div>
-			<AppLayer class="childern-container" v-if="layer.type == 'rectangle' && layer.childrens.length" :elements="layer.childrens" />
+			<AppLayer
+				class="childern-container"
+				v-if="layer.type == 'rectangle' && layer.childrens.length"
+				:elements="layer.childrens"
+			/>
 		</div>
 	</div>
 </template>
@@ -71,8 +75,8 @@ const ElementStore = useElementStore();
 const props = defineProps({
 	elements: {
 		type: Array,
-	}
-})
+	},
+});
 </script>
 <style lang="scss" scoped>
 .layers-panel {

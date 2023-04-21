@@ -200,7 +200,11 @@
 					"
 					:class="['frappeControl']"
 				>
-					<label v-if="field.isLabelled" class="main-label" v-text="typeof field.label == 'function' ? field.label() : field.label"></label>
+					<label
+						v-if="field.isLabelled"
+						class="main-label"
+						v-text="typeof field.label == 'function' ? field.label() : field.label"
+					></label>
 					<div
 						:ref="
 							(el) => {

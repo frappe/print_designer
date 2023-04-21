@@ -15,13 +15,13 @@
 				class="btn btn-sm"
 				@click="
 					(event) => {
-							if (MainStore.mode == 'pdfSetup') {
-								MainStore.mode = 'editing';
-							} else {
-								MainStore.mode = 'pdfSetup';
-							}
-							event.target.blur();
+						if (MainStore.mode == 'pdfSetup') {
+							MainStore.mode = 'editing';
+						} else {
+							MainStore.mode = 'pdfSetup';
 						}
+						event.target.blur();
+					}
 				"
 			>
 				{{ MainStore.mode == "pdfSetup" ? "Exit" : "Header / Footer" }}

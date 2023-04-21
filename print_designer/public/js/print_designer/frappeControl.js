@@ -105,9 +105,9 @@ export const makeFeild = ({
 						() => {
 							MainStore.frappeControls[name].$wrapper.popover("hide");
 						}
-						);
-					});
-					MainStore.frappeControls[name].$wrapper.on("hidden.bs.popover", () => {
+					);
+				});
+				MainStore.frappeControls[name].$wrapper.on("hidden.bs.popover", () => {
 					if (!MainStore.frappeControls[name]) return;
 					MainStore.frappeControls[name].$input[0].classList.remove("input-active");
 					hidePicker && hidePicker();

@@ -93,25 +93,25 @@ const printDesignerDialog = () => {
 		secondary_action_label: __("Exit"),
 		secondary_action() {
 			let prev_route = frappe.get_prev_route();
-			prev_route.length ? frappe.set_route(...prev_route): frappe.set_route()
-		}
+			prev_route.length ? frappe.set_route(...prev_route) : frappe.set_route();
+		},
 	});
-	return d
-}
+	return d;
+};
 
 const load_print_designer = async (wrapper) => {
 	let route = frappe.get_route();
 	let $parent = $(wrapper);
 	let is_print_format;
-	let message = `Print Format <b>${route[1]}</b> not found. <hr/> Would you like to Create or Edit other Print Format?`
-	
+	let message = `Print Format <b>${route[1]}</b> not found. <hr/> Would you like to Create or Edit other Print Format?`;
+
 	if (route.length > 1 && route[1].length) {
-		is_print_format = await frappe.db.get_value("Print Format", route[1], "print_designer")
+		is_print_format = await frappe.db.get_value("Print Format", route[1], "print_designer");
 		if (typeof is_print_format.message.print_designer == "number") {
-			is_print_format = is_print_format.message.print_designer
-			message = `Print Format <b>${route[1]}</b> is not made using Print Designer. <hr/> Would you like to Create or Edit other Print Format?`
+			is_print_format = is_print_format.message.print_designer;
+			message = `Print Format <b>${route[1]}</b> is not made using Print Designer. <hr/> Would you like to Create or Edit other Print Format?`;
 		} else {
-			is_print_format = false
+			is_print_format = false;
 		}
 	}
 	if (route.length > 1 && route[1].length) {
@@ -122,23 +122,25 @@ const load_print_designer = async (wrapper) => {
 					print_format: route[1],
 				});
 			});
+		} else {
+			frappe.confirm(
+				message,
+				() => {
+					let d = printDesignerDialog();
+					if (typeof is_print_format == "number") {
+						d.set_value("action", "Create");
+					} else {
+						d.set_value("action", "Edit");
+					}
+				},
+				() => {
+					let prev_route = frappe.get_prev_route();
+					prev_route.length ? frappe.set_route(...prev_route) : frappe.set_route();
+				}
+			);
 		}
-	else {
-		frappe.confirm(message,
-    () => {
-		let d = printDesignerDialog()
-		if (typeof is_print_format == "number"){
-			d.set_value("action", "Create");
-		} else{
-			d.set_value("action", "Edit");
-		}
-    }, () => {
-		let prev_route = frappe.get_prev_route();
-		prev_route.length ? frappe.set_route(...prev_route): frappe.set_route()
-    })
-}
-} else {
-	let d = printDesignerDialog();
-	d.set_value("action", "Create");
-}
+	} else {
+		let d = printDesignerDialog();
+		d.set_value("action", "Create");
+	}
 };

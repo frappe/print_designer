@@ -187,33 +187,33 @@ onUpdated(() => {
 });
 </script>
 <style deep lang="scss">
-	[contenteditable] {
-		outline: none;
-	}
-	p:empty:before {
-		content: attr(data-placeholder);
-	}
-	[contenteditable]:empty:focus:before {
-		content: "";
-	}
-	.text-hover:hover {
-		box-sizing: border-box !important;
-		border-bottom: 1px solid var(--primary-color) !important;
-	}
-	.flexDyanmicText {
-		.baseSpanTag {
-			display: flex;
-			.labelSpanTag {
-				flex: 1;
-			}
-			.valueSpanTag {
-				flex: 2;
-			}
+[contenteditable] {
+	outline: none;
+}
+p:empty:before {
+	content: attr(data-placeholder);
+}
+[contenteditable]:empty:focus:before {
+	content: "";
+}
+.text-hover:hover {
+	box-sizing: border-box !important;
+	border-bottom: 1px solid var(--primary-color) !important;
+}
+.flexDyanmicText {
+	.baseSpanTag {
+		display: flex;
+		.labelSpanTag {
+			flex: 1;
+		}
+		.valueSpanTag {
+			flex: 2;
 		}
 	}
-	.flexDirectionColumn {
-		.baseSpanTag {
-			flex-direction: column;
-		}
+}
+.flexDirectionColumn {
+	.baseSpanTag {
+		flex-direction: column;
 	}
+}
 </style>

@@ -134,15 +134,15 @@ background-image: url('{{frappe.get_url()}}{%if element.isDynamic %}{{element.im
     <link rel="preconnect" href="https://fonts.gstatic.com" />
         {% if settings.printHeaderFonts %}
     {% set printHeaderFonts = getFontStyles(settings.printHeaderFonts) %}
-        <link     
+        <link
             href="https://fonts.googleapis.com/css2?family={{printHeaderFonts}}"
             rel="stylesheet"
-            id="headerFontsLinkTag"      
+            id="headerFontsLinkTag"
         />
     {%endif%}
         {% if settings.printFooterFonts %}
     {% set printFooterFonts = getFontStyles(settings.printFooterFonts) %}
-        <link      
+        <link
             href="https://fonts.googleapis.com/css2?family={{printFooterFonts}}"
             rel="stylesheet"
             id="footerFontsLinkTag"
@@ -150,7 +150,7 @@ background-image: url('{{frappe.get_url()}}{%if element.isDynamic %}{{element.im
     {%endif%}
         {% if settings.printBodyFonts %}
     {% set printBodyFonts = getFontStyles(settings.printBodyFonts) %}
-        <link     
+        <link
             href="https://fonts.googleapis.com/css2?family={{printBodyFonts}}"
             rel="stylesheet"
         />

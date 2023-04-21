@@ -1,13 +1,16 @@
 <template>
-	<div v-if="isTable" style=" display: flex; align-items: baseline; height: 26px; margin: 0.8rem 0;">
-		<label for="column-name" style="padding-right: 1rem; padding-left: 0.5rem;">Label :  </label>
+	<div
+		v-if="isTable"
+		style="display: flex; align-items: baseline; height: 26px; margin: 0.8rem 0"
+	>
+		<label for="column-name" style="padding-right: 1rem; padding-left: 0.5rem">Label : </label>
 		<input
-				type="text"
-				id="column-name"
-				class="form-control input-sm col-4 my-2"
-				:placeholder="__('Enter Label')"
-				v-model="label"
-			/>
+			type="text"
+			id="column-name"
+			class="form-control input-sm col-4 my-2"
+			:placeholder="__('Enter Label')"
+			v-model="label"
+		/>
 	</div>
 	<div
 		class="preview-container"
@@ -73,23 +76,26 @@
 			<div @click="addStaticText">
 				<em style="font-weight: 900">T</em>
 				<sub style="font-weight: 600; font-size: 1em bottom:-0.15em">+</sub>
-				<span style="font-size: 12px; padding: 0px 5px;">Add Text</span>
+				<span style="font-size: 12px; padding: 0px 5px">Add Text</span>
 			</div>
-			<div v-if="selectedEl && !selectedEl.field.is_static"
-				@click="selectedEl.field.is_labelled = !selectedEl.field.is_labelled">
+			<div
+				v-if="selectedEl && !selectedEl.field.is_static"
+				@click="selectedEl.field.is_labelled = !selectedEl.field.is_labelled"
+			>
 				<span
-				class="fa fa-tag"
-				:style="[selectedEl.field.is_labelled && 'color:var(--primary)']"
+					class="fa fa-tag"
+					:style="[selectedEl.field.is_labelled && 'color:var(--primary)']"
 				></span>
-				<span style="font-size: 12px; padding: 0px 5px;">{{ selectedEl.field.is_labelled ? "Remove Label" : "Add Label" }}</span>
+				<span style="font-size: 12px; padding: 0px 5px">{{
+					selectedEl.field.is_labelled ? "Remove Label" : "Add Label"
+				}}</span>
 			</div>
-			<div v-if="selectedEl"
-					@click="selectedEl.field.nextLine = !selectedEl.field.nextLine">
+			<div v-if="selectedEl" @click="selectedEl.field.nextLine = !selectedEl.field.nextLine">
 				<span
 					class="next-line fa fa-level-down"
 					:style="[selectedEl.field.nextLine && 'color:var(--primary)']"
 				></span>
-				<span style="font-size: 12px; padding: 0px 5px;">New Line</span>
+				<span style="font-size: 12px; padding: 0px 5px">New Line</span>
 			</div>
 		</div>
 		<div
@@ -100,30 +106,9 @@
 			@dragleave="dragleave"
 			@drop="(ev) => deleteField(ev)"
 		>
-			<span class="fa fa-trash"></span> <span style="font-size: 12px; padding: 0px 5px;">Delete</span>
-		</div>
-		<!-- <div class="help-legend-container">
-			<div class="legend">
-				<div>
-					<span class="fa fa-square" style="color: var(--primary)"></span
-					><span> Editable Text</span>
-				</div>
-				<div>
-					<span class="fa fa-square" style="color: var(--success)"></span
-					><span> Dynamic Text</span>
-				</div>
-			</div>
-		</div> -->
-		<!-- <div
-			class="deleteIcon"
-			v-if="fieldnames.length"
-			@click.stop="handleDeleteClick"
-			@dragover="allowDeleteDrop"
-			@dragleave="dragleave"
-			@drop="(ev) => deleteField(ev)"
-		>
 			<span class="fa fa-trash"></span>
-		</div> -->
+			<span style="font-size: 12px; padding: 0px 5px">Delete</span>
+		</div>
 	</div>
 </template>
 
@@ -370,22 +355,6 @@ const deleteField = (ev) => {
 			&:first-child {
 				padding-left: 0px;
 				border-left: 0px;
-			}
-		}
-	}
-	.help-legend-container {
-		flex: auto;
-		display: flex;
-		font-size: small;
-		justify-content: flex-start;
-		align-items: center;
-		padding-left: 24px;
-		.legend {
-			display: flex;
-			justify-content: space-around;
-			align-items: center;
-			span {
-				padding-left: 10px;
 			}
 		}
 	}

@@ -90,7 +90,8 @@ export const createPropertiesPanel = () => {
 						isStyle: true,
 						property: "borderWidth",
 					})
-				).value },
+				).value;
+			},
 			onClick: () =>
 				handleBorderIconClick(
 					getConditonalObject({
@@ -380,7 +381,7 @@ export const createPropertiesPanel = () => {
 				},
 			},
 			[
-				pageInput("Height", "page_height", "height", {parentBorderTop: true}),
+				pageInput("Height", "page_height", "height", { parentBorderTop: true }),
 				pageInput("Width", "page_width", "width"),
 			],
 		],
@@ -403,7 +404,9 @@ export const createPropertiesPanel = () => {
 	MainStore.propertiesPanel.push({
 		title: "PDF Settings",
 		sectionCondtional: () =>
-		MainStore.mode == "pdfSetup" && !MainStore.getCurrentElementsId.length && MainStore.activeControl === "mouse-pointer",
+			MainStore.mode == "pdfSetup" &&
+			!MainStore.getCurrentElementsId.length &&
+			MainStore.activeControl === "mouse-pointer",
 		fields: [
 			[
 				pageInput("Header", "page_header", "headerHeight"),
@@ -629,71 +632,71 @@ export const createPropertiesPanel = () => {
 					},
 				},
 			],
-			[{
-				label: "Label Style :",
-				name: "labelDisplayOptions",
-				labelDirection: "column",
-				condtional: null,
-				frappeControl: (ref, name) => {
-					const MainStore = useMainStore();
-					makeFeild({
-						name: name,
-						ref: ref,
-						fieldtype: "Select",
-						requiredData: [MainStore],
-						options: () => {
-							return [
-								{ label: "Inline", value: "standard" },
-								{ label: "Row", value: "flexDyanmicText" },
-								{ label: "Column", value: "flexDirectionColumn" },
-							];
-						},
-						reactiveObject: () => {
-							let styleClass = "table";
-							if (MainStore.activeControl == "text") {
-								if (MainStore.textControlType == "dynamic") {
-									styleClass = "dynamicText";
-								} else {
-									styleClass = "staticText";
+			[
+				{
+					label: "Label Style :",
+					name: "labelDisplayOptions",
+					labelDirection: "column",
+					condtional: null,
+					frappeControl: (ref, name) => {
+						const MainStore = useMainStore();
+						makeFeild({
+							name: name,
+							ref: ref,
+							fieldtype: "Select",
+							requiredData: [MainStore],
+							options: () => {
+								return [
+									{ label: "Inline", value: "standard" },
+									{ label: "Row", value: "flexDyanmicText" },
+									{ label: "Column", value: "flexDirectionColumn" },
+								];
+							},
+							reactiveObject: () => {
+								let styleClass = "table";
+								if (MainStore.activeControl == "text") {
+									if (MainStore.textControlType == "dynamic") {
+										styleClass = "dynamicText";
+									} else {
+										styleClass = "staticText";
+									}
 								}
-							}
-							return (
-								MainStore.getCurrentElementsValues[0] ||
-								MainStore.globalStyles[styleClass]
-							);
-						},
-						onChangeCallback: (value) => {
-							let object = MainStore.getCurrentElementsValues[0];
-							if (!object) return;
-							if (
-								object.labelDisplayStyle ==
-								"standard"
-							) {
-								object.classes = object.classes.filter((cls) => ["flexDyanmicText", "flexDirectionColumn"].indexOf(cls) == -1);
-							} else if (
-								object.labelDisplayStyle ==
-								"flexDyanmicText"
-							) {
-								if (object.classes.indexOf("flexDyanmicText") == -1) {
-									object.classes.push("flexDyanmicText")
+								return (
+									MainStore.getCurrentElementsValues[0] ||
+									MainStore.globalStyles[styleClass]
+								);
+							},
+							onChangeCallback: (value) => {
+								let object = MainStore.getCurrentElementsValues[0];
+								if (!object) return;
+								if (object.labelDisplayStyle == "standard") {
+									object.classes = object.classes.filter(
+										(cls) =>
+											["flexDyanmicText", "flexDirectionColumn"].indexOf(
+												cls
+											) == -1
+									);
+								} else if (object.labelDisplayStyle == "flexDyanmicText") {
+									if (object.classes.indexOf("flexDyanmicText") == -1) {
+										object.classes.push("flexDyanmicText");
+									}
+									object.classes = object.classes.filter(
+										(cls) => cls != "flexDirectionColumn"
+									);
+								} else if (object.labelDisplayStyle == "flexDirectionColumn") {
+									if (object.classes.indexOf("flexDyanmicText") == -1) {
+										object.classes.push("flexDyanmicText");
+									}
+									if (object.classes.indexOf("flexDirectionColumn") == -1) {
+										object.classes.push("flexDirectionColumn");
+									}
 								}
-								object.classes = object.classes.filter((cls) => cls != "flexDirectionColumn");
-							} else if (
-								object.labelDisplayStyle ==
-								"flexDirectionColumn"
-								) {
-								if (object.classes.indexOf("flexDyanmicText") == -1) {
-									object.classes.push("flexDyanmicText")
-								}
-								if (object.classes.indexOf("flexDirectionColumn") == -1) {
-									object.classes.push("flexDirectionColumn")
-								}
-							}
-						},
-						propertyName: "labelDisplayStyle",
-					});
+							},
+							propertyName: "labelDisplayStyle",
+						});
+					},
 				},
-			}],
+			],
 			[
 				{
 					label: "Font",

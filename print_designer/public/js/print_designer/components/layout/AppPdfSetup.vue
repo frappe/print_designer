@@ -51,7 +51,7 @@ const setResizable = (ref, edges) => {
 						MainStore.page["headerHeight"] + e.dy <=
 						MainStore.page.height - MainStore.page.footerHeight
 					) {
-						if (MainStore.page["headerHeight"]  + e.dy < 0) {
+						if (MainStore.page["headerHeight"] + e.dy < 0) {
 							MainStore.page["headerHeight"] = 0;
 						} else {
 							MainStore.page["headerHeight"] = MainStore.page["headerHeight"] + e.dy;
@@ -184,41 +184,41 @@ onUnmounted(() => {
 	height: 100%;
 	top: 0;
 	left: 0;
-.resize-body {
-	position: absolute;
-	top: 0;
-	left: 0;
-	width: 100%;
-	height: 100%;
-	opacity: 0.1;
-	background-color: var(--bg-color);
-}
-.pdf-resize {
-	position: relative;
-	left: 0;
-	width: 100%;
-	z-index: 1001;
-	outline: 1px solid var(--success);
-	.resize-handle {
-		display: none;
-		border-color: var(--success) !important;
+	.resize-body {
+		position: absolute;
+		top: 0;
+		left: 0;
+		width: 100%;
+		height: 100%;
+		opacity: 0.1;
+		background-color: var(--bg-color);
 	}
-	&.pdf-resize-header {
-		.bottom-middle {
-			display: block;
+	.pdf-resize {
+		position: relative;
+		left: 0;
+		width: 100%;
+		z-index: 1001;
+		outline: 1px solid var(--success);
+		.resize-handle {
+			display: none;
+			border-color: var(--success) !important;
+		}
+		&.pdf-resize-header {
+			.bottom-middle {
+				display: block;
+			}
+		}
+		&.pdf-resize-footer {
+			.top-middle {
+				display: block;
+			}
 		}
 	}
-	&.pdf-resize-footer {
-		.top-middle {
-			display: block;
-		}
+	.main {
+		flex: auto;
+		background-color: var(--bg-color);
+		opacity: 0.7;
+		z-index: 1000;
 	}
-}
-.main {
-	flex: auto;
-	background-color: var(--bg-color);
-	opacity: 0.7;
-	z-index: 1000;
-}
 }
 </style>

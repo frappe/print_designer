@@ -511,7 +511,7 @@ watchEffect(() => {
 });
 </script>
 <style deep lang="scss">
-	.active-elements {
+.active-elements {
 	will-change: left, top, width, height;
 	z-index: 1000 !important;
 	outline: 1px solid var(--primary-color) !important;
