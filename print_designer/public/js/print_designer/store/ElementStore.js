@@ -352,7 +352,7 @@ export const useElementStore = defineStore("ElementStore", {
 				...(ElementsFooter || []),
 				...(ElementsAfterTable || []),
 			];
-			if (this.Elements.length === 0) {
+			if (this.Elements.length === 0 && !!MainStore.getTableMetaFields.length) {
 				const newTable = {
 					id: frappe.utils.get_random(10),
 					type: "table",

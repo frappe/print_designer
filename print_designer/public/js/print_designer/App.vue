@@ -23,7 +23,6 @@ import AppCanvas from "./components/layout/AppCanvas.vue";
 import AppPropertiesPanel from "./components/layout/AppPropertiesPanel.vue";
 import { useAttachKeyBindings } from "./composables/AttachKeyBindings";
 import { fetchMeta } from "./store/fetchMetaAndData";
-import { useElementStore } from "./store/ElementStore";
 
 const props = defineProps({
 	print_format_name: {
@@ -32,7 +31,6 @@ const props = defineProps({
 	},
 });
 const MainStore = useMainStore();
-const ElementStore = useElementStore();
 
 const toolbarClasses = computed(() => {
 	return [
@@ -49,7 +47,6 @@ onMounted(() => {
 	});
 	MainStore.printDesignName = props.print_format_name;
 	fetchMeta();
-	ElementStore.loadElements(MainStore.printDesignName);
 	const screen_stylesheet = document.createElement("style");
 	screen_stylesheet.title = "print-designer-stylesheet";
 	screen_stylesheet.rel = "stylesheet";

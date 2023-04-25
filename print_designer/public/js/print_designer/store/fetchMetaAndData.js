@@ -1,5 +1,6 @@
 import { watch, markRaw } from "vue";
 import { useMainStore } from "./MainStore";
+import { useElementStore } from "./ElementStore";
 export const fetchMeta = () => {
 	const MainStore = useMainStore();
 	frappe.model.clear_doc("Print Format", MainStore.printDesignName);
@@ -31,6 +32,7 @@ export const fetchMeta = () => {
 				getMeta(field.options, field.fieldname);
 			});
 			fetchDoc();
+			!MainStore.getTableMetaFields.length && (MainStore.controls.Table.isDisabled = true);
 		});
 	});
 	return;
@@ -83,6 +85,8 @@ export const getValue = async (doctype, name, fieldname) => {
 
 export const fetchDoc = async (id = null) => {
 	const MainStore = useMainStore();
+	const ElementStore = useElementStore();
+	ElementStore.loadElements(MainStore.printDesignName);
 	let doctype = MainStore.doctype;
 	let doc;
 	if (!id) {

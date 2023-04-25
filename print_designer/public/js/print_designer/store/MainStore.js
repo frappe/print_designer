@@ -89,6 +89,7 @@ export const useMainStore = defineStore("MainStore", {
 				aria_label: __("Mouse Pointer (M)"),
 				id: "mouse-pointer",
 				cursor: "default",
+				isDisabled: false,
 			},
 			Text: {
 				icon: "fa fa-font",
@@ -96,6 +97,7 @@ export const useMainStore = defineStore("MainStore", {
 				aria_label: __("Text (T)"),
 				id: "text",
 				cursor: "text",
+				isDisabled: false,
 			},
 			Rectangle: {
 				icon: "fa fa-square-o",
@@ -103,6 +105,7 @@ export const useMainStore = defineStore("MainStore", {
 				aria_label: __("Rectangle (R)"),
 				id: "rectangle",
 				cursor: "crosshair",
+				isDisabled: false,
 			},
 			Image: {
 				icon: "fa fa-image",
@@ -110,6 +113,7 @@ export const useMainStore = defineStore("MainStore", {
 				aria_label: __("Image (I)"),
 				id: "image",
 				cursor: "crosshair",
+				isDisabled: false,
 			},
 			Table: {
 				icon: "fa fa-table",
@@ -117,6 +121,7 @@ export const useMainStore = defineStore("MainStore", {
 				aria_label: __("Table (A)"),
 				id: "table",
 				cursor: "crosshair",
+				isDisabled: false,
 			},
 			// Components: {
 			// 	icon: "fa fa-cube",

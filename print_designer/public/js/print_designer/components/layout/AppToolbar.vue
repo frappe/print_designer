@@ -2,13 +2,15 @@
 	<div class="sidebar">
 		<div class="toolbar-section mt-3">
 			<div>
-				<span
-					v-for="({ id, aria_label, icon }, key) in MainStore.controls"
-					:key="id"
-					:title="aria_label"
-					:class="iconClasses(id, icon)"
-					@click="MainStore.setActiveControl(key)"
-				></span>
+				<template v-for="({ id, aria_label, icon, isDisabled }, key) in MainStore.controls" :key="id">
+					<span
+						v-if="!isDisabled"
+						:key="id"
+						:title="aria_label"
+						:class="iconClasses(id, icon)"
+						@click="MainStore.setActiveControl(key)"
+					></span>
+				</template>
 			</div>
 			<IconsUse
 				name="layerPanel"
