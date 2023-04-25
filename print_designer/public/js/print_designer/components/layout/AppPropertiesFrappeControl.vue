@@ -25,7 +25,7 @@ const props = defineProps({
 	},
 });
 onBeforeUnmount(() => {
-	if (MainStore.frappeControls[props.field.name].df.fieldtype == "Color") {
+	if (MainStore.frappeControls[props.field.name]?.df.fieldtype == "Color") {
 		MainStore.frappeControls[props.field.name].$wrapper.off("show.bs.popover", "**");
 		MainStore.frappeControls[props.field.name].$wrapper.off("hidden.bs.popover", "**");
 	}

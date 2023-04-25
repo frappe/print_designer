@@ -115,6 +115,7 @@ export const createTable = (cordinates, parent = null) => {
 		width: 0,
 		height: 0,
 		styleEditMode: "main",
+		labelDisplayStyle: "standard",
 		style: {},
 		labelStyle: {},
 		headerStyle: {},
@@ -161,6 +162,7 @@ export const createText = (cordinates, parent = null) => {
 		width: 0,
 		height: 0,
 		styleEditMode: "main",
+		labelDisplayStyle: "standard",
 		style: {},
 		classes: [],
 	};
@@ -205,6 +207,7 @@ export const createDynamicText = (cordinates, parent = null) => {
 		width: 0,
 		height: 0,
 		styleEditMode: "main",
+		labelDisplayStyle: "standard",
 		style: {},
 		labelStyle: {},
 		classes: [],

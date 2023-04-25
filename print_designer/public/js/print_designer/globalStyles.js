@@ -2,6 +2,7 @@ export const globalStyles = {
 	staticText: new Object({
 		isGlobalStyle: true,
 		styleEditMode: "main",
+		labelDisplayStyle: "standard",
 		type: "text",
 		isDynamic: false,
 		mainRuleSelector: ".staticText",
@@ -43,6 +44,7 @@ export const globalStyles = {
 	dynamicText: new Object({
 		isGlobalStyle: true,
 		styleEditMode: "main",
+		labelDisplayStyle: "standard",
 		type: "text",
 		isDynamic: true,
 		mainRuleSelector: ".dynamicText",
@@ -182,6 +184,7 @@ export const globalStyles = {
 	table: new Object({
 		isGlobalStyle: true,
 		styleEditMode: "main",
+		labelDisplayStyle: "standard",
 		type: "table",
 		isDynamic: true,
 		mainRuleSelector: ".printTable td",
