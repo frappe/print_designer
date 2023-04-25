@@ -62,7 +62,7 @@ export const useElementStore = defineStore("ElementStore", {
 			const afterTableElements = [];
 			const footerElements = [];
 			let tableElement = this.Elements.filter((el) => el.type == "table");
-			let isColliding = false;
+			let isOverlapping = false;
 			if (tableElement.length == 1 && MainStore.isHeaderFooterAuto) {
 				this.Elements.forEach((element) => {
 					if (
@@ -82,12 +82,12 @@ export const useElementStore = defineStore("ElementStore", {
 									MainStore.page.marginTop -
 									MainStore.page.marginBottom)
 					) {
-						isColliding = true;
+						isOverlapping = true;
 					}
 				});
-				if (isColliding) {
+				if (isOverlapping) {
 					MainStore.mode = "editing";
-				} else if (!isColliding) {
+				} else if (!isOverlapping) {
 					MainStore.page.headerHeight = tableElement[0].startY;
 					MainStore.page.footerHeight =
 						MainStore.page.height -
@@ -97,14 +97,14 @@ export const useElementStore = defineStore("ElementStore", {
 							MainStore.page.marginBottom);
 				}
 			} else {
-				let isHeaderColliding = false;
-				let isFooterColliding = false;
+				let isHeaderOverlapping = false;
+				let isFooterOverlapping = false;
 				this.Elements.forEach((element) => {
 					if (
 						element.startY < MainStore.page.headerHeight &&
 						element.startY + element.height > MainStore.page.headerHeight
 					) {
-						isHeaderColliding = true;
+						isHeaderOverlapping = true;
 					}
 					if (
 						element.startY <
@@ -118,16 +118,16 @@ export const useElementStore = defineStore("ElementStore", {
 								MainStore.page.marginTop -
 								MainStore.page.marginBottom
 					) {
-						isFooterColliding = true;
+						isFooterOverlapping = true;
 					}
 				});
-				if (isHeaderColliding || isFooterColliding) {
+				if (isHeaderOverlapping || isFooterOverlapping) {
 					MainStore.mode = "pdfSetup";
 					frappe.show_alert(
 						{
-							message: `Please resolve colliding ${
-								isHeaderColliding ? "header" : ""
-							} ${isFooterColliding ? "footer" : ""}`,
+							message: `Please resolve overlapping ${
+								isHeaderOverlapping ? "header" : ""
+							} ${isHeaderOverlapping && isFooterOverlapping ? " and " : ""} ${isFooterOverlapping ? "footer" : ""}`,
 							indicator: "red",
 						},
 						5
@@ -162,7 +162,7 @@ export const useElementStore = defineStore("ElementStore", {
 					: mainPrintFonts;
 				let newElement = childrensSave(element, printFonts);
 				newElement.classes = newElement.classes.filter(
-					(name) => ["inHeaderFooter", "collideHeaderFooter"].indexOf(name) == -1
+					(name) => ["inHeaderFooter", "overlappingHeaderFooter"].indexOf(name) == -1
 				);
 				if (element.type == "rectangle" && element.childrens.length) {
 					let childrensArray = element.childrens;
@@ -269,6 +269,13 @@ export const useElementStore = defineStore("ElementStore", {
 				css,
 			});
 			await frappe.dom.unfreeze();
+			frappe.show_alert(
+				{
+					message: `Print Format Saved Successfully`,
+					indicator: "green",
+				},
+				5
+			);
 		},
 		async loadElements(printDesignName) {
 			const MainStore = useMainStore();

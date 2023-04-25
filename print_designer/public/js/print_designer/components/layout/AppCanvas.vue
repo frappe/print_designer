@@ -520,7 +520,7 @@ watchEffect(() => {
 	outline: 1px solid var(--primary-color) !important;
 	outline-offset: -1px;
 }
-.collideHeaderFooter {
+.overlappingHeaderFooter {
 	outline: 1px solid var(--danger) !important;
 	outline-offset: -1px;
 }

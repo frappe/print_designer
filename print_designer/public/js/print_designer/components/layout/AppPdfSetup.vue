@@ -82,7 +82,7 @@ onMounted(() => {
 	});
 	if (MainStore.isHeaderFooterAuto) {
 		let tableElement = ElementStore.Elements.filter((el) => el.type == "table");
-		let isColliding = false;
+		let isOverlapping = false;
 		if (tableElement.length == 1) {
 			ElementStore.Elements.forEach((element) => {
 				if (
@@ -103,10 +103,10 @@ onMounted(() => {
 									MainStore.page.marginTop -
 									MainStore.page.marginBottom))
 				) {
-					isColliding = true;
+					isOverlapping = true;
 				}
 			});
-			if (!isColliding) {
+			if (!isOverlapping) {
 				MainStore.page.headerHeight = tableElement[0].startY;
 				MainStore.page.footerHeight =
 					MainStore.page.height -
@@ -140,21 +140,21 @@ onMounted(() => {
 							MainStore.page.marginTop -
 							MainStore.page.marginBottom
 				) {
-					location = "collide";
-					element.classes.push("collideHeaderFooter");
+					location = "overlapping";
+					element.classes.push("overlappingHeaderFooter");
 				}
 				switch (location) {
 					case "main":
 						element.classes = element.classes.filter(
-							(name) => ["inHeaderFooter", "collideHeaderFooter"].indexOf(name) == -1
+							(name) => ["inHeaderFooter", "overlappingHeaderFooter"].indexOf(name) == -1
 						);
 						break;
 					case "inside":
 						element.classes = element.classes.filter(
-							(name) => ["collideHeaderFooter"].indexOf(name) == -1
+							(name) => ["overlappingHeaderFooter"].indexOf(name) == -1
 						);
 						break;
-					case "collide":
+					case "overlapping":
 						element.classes = element.classes.filter(
 							(name) => ["inHeaderFooter"].indexOf(name) == -1
 						);
@@ -169,7 +169,7 @@ onMounted(() => {
 onUnmounted(() => {
 	ElementStore.Elements.forEach((element) => {
 		element.classes = element.classes.filter(
-			(name) => ["inHeaderFooter", "collideHeaderFooter"].indexOf(name) == -1
+			(name) => ["inHeaderFooter", "overlappingHeaderFooter"].indexOf(name) == -1
 		);
 	});
 });
