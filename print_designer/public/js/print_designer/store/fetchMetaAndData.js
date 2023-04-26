@@ -90,22 +90,19 @@ export const fetchDoc = async (id = null) => {
 	let doctype = MainStore.doctype;
 	let doc;
 	if (!id) {
-		if (MainStore.currentDoc) {
-			id = MainStore.currentDoc;
-			MainStore.currentDoc = null;
-		} else {
-			let latestdoc = await frappe.db.get_list(doctype, {
-				fields: ["name"],
-				order_by: "modified desc",
-				limit: 1,
-			});
-			id = latestdoc[0]?.name;
-		}
+		let latestdoc = await frappe.db.get_list(doctype, {
+			fields: ["name"],
+			order_by: "modified desc",
+			limit: 1,
+		});
+		MainStore.currentDoc = latestdoc[0]?.name;
+	} else {
+		MainStore.currentDoc = id;
 	}
-	if (!id) return;
 	watch(
 		() => MainStore.currentDoc,
 		async () => {
+			if (!MainStore.currentDoc) return;
 			doc = await frappe.db.get_doc(doctype, MainStore.currentDoc);
 			Object.keys(doc).forEach((element) => {
 				if (
@@ -135,7 +132,7 @@ export const fetchDoc = async (id = null) => {
 							MainStore.docData
 					  );
 				if (!value) {
-					if (["Image, Attach Image"].indexOf(el.fieldtype)) {
+					if (["Image, Attach Image"].indexOf(el.fieldtype) != -1) {
 						value = null;
 					} else {
 						value = `{{ ${el.parentField ? el.parentField + "." : ""}${
@@ -146,7 +143,7 @@ export const fetchDoc = async (id = null) => {
 				el.value = value;
 			});
 			await frappe.dom.unfreeze();
-		}
+		},
+		{ immediate: true }
 	);
-	MainStore.currentDoc = id;
 };

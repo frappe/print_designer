@@ -34,7 +34,7 @@ export const useMainStore = defineStore("MainStore", {
 		printFooterFonts: null,
 		rawMeta: null,
 		metaFields: [],
-		docData: [],
+		docData: {},
 		dynamicData: [],
 		imageDocFields: [],
 		snapPoints: [],
