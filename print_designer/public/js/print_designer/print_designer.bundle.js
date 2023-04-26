@@ -12,9 +12,11 @@ class PrintDesigner {
 		let headerContainer = document.querySelector("header .container");
 		headerContainer.style.width = "100%";
 		headerContainer.style.minWidth = "100%";
+		headerContainer.style.userSelect = "none";
 		frappe.router.once("change", () => {
 			headerContainer.style.width = null;
 			headerContainer.style.minWidth = null;
+			headerContainer.style.userSelect = "auto";
 			app.unmount();
 		});
 	}

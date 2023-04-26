@@ -78,12 +78,14 @@ watchEffect(() => {
 	}
 });
 </script>
-<style scoped lang="scss">
+<style deep lang="scss">
+* {
+	user-select: none;
+}
 .main-layout {
 	display: flex;
 	justify-content: space-between;
 	margin: 0;
-
 	.app-sections {
 		flex: 1;
 		height: calc(100vh - 61px);

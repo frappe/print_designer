@@ -183,9 +183,6 @@ onMounted(() => createPropertiesPanel());
 		padding: 8px 5px;
 		border-top: 1px solid var(--border-color);
 	}
-	* {
-		user-select: none;
-	}
 	.picker-arrow.arrow {
 		display: none;
 	}

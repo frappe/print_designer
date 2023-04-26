@@ -319,9 +319,6 @@ const handleMouseUp = (e, tablewidth) => {
 .dropzone {
 	background-color: var(--gray-300);
 }
-* {
-	user-select: none;
-}
 .table-container {
 	border: 1px solid var(--gray-400);
 	background-color: var(--gray-50);
