@@ -84,16 +84,17 @@ const getHTML = (field, index) => {
 	if (props.table) {
 		if (field.is_static) {
 			return field.value;
-		} else if (field.fieldtype == "Currency") {
-			return frappe.format(
-				MainStore.docData[props.table.fieldname][index - 1][field.fieldname],
-				{ fieldtype: "Currency", options: field.options },
-				{ inline: true },
-				MainStore.docData
-			);
 		} else {
-			return MainStore.docData[props.table.fieldname][index - 1][field.fieldname];
-		}
+			if (typeof MainStore.docData[props.table.fieldname]?.[index - 1][field.fieldname] != "undefined"){
+				return frappe.format(
+							MainStore.docData[props.table.fieldname][index - 1][field.fieldname],
+							{ fieldtype: field.fieldtype, options: field.options },
+							{ inline: true },
+							MainStore.docData
+					  )
+			}
+			return ["Image, Attach Image"].indexOf(field.fieldtype) != -1 ? null : `{{ ${ field.fieldname } }}`;
+			}
 	} else {
 		return (
 			field.value ||

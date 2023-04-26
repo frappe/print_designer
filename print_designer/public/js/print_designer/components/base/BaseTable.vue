@@ -68,7 +68,7 @@
 						v-for="row in MainStore.docData[table?.fieldname]?.slice(
 							0,
 							PreviewRowNo || 3
-						) || []"
+						) || [{}]"
 						:key="row.idx"
 					>
 						<BaseTableTd

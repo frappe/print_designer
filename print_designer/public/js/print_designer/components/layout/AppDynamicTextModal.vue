@@ -209,45 +209,30 @@ const selectField = async (field, fieldtype) => {
 	});
 	if (isRemoved) return;
 	let index = fieldnames.value.length;
-	let value;
-	if (field.fieldtype == "Currency") {
-		const formatCurrency = (value) => {
-			return frappe.format(
-				value,
-				{ fieldtype: "Currency", options: field.options },
-				{ inline: true },
-				MainStore.docData
-			);
-		};
-		value = props.table
-			? formatCurrency(MainStore.docData[props.table.fieldname][0][field.fieldname])
-			: previewRef.value.parentField
-			? MainStore.docData[previewRef.value.parentField]
-				? formatCurrency(
-						await getValue(
-							doctype.value,
-							MainStore.docData[previewRef.value.parentField],
+	let value = previewRef.value.parentField
+					? await getValue(doctype.value, MainStore.docData[previewRef.value.parentField], field.fieldname)
+					: props.table
+					? typeof MainStore.docData[props.table.fieldname]?.[0][field.fieldname] != "undefined" ? frappe.format(
+							MainStore.docData[props.table.fieldname][0][field.fieldname],
+							{ fieldtype: field.fieldtype, options: field.options },
+							{ inline: true },
+							MainStore.docData
+					  ) : `{{ ${field.fieldname} }}`
+					: frappe.format(
+							MainStore.docData[field.fieldname],
+							{ fieldtype: field.fieldtype, options: field.options },
+							{ inline: true },
+							MainStore.docData
+					  );
+				if (!value) {
+					if (["Image, Attach Image"].indexOf(field.fieldtype) != -1) {
+						value = null;
+					} else {
+						value = `{{ ${previewRef.value.parentField ? previewRef.value.parentField + "." : ""}${
 							field.fieldname
-						)
-				  )
-				: `{{ ${previewRef.value.parentField}.${field.fieldname} }}`
-			: MainStore.docData[field.fieldname]
-			? formatCurrency(MainStore.docData[field.fieldname])
-			: `{{ ${field.fieldname} }}`;
-	} else {
-		value = props.table
-			? MainStore.docData[props.table.fieldname][0]?.[field.fieldname] ||
-			  `{{ ${props.table.fieldname}.${field.fieldname} }}`
-			: previewRef.value.parentField
-			? MainStore.docData[previewRef.value.parentField]
-				? await getValue(
-						doctype.value,
-						MainStore.docData[previewRef.value.parentField],
-						field.fieldname
-				  )
-				: `{{ ${previewRef.value.parentField}.${field.fieldname} }}`
-			: MainStore.docData[field.fieldname];
-	}
+						} }}`;
+					}
+				}
 	let dynamicField = {
 		doctype: doctype.value,
 		parentField: previewRef.value.parentField,
@@ -328,7 +313,7 @@ small {
 .dynamic-results {
 	display: flex;
 	flex: auto;
-	max-height: min(50vh, 650px);
+	max-height: max(calc(94vh - 318px), 150px);
 	.searchbar {
 		height: 26px;
 		width: 100%;
