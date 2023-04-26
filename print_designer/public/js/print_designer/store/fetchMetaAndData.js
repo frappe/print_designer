@@ -99,9 +99,10 @@ export const fetchDoc = async (id = null) => {
 				order_by: "modified desc",
 				limit: 1,
 			});
-			id = latestdoc[0].name;
+			id = latestdoc[0]?.name;
 		}
 	}
+	if (!id) return;
 	watch(
 		() => MainStore.currentDoc,
 		async () => {
