@@ -183,9 +183,6 @@ onMounted(() => createPropertiesPanel());
 		padding: 8px 5px;
 		border-top: 1px solid var(--border-color);
 	}
-	.picker-arrow.arrow {
-		display: none;
-	}
 	.frappeControl {
 		padding: 4px 15px;
 		width: 100%;
@@ -241,5 +238,8 @@ onMounted(() => createPropertiesPanel());
 	.borderColorSelector {
 		margin-top: 10px;
 	}
+}
+.picker-arrow.arrow {
+	display: none;
 }
 </style>

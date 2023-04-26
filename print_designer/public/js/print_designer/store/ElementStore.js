@@ -408,6 +408,7 @@ export const useElementStore = defineStore("ElementStore", {
 					width: 771.0236220564,
 					height: 442.20472441469997,
 					styleEditMode: "main",
+					labelDisplayStyle: "standard",
 					style: {},
 					labelStyle: {},
 					headerStyle: {},

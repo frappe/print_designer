@@ -637,7 +637,21 @@ export const createPropertiesPanel = () => {
 					label: "Label Style :",
 					name: "labelDisplayOptions",
 					labelDirection: "column",
-					condtional: null,
+					condtional: ()=> {
+						let styleClass = "table";
+								if (MainStore.activeControl == "text") {
+									if (MainStore.textControlType == "dynamic") {
+										styleClass = "dynamicText";
+									} else {
+										styleClass = "staticText";
+									}
+								}
+						let curObj = MainStore.getCurrentElementsValues[0] || MainStore.globalStyles[styleClass]
+						if (curObj.type == "table" || curObj.type == "text" && curObj.isDynamic) {
+							return true
+						}
+						return false
+					},
 					frappeControl: (ref, name) => {
 						const MainStore = useMainStore();
 						makeFeild({
