@@ -1,11 +1,11 @@
 # Print Designer
-
-## Frappe App to Design Print Formats using interactive UI.
+<div align="center" markdown="1">
+<img src="https://user-images.githubusercontent.com/39730881/234943112-28e1bfa8-8c41-4176-9cbe-3c3e10b1e347.svg" alt="Print Designer logo" height="200"/>
+</div>
 
 <div align="center" markdown="1">
-<img src=".github/logo.png" alt="Frappe Print Designer logo" width="384"/>
 
-*Free and Open Source App to **Design Print Formats** using **Interactive UI** for your Frappe Apps*
+## Frappe app to design print formats using interactive UI.
 
 </div>
 
