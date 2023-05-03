@@ -185,7 +185,6 @@ onUpdated(() => {
 		height.value = targetRect.height + 2;
 	}
 });
-console.log(props);
 </script>
 
 <style deep lang="scss">
