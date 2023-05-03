@@ -1,5 +1,7 @@
 import { useMainStore } from "./store/MainStore";
 import { useElementStore } from "./store/ElementStore";
+import JsBarcode from "jsbarcode";
+
 
 export const createRectangle = (cordinates, parent = null) => {
 	const ElementStore = useElementStore();
@@ -189,6 +191,53 @@ export const createDynamicText = (cordinates, parent = null) => {
 	const newDynamicText = {
 		id: id,
 		type: "text",
+		DOMRef: null,
+		parent: parent,
+		content: "",
+		contenteditable: false,
+		isDynamic: true,
+		isFixedSize: false,
+		dynamicContent: [],
+		selectedDyanmicText: null,
+		isDraggable: false,
+		isResizable: false,
+		isDropZone: false,
+		startX: cordinates.startX - 5,
+		startY: cordinates.startY - 16,
+		pageX: cordinates.pageX,
+		pageY: cordinates.pageY,
+		width: 0,
+		height: 0,
+		styleEditMode: "main",
+		labelDisplayStyle: "standard",
+		style: {},
+		labelStyle: {},
+		classes: [],
+	};
+	parent !== ElementStore.Elements
+		? parent.childrens.push(newDynamicText)
+		: ElementStore.Elements.push(newDynamicText);
+	MainStore.lastCreatedElement = newDynamicText;
+	return newDynamicText;
+};
+
+export const createBarcode = (cordinates, parent = null) => {
+	const ElementStore = useElementStore();
+	const MainStore = useMainStore();
+
+	if (parent === null) parent = ElementStore.Elements;
+	let id = frappe.utils.get_random(10);
+	if (cordinates instanceof MouseEvent) {
+		cordinates = {
+			startX: cordinates.offsetX,
+			startY: cordinates.offsetY,
+			pageX: cordinates.x,
+			pageY: cordinates.y,
+		};
+	}
+	const newDynamicText = {
+		id: id,
+		type: "barcode",
 		DOMRef: null,
 		parent: parent,
 		content: "",

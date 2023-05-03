@@ -58,6 +58,7 @@ import BaseStaticText from "../base/BaseStaticText.vue";
 import BaseDynamicText from "../base/BaseDynamicText.vue";
 import BaseImage from "../base/BaseImage.vue";
 import BaseTable from "../base/BaseTable.vue";
+import BaseBarcode from "../base/BaseBarcode.vue";
 import AppPdfSetup from "./AppPdfSetup.vue";
 import AppPreviewPdf from "./AppPreviewPdf.vue";
 import AppWidthHeightModal from "./AppWidthHeightModal.vue";
@@ -78,6 +79,7 @@ const isComponent = Object.freeze({
 	},
 	image: BaseImage,
 	table: BaseTable,
+	barcode: BaseBarcode,
 });
 const MainStore = useMainStore();
 const ElementStore = useElementStore();
@@ -89,6 +91,7 @@ const marqueeOptions = {
 const { drawEventHandler, parameters } = useDraw();
 
 const handleMouseDown = (e) => {
+	debugger;
 	if (MainStore.openModal) return;
 	if (
 		(MainStore.isDrawing && !MainStore.isMarqueeActive) ||
@@ -122,7 +125,7 @@ const handleMouseDown = (e) => {
 				clientX: e.clientX,
 				clientY: e.clientY,
 			});
-		} else if (MainStore.activeControl == "text") {
+		} else if (["text", "barcode"].includes(MainStore.activeControl)) {
 			if (MainStore.getCurrentElementsId.length) {
 				MainStore.getCurrentElementsId.forEach((element) => {
 					delete MainStore.currentElements[element];

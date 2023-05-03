@@ -28,6 +28,13 @@
     {% endif %}
 </div>
 {%- endmacro %}
+{% macro render_barcode(element) -%}
+{% for field in element.dynamicContent %}
+<svg id="{{ element.id }}" style="position: absolute; top:{% if 'printY' in element %}{{ element.printY }}{% else %}{{ element.startY }}{% endif %}px; left:{% if 'printX' in element %}{{ element.printX }}{% else %}{{ element.startX }}{% endif %}px; width:{{ element.width }}px;height:{{ element.height }}px; {{convert_css(element.style)}}"
+    class="barcode {{ element.classes | join(' ') }}" jsbarcode-value="{{ field.value }}">
+</svg>
+{% endfor %}
+{%- endmacro %}
 {% macro render_image(element) -%}
 <div
     style="position: absolute; top:{% if 'printY' in element %}{{ element.printY }}{% else %}{{ element.startY }}{% endif %}px; left:{% if 'printX' in element %}{{ element.printX }}{% else %}{{ element.startX }}{% endif %}px;width:{{ element.width }}px;height:{{ element.height }}px;
@@ -125,6 +132,8 @@ background-image: url('{{frappe.get_url()}}{%if element.isDynamic %}{{element.im
 {% else%}
 {{render_statictext(element)}}
 {% endif %}
+{% elif element.type == "barcode" %}
+{{render_barcode(element)}}
 {% endif %}
 {%- endmacro %}
 {% macro getFontStyles(fonts) -%}{%for key, value in fonts.items()%}{{key ~ ':ital,wght@'}}{%for index, size in enumerate(value.weight)%}{%if index > 0%};{%endif%}0,{{size}}{%endfor%}{%for index, size in enumerate(value.italic)%}{%if index > 0%};{%endif%}1,{{size}}{%endfor%}{% if not loop.last %}{{'&display=swap&family='}}{%endif%}{%endfor%}{%- endmacro %}
@@ -164,6 +173,9 @@ background-image: url('{{frappe.get_url()}}{%if element.isDynamic %}{{element.im
             <div style="width: 100%; position: relative; top:0px; left: 0px; height:{{ settings.page.footerHeightWithMargin }}px; ">{% if footerElement %}{{ renderFooter }}{%endif%}</div>
             </div>
     </div>
+<script>
+	JsBarcode(".barcode").init();
+</script>
 <style>
     .print-format {
         box-sizing: border-box;
