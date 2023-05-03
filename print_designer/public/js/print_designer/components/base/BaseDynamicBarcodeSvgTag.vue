@@ -88,27 +88,18 @@ const props = defineProps({
 onMounted(() => {
 	JsBarcode(domBarcode.value, props.field.value);
 });
-const getHTML = (field, index) => {
-	if (props.table) {
-		if (field.is_static) {
-			return field.value;
-		} else {
-			if (typeof MainStore.docData[props.table.fieldname]?.[index - 1][field.fieldname] != "undefined"){
-				return frappe.format(
-							MainStore.docData[props.table.fieldname][index - 1][field.fieldname],
-							{ fieldtype: field.fieldtype, options: field.options },
-							{ inline: true },
-							MainStore.docData
-					  )
-			}
-			return ["Image, Attach Image"].indexOf(field.fieldtype) != -1 ? null : `{{ ${ field.fieldname } }}`;
-			}
-	} else {
-		return (
-			field.value ||
-			`{{ ${field.parentField ? field.parentField + "." : ""}${field.fieldname} }}`
-		);
-	}
-};
 
 </script>
+
+<style lang="scss" scoped>
+.dynamic-span {
+	padding: 1px !important;
+}
+.dynamic-span-hover:hover:not(.dynamic-span-selected) {
+	border-bottom: 1px solid var(--gray-600) !important;
+	cursor: default;
+}
+.dynamic-span-selected {
+	border-bottom: 1px solid var(--primary-color) !important;
+}
+</style>
