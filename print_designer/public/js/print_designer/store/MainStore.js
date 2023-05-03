@@ -336,7 +336,7 @@ export const useMainStore = defineStore("MainStore", {
 			if (object) {
 				styleEditMode = mapper[object.styleEditMode];
 				globalStyleName = object.type;
-				if (globalStyleName == "text") {
+				if (["text", "barcode"].includes(globalStyleName)) {
 					if (object.isDynamic) {
 						globalStyleName = "dynamicText";
 					} else {
