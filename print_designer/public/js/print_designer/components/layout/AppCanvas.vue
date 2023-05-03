@@ -91,7 +91,6 @@ const marqueeOptions = {
 const { drawEventHandler, parameters } = useDraw();
 
 const handleMouseDown = (e) => {
-	debugger;
 	if (MainStore.openModal) return;
 	if (
 		(MainStore.isDrawing && !MainStore.isMarqueeActive) ||
