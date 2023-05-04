@@ -8,7 +8,7 @@
 				'labelSpanTag',
 				{
 					'dynamic-span-hover':
-						parentClass == 'printTable' ? true : MainStore.activeControl == 'text',
+						parentClass == 'printTable' ? true : MainStore.activeControl == 'barcode',
 					'dynamic-span-selected':
 						selectedDyanmicText === field && field?.labelStyleEditing,
 				},
@@ -26,7 +26,7 @@
 				'dynamic-span',
 				{
 					'dynamic-span-hover':
-						parentClass == 'printTable' ? true : MainStore.activeControl == 'text',
+						parentClass == 'printTable' ? true : MainStore.activeControl == 'barcode',
 					'dynamic-span-selected':
 						selectedDyanmicText === field && !field.labelStyleEditing,
 				},
@@ -86,7 +86,11 @@ const props = defineProps({
 });
 
 onMounted(() => {
-	JsBarcode(domBarcode.value, props.field.value);
+	JsBarcode(domBarcode.value, props.field.value, {
+		height: 30,
+		width: 2,
+		displayValue: false,
+	});
 });
 
 </script>

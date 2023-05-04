@@ -93,7 +93,7 @@ const {
 } = toRefs(props.object);
 const setSelectedDyanmicText = (value, isLabel) => {
 	if (
-		MainStore.activeControl != "text" ||
+		MainStore.activeControl != "barcode" ||
 		MainStore.getCurrentElementsId.indexOf(id.value) == -1
 	)
 		return;
@@ -131,7 +131,7 @@ const toggleDragResize = (toggle) => {
 watch(
 	() => MainStore.activeControl,
 	() => {
-		if (MainStore.activeControl == "text") {
+		if (MainStore.activeControl == "barcode") {
 			toggleDragResize(false);
 		} else {
 			toggleDragResize(true);
