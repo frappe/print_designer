@@ -10,6 +10,7 @@
 </div>
 
 ## Installation
+Please note that print designer is only compatible with develop version of frappe framework.
 ### Local
 
 To setup the repository locally follow the steps mentioned below:
