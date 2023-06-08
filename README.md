@@ -9,6 +9,57 @@
 
 </div>
 
+## Features and How to Guides
+<details>
+<summary><h4>Create Print Format</h4></summary>
+
+#### Using Awesomebar
+
+https://github.com/frappe/print_designer/assets/39730881/913649cf-84f6-4284-b373-0997aaa3e356
+
+#### Using Print Page
+
+https://github.com/frappe/print_designer/assets/39730881/502a3e29-8bb5-4ec7-bfda-eaa85505acec
+</details>
+<details>
+<summary><h4>Static & Dynamic Image</h4></summary>
+
+#### Static Image
+
+https://github.com/frappe/print_designer/assets/39730881/4d73d720-2de4-4d0a-9435-f924b8de3b7e
+
+#### Dynamic Image
+
+https://github.com/frappe/print_designer/assets/39730881/c22df30b-9e91-4e1c-9a73-51d85c149412
+
+</details>
+<details>
+<summary><h4>Static & Dynamic Text</h4></summary>
+
+#### Dynamic Text
+
+https://github.com/frappe/print_designer/assets/39730881/e1c5a970-8df4-443d-828f-a5513fad41df
+
+#### Static Text
+
+https://github.com/frappe/print_designer/assets/39730881/de629a8e-fbec-4449-8e03-f08346ffe460
+
+</details>
+<details>
+<summary><h4>Rectangle & Layouts</h4></summary>
+
+#### Rectangle
+
+https://github.com/frappe/print_designer/assets/39730881/cc3e64ce-285d-4a60-b249-a4b6dd4d2ce0
+
+</details>
+<details>
+<summary><h4>Child Table</h4></summary>
+
+https://github.com/frappe/print_designer/assets/39730881/b9cb5db7-1336-475c-9d82-d20c3a6a903e
+
+</details>
+
 ## Installation
 Please note that print designer is only compatible with develop version of frappe framework.
 ### Local
