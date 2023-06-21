@@ -138,6 +138,7 @@ export const useElementStore = defineStore("ElementStore", {
 			let isHeaderEmpty = true;
 			let isBodyEmpty = true;
 			let isFooterEmpty = true;
+			let pageInfoInBody = [];
 			this.Elements.forEach((element) => {
 				let is_header = false;
 				let is_footer = false;
@@ -154,6 +155,12 @@ export const useElementStore = defineStore("ElementStore", {
 						MainStore.page.marginBottom
 				) {
 					is_footer = true;
+				} else {
+					if (element.type == "text" && element.isDynamic) {
+						element.dynamicContent.filter((el) => ["page", "topage", "date", "time"].indexOf(el.fieldname) != -1).forEach((field) =>  {
+							pageInfoInBody.push(field.fieldname);
+						});
+					}
 				}
 				let printFonts = is_header
 					? headerPrintFonts
@@ -220,6 +227,13 @@ export const useElementStore = defineStore("ElementStore", {
 					return;
 				}
 				MainStore.printBodyFonts = null;
+			}
+			if (pageInfoInBody.length){
+				frappe.show_alert({
+					message: "Please move <b>" + pageInfoInBody.join(", ") + "</b> to header / footer",
+					indicator: "orange",
+				});
+				return;
 			}
 			if (isFooterEmpty) {
 				MainStore.printFooterFonts = null;

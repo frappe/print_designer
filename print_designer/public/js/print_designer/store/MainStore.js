@@ -275,6 +275,30 @@ export const useMainStore = defineStore("MainStore", {
 							label: "Name",
 							options: undefined,
 						},
+						{
+							fieldname: "page",
+							fieldtype: "Small Text",
+							label: "Current Page",
+							options: undefined,
+						},
+						{
+							fieldname: "topage",
+							fieldtype: "Small Text",
+							label: "Total Pages",
+							options: undefined,
+						},
+						{
+							fieldname: "time",
+							fieldtype: "Small Text",
+							label: "Print Time",
+							options: undefined,
+						},
+						{
+							fieldname: "date",
+							fieldtype: "Small Text",
+							label: "Print Date",
+							options: undefined,
+						},
 					];
 				}
 				metaFields.forEach((field) => {

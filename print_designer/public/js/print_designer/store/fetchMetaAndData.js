@@ -135,9 +135,24 @@ export const fetchDoc = async (id = null) => {
 					if (["Image, Attach Image"].indexOf(el.fieldtype) != -1) {
 						value = null;
 					} else {
-						value = `{{ ${el.parentField ? el.parentField + "." : ""}${
-							el.fieldname
-						} }}`;
+						switch (el.fieldname) {
+							case "page":
+								value = "0";
+								break;
+							case "topage":
+								value = "999";
+								break;
+							case "date":
+								value = frappe.datetime.now_date();
+								break;
+							case "time":
+								value = frappe.datetime.now_time();
+								break;
+							default:
+								value = `{{ ${el.parentField ? el.parentField + "." : ""}${
+									el.fieldname
+								} }}`;
+						}
 					}
 				}
 				el.value = value;

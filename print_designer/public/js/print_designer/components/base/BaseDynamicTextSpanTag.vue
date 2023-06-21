@@ -31,6 +31,7 @@
 						selectedDyanmicText === field && !field.labelStyleEditing,
 				},
 				{ valueSpanTag: !field.is_static && field.is_labelled },
+				getPageClass(field)
 			]"
 			@click="selectDyanmicText()"
 			:style="[field?.style]"
@@ -102,6 +103,11 @@ const getHTML = (field, index) => {
 		);
 	}
 };
+
+const getPageClass = (field) => {
+	if (["page", "frompage", "time", "date"].indexOf(field.fieldname) == -1) return "";
+	return `page_info_${field.fieldname}`;
+}
 </script>
 
 <style lang="scss" scoped>

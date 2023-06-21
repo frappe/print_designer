@@ -228,9 +228,24 @@ const selectField = async (field, fieldtype) => {
 					if (["Image, Attach Image"].indexOf(field.fieldtype) != -1) {
 						value = null;
 					} else {
-						value = `{{ ${previewRef.value.parentField ? previewRef.value.parentField + "." : ""}${
-							field.fieldname
-						} }}`;
+						switch (field.fieldname) {
+							case "page":
+								value = "0";
+								break;
+							case "topage":
+								value = "999";
+								break;
+							case "date":
+								value = frappe.datetime.now_date();
+								break;
+							case "time":
+								value = frappe.datetime.now_time();
+								break;
+							default:
+								value = `{{ ${previewRef.value.parentField ? previewRef.value.parentField + "." : ""}${
+									field.fieldname
+								} }}`;
+						}
 					}
 				}
 	let dynamicField = {

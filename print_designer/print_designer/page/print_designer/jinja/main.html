@@ -7,6 +7,11 @@
     </p>
 </div>
 {%- endmacro %}
+{% macro page_class(field) %}
+    {% if field.fieldname in ['page', 'topage', 'time', 'date'] %}
+        page_info_{{ field.fieldname }}
+    {% endif %}
+{% endmacro %}
 {% macro render_dynamictext(element) -%}
 <div style="position: absolute; top:{% if 'printY' in element %}{{ element.printY }}{% else %}{{ element.startY }}{% endif %}px; left:{% if 'printX' in element %}{{ element.printX }}{% else %}{{ element.startX }}{% endif %}px;{% if element.isFixedSize %}width:{{ element.width }}px;height:{{ element.height }}px;{% else %}width:fit-content; height:fit-content;{%endif%}" class="
     {{ element.classes | join(' ') }}">
@@ -99,7 +104,7 @@ background-image: url('{{frappe.get_url()}}{%if element.isDynamic %}{{element.im
         {{ field.label }}
     </span>
     {% endif %}
-    <span class="dynamic-span {% if not field.is_static and field.is_labelled %}valueSpanTag{%endif%}"
+    <span class="dynamic-span {% if not field.is_static and field.is_labelled %}valueSpanTag{%endif%} {{page_class(field)}} }}"
         style="{{convert_css(field.style)}} user-select:auto;">
         {{ span_value }}
     </span>
