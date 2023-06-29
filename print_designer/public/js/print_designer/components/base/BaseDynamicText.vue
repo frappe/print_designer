@@ -5,7 +5,7 @@
 		@mouseup="handleMouseUp"
 		:style="[
 			postionalStyles(startX, startY, width, height),
-			!isFixedSize && 'width:fit-content; height:fit-content;',
+			!isFixedSize && 'width:fit-content; height:fit-content; white-space:nowrap;',
 		]"
 		:class="MainStore.getCurrentElementsId.includes(id) ? 'active-elements' : 'text-hover'"
 		:ref="setElements(object, index)"
@@ -15,7 +15,7 @@
 			:style="[
 				style,
 				widthHeightStyle(width, height),
-				!isFixedSize && 'width:fit-content; height:fit-content;',
+				!isFixedSize && 'width:fit-content; height:fit-content; white-space:nowrap;',
 			]"
 			:class="['dynamicText', classes]"
 			v-if="type == 'text'"
