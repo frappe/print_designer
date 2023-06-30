@@ -627,7 +627,7 @@ const getGlobalStyleObject = (object = null) => {
 	}
 	if (object) {
 		globalStyleName = object.type;
-		if (globalStyleName == "text") {
+		if (["text", "barcode"].includes(globalStyleName)) {
 			if (object.isDynamic) {
 				globalStyleName = "dynamicText";
 			} else {

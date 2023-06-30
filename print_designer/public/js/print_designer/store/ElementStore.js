@@ -6,6 +6,7 @@ import {
 	createDynamicText,
 	createImage,
 	createTable,
+	createBarcode,
 } from "../defaultObjects";
 import { handlePrintFonts } from "../utils";
 export const useElementStore = defineStore("ElementStore", {
@@ -28,6 +29,8 @@ export const useElementStore = defineStore("ElementStore", {
 				newElement = createImage(event, element);
 			} else if (MainStore.activeControl == "table") {
 				newElement = createTable(event, element);
+			} else if (MainStore.activeControl == "barcode") {
+				newElement = createBarcode(event, element);
 			}
 			return newElement;
 		},

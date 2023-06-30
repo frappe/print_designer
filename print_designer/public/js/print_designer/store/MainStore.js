@@ -130,13 +130,13 @@ export const useMainStore = defineStore("MainStore", {
 			// 	id: "components",
 			// 	cursor: "default",
 			// },
-			// Barcode: {
-			// 	icon: "fa fa-barcode",
-			// 	control: "Barcode",
-			// 	aria_label: __("Barcode (B)"),
-			// 	id: "barcode",
-			// 	cursor: "crosshair",
-			// },
+			Barcode: {
+				icon: "fa fa-barcode",
+				control: "Barcode",
+				aria_label: __("Barcode (B)"),
+				id: "barcode",
+				cursor: "crosshair",
+			},
 		},
 		propertiesPanel: [],
 	}),
@@ -360,7 +360,7 @@ export const useMainStore = defineStore("MainStore", {
 			if (object) {
 				styleEditMode = mapper[object.styleEditMode];
 				globalStyleName = object.type;
-				if (globalStyleName == "text") {
+				if (["text", "barcode"].includes(globalStyleName)) {
 					if (object.isDynamic) {
 						globalStyleName = "dynamicText";
 					} else {
