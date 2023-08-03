@@ -310,6 +310,7 @@ export const useMainStore = defineStore("MainStore", {
 							["Link", "Image", "Attach", "Attach Image"].indexOf(field.fieldtype) ==
 								-1)
 					) {
+						if (!state.openBarcodeModal && field.fieldtype == "Barcode") return;
 						if (fields[field.fieldtype]) {
 							fields[field.fieldtype].push(field);
 						} else {
