@@ -86,6 +86,10 @@ def convert_uom(
 @frappe.whitelist()
 def get_barcode(barcode_format, barcode_value, options={}, width=None, height=None, png_base64=False):
 	options = frappe.parse_json(options)
+
+	if (barcode_value.startswith("<svg")):
+		import re
+		barcode_value = re.search(r'data-barcode-value="(.*?)">', barcode_value).group(1)
 	
 	if barcode_format == "qrcode": return get_qrcode(barcode_value, options, png_base64)
 	

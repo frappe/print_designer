@@ -131,6 +131,10 @@ export const fetchDoc = async (id = null) => {
 							{ inline: true },
 							MainStore.docData
 					  );
+				if (value.startsWith("<svg")) {
+					value.match(new RegExp(`data-barcode-value="(.*?)">`));
+					value = result[1];
+				};
 				if (!value) {
 					if (["Image, Attach Image"].indexOf(el.fieldtype) != -1) {
 						value = null;

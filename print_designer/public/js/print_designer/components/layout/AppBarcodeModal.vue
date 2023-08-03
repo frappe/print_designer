@@ -191,6 +191,10 @@ const selectField = async (field, fieldtype) => {
 							{ inline: true },
 							MainStore.docData
 					  ) || `${field.fieldname}`
+		if (value.startsWith("<svg")) {
+			const result = value.match(new RegExp(`data-barcode-value="(.*?)">`));
+			value = result[1];
+		};
 	let dynamicField = {
 		doctype: doctype.value,
 		parentField: previewRef.value.parentField,
