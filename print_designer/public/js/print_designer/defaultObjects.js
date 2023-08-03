@@ -82,6 +82,51 @@ export const createImage = (cordinates, parent = null) => {
 	MainStore.lastCreatedElement = newImage;
 	return newImage;
 };
+export const createBarcode = (cordinates, parent = null) => {
+	const ElementStore = useElementStore();
+	const MainStore = useMainStore();
+
+	if (parent === null) parent = ElementStore.Elements;
+	let id = frappe.utils.get_random(10);
+	if (cordinates instanceof MouseEvent) {
+		cordinates = {
+			startX: cordinates.offsetX,
+			startY: cordinates.offsetY,
+			pageX: cordinates.x,
+			pageY: cordinates.y,
+		};
+	}
+	const newBarcode = {
+		id: id,
+		type: "barcode",
+		barcodeFormat: MainStore.globalStyles["barcode"].barcodeFormat || "qrcode",
+		barcodeColor: "#000000",
+		barcodeBackgroundColor: "#ffffff",
+		DOMRef: null,
+		parent: parent,
+		isDraggable: false,
+		isResizable: false,
+		isDropZone: false,
+		isDynamic: false,
+		value: "9876543210",
+		dynamicContent: [],
+		startX: cordinates.startX,
+		startY: cordinates.startY,
+		pageX: cordinates.pageX,
+		pageY: cordinates.pageY,
+		width: 0,
+		height: 0,
+		styleEditMode: "main",
+		style: {},
+		classes: [],
+	};
+
+	parent !== ElementStore.Elements
+		? parent.childrens.push(newBarcode)
+		: ElementStore.Elements.push(newBarcode);
+	MainStore.lastCreatedElement = newBarcode;
+	return newBarcode;
+};
 export const createTable = (cordinates, parent = null) => {
 	const ElementStore = useElementStore();
 	const MainStore = useMainStore();
@@ -372,3 +417,25 @@ export const GoogleFonts = {
 		[100, 200, 300, 400, 500, 600, 700, 800, 900],
 	],
 };
+
+export const barcodeFormats = [
+	{ label: "QR Code", value:"qrcode" },
+    { label: "Code39", value: "code39" },
+    { label: "Code128", value: "code128" },
+    { label: "EAN", value: "ean" },
+	{ label: "EAN8", value: "ean8" },
+    { label: "EAN13", value: "ean13" },
+    { label: "EAN14", value: "ean14" },
+    { label: "GTIN", value: "gtin" },
+    { label: "JAN", value: "jan" },
+    { label: "UPCA", value: "upc" },
+    { label: "UPCA", value: "upca" },
+    { label: "ISSN", value: "issn" },
+    { label: "ISBN", value: "isbn" },
+    { label: "ISBN10", value: "isbn10" },
+    { label: "ISBN13", value: "isbn13" },
+    { label: "PZN", value: "pzn" },
+    { label: "ITF", value: "itf" },
+    { label: "GS1", value: "gs1" },
+    { label: "Gs1_128", value: "gs1_128" }
+]

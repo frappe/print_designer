@@ -44,6 +44,10 @@
 					MainStore.openTableColumnModal ? MainStore.openTableColumnModal.table : null
 				"
 			/>
+			<AppBarcodeModal
+				v-if="!!MainStore.openBarcodeModal"
+				:openBarcodeModal="MainStore.openBarcodeModal"
+			/>
 			<AppImageModal
 				v-if="!!MainStore.openImageModal"
 				:openImageModal="MainStore.openImageModal"
@@ -62,6 +66,7 @@ import AppPdfSetup from "./AppPdfSetup.vue";
 import AppPreviewPdf from "./AppPreviewPdf.vue";
 import AppWidthHeightModal from "./AppWidthHeightModal.vue";
 import AppDynamicTextModal from "./AppDynamicTextModal.vue";
+import AppBarcodeModal from "./AppBarcodeModal.vue";
 import AppImageModal from "./AppImageModal.vue";
 import { watch, watchEffect, onMounted, nextTick } from "vue";
 import { useMainStore } from "../../store/MainStore";
@@ -70,6 +75,7 @@ import { useMarqueeSelection } from "../../composables/MarqueeSelectionTool";
 import { useDraw } from "../../composables/Draw";
 import { updateElementParameters, setCurrentElement, recursiveChildrens } from "../../utils";
 import { useChangeValueUnit } from "../../composables/ChangeValueUnit";
+import BaseBarcode from "../base/BaseBarcode.vue";
 const isComponent = Object.freeze({
 	rectangle: BaseRectangle,
 	text: {
@@ -78,6 +84,7 @@ const isComponent = Object.freeze({
 	},
 	image: BaseImage,
 	table: BaseTable,
+	barcode: BaseBarcode
 });
 const MainStore = useMainStore();
 const ElementStore = useElementStore();
@@ -203,7 +210,7 @@ const handleMouseUp = (e) => {
 				MainStore.lastCreatedElement &&
 				!MainStore.openModal &&
 				!MainStore.isMoved &&
-				MainStore.currentDrawListener?.drawEventHandler.parameters.isMouseDown
+				MainStore.currentDrawListener?.parameters.isMouseDown
 			) {
 				if (!MainStore.modalLocation.isDragged) {
 					clientX = e.clientX;
@@ -229,9 +236,14 @@ const handleMouseUp = (e) => {
 		MainStore.isMoveStart = false;
 		MainStore.isMoved = false;
 	}
-	if (MainStore.isDrawing && MainStore.lastCreatedElement?.type == "image") {
+	if (MainStore.isDrawing && MainStore.isMoved && MainStore.lastCreatedElement?.type == "image") {
 		!MainStore.openImageModal &&
 			nextTick(() => (MainStore.openImageModal = MainStore.lastCreatedElement));
+		MainStore.setActiveControl("MousePointer");
+	}
+	if (MainStore.isDrawing && MainStore.isMoved && MainStore.lastCreatedElement?.type == "barcode") {
+		!MainStore.openBarcodeModal &&
+			nextTick(() => (MainStore.openBarcodeModal = MainStore.lastCreatedElement));
 		MainStore.setActiveControl("MousePointer");
 	}
 	if (MainStore.isDrawing && MainStore.lastCreatedElement?.type == "rectangle") {

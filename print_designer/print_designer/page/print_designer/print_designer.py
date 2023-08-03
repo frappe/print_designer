@@ -81,3 +81,86 @@ def convert_uom(
 		{"from_px": from_px, "from_mm": from_mm, "from_cm": from_cm, "from_in": from_in},
 	)
 	return f"{round(number * converstion_factor[0][f'from_{from_uom}'][0][f'to_{to_uom}'], 3)}{to_uom}"
+
+
+@frappe.whitelist()
+def get_barcode(barcode_format, barcode_value, options={}, width=None, height=None, png_base64=False):
+	options = frappe.parse_json(options)
+	
+	if barcode_format == "qrcode": return get_qrcode(barcode_value, options, png_base64)
+	
+	import barcode
+	from barcode.writer import ImageWriter, SVGWriter
+	from io import BytesIO
+
+	class PDSVGWriter(SVGWriter):
+		def __init__(self):
+			SVGWriter.__init__(self)
+
+		def calculate_viewbox(self, code):
+			vw, vh = self.calculate_size(len(code[0]), len(code), self.dpi)
+			return vw, vh
+
+		def _init(self, code):
+			SVGWriter._init(self, code)
+			vw, vh = self.calculate_viewbox(code)
+			if not width:
+				self._root.removeAttribute("width")
+			else:
+				self._root.setAttribute("width", f"{width * 3.7795275591}")
+			if not height:
+				self._root.removeAttribute("height")
+			else:
+				print(height)
+				self._root.setAttribute("height", height)
+			
+			self._root.setAttribute("viewBox", f"0 0 {vw * 3.7795275591} {vh * 3.7795275591}")
+
+	if barcode_format not in barcode.PROVIDED_BARCODES:
+		return f"Barcode format {barcode_format} not supported. Valid formats are: {barcode.PROVIDED_BARCODES}"
+	writer = ImageWriter() if png_base64 else PDSVGWriter()	
+	barcode_class = barcode.get_barcode_class(barcode_format)
+
+	try:
+		barcode = barcode_class(barcode_value, writer)
+	except:
+		frappe.msgprint(f"Invalid barcode value <b>{barcode_value}</b> for format <b>{barcode_format}</b>", raise_exception=True, alert=True, indicator="red")
+
+	stream = BytesIO()
+	barcode.write(stream, options)
+	barcode_value = stream.getvalue().decode('utf-8')
+	stream.close()
+
+	if png_base64:
+		import base64
+		barcode_value = base64.b64encode(barcode_value)
+	
+	return { "type": "png_base64" if png_base64 else "svg", "value": barcode_value }
+
+
+def get_qrcode(barcode_value, options={}, png_base64=False):
+	import pyqrcode
+	from io import BytesIO
+	options = frappe.parse_json(options)
+	options = {
+		"scale": options.get("scale", 5),
+		"module_color": options.get("module_color", "#000000"),
+		"background": options.get("background", "#ffffff"),
+		"quiet_zone": options.get("quiet_zone", 1),
+	}
+	qr = pyqrcode.create(barcode_value)
+	stream = BytesIO()
+	if png_base64:
+		qrcode_svg = qr.png_as_base64_str(**options)
+	else:
+		options.update({
+			"svgclass": "print-qrcode",
+			"lineclass": "print-qrcode-path",
+			"omithw": True,
+			"xmldecl": False
+		})
+		qr.svg(stream, **options)
+		qrcode_svg = stream.getvalue().decode('utf-8')
+		stream.close()
+
+	return { "type": "png_base64" if png_base64 else "svg", "value": qrcode_svg}

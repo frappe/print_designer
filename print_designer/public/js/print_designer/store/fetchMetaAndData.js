@@ -11,7 +11,7 @@ export const fetchMeta = () => {
 			MainStore.rawMeta = markRaw(frappe.get_meta(print_format.doc_type));
 			let metaFields = frappe.get_meta(print_format.doc_type).fields.filter((df) => {
 				if (
-					["Section Break", "Column Break", "Tab Break"].includes(df.fieldtype) ||
+					["Section Break", "Column Break", "Tab Break", "Image"].includes(df.fieldtype) ||
 					(df.print_hide == 1 && df.fieldtype != "Link")
 				) {
 					return false;

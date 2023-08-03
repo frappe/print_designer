@@ -248,7 +248,7 @@ export const createPropertiesPanel = () => {
 			condtional,
 			...args,
 		});
-	const colorStyleFrappeControl = (label, name, propertyName, isFontStyle = false) => {
+	const colorStyleFrappeControl = (label, name, propertyName, isFontStyle = false, isStyle=true) => {
 		return {
 			label,
 			name,
@@ -277,8 +277,8 @@ export const createPropertiesPanel = () => {
 							MainStore.globalStyles[styleClass]
 						);
 					},
-					propertyName: propertyName,
-					isStyle: true,
+					propertyName,
+					isStyle,
 					isFontStyle,
 				});
 			},
@@ -954,6 +954,43 @@ export const createPropertiesPanel = () => {
 				paddingInput("Left", "paddingLeft", "paddingLeft"),
 				paddingInput("Right", "paddingRight", "paddingRight"),
 			],
+		],
+	});
+	MainStore.propertiesPanel.push({
+		title: "Barcode Settings",
+		sectionCondtional: () =>
+			(!MainStore.getCurrentElementsId.length && MainStore.activeControl === "barcode") || 
+			(MainStore.getCurrentElementsId.length === 1 && MainStore.getCurrentElementsValues[0].type === "barcode"),
+		fields: [
+			{
+				label: "Barcode Format",
+				name: "barcodeFormat",
+				isLabelled: true,
+				condtional: null,
+				frappeControl: (ref, name) => {
+					const MainStore = useMainStore();
+					const { barcodeFormats } = storeToRefs(MainStore);
+					makeFeild({
+						name: name,
+						ref: ref,
+						fieldtype: "Autocomplete",
+						requiredData: [
+							barcodeFormats,
+							MainStore.getCurrentElementsValues[0] ||
+								MainStore.globalStyles["barcode"],
+						],
+						options: () => barcodeFormats.value,
+						reactiveObject: () => {
+							return (
+								MainStore.getCurrentElementsValues[0] ||
+								MainStore.globalStyles["barcode"]
+							);
+						},
+						propertyName: "barcodeFormat",
+					});
+				},
+			},
+			[colorStyleFrappeControl("Color", "barcodeColor", "barcodeColor", false, false), colorStyleFrappeControl("Background", "barcodeBackgroundColor", "barcodeBackgroundColor", false, false)],
 		],
 	});
 };
