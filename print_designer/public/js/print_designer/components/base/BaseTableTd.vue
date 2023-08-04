@@ -3,7 +3,7 @@
 		v-for="column in columns"
 		:key="column.fieldname"
 		:style="style"
-		@click.self="setSelectedDyanmicText(null)"
+		@click.self="setSelectedDynamicText(null)"
 	>
 		<template
 			v-for="field in column?.dynamicContent"
@@ -14,8 +14,8 @@
 					field,
 					labelStyle,
 					index: row.idx,
-					selectedDyanmicText,
-					setSelectedDyanmicText,
+					selectedDynamicText,
+					setSelectedDynamicText,
 					parentClass: 'printTable',
 					table,
 				}"
@@ -47,11 +47,11 @@ const props = defineProps({
 		type: Object,
 		required: true,
 	},
-	selectedDyanmicText: {
+	selectedDynamicText: {
 		type: Object,
 		required: false,
 	},
-	setSelectedDyanmicText: {
+	setSelectedDynamicText: {
 		type: Function,
 		required: false,
 	},

@@ -77,8 +77,8 @@
 								columns,
 								style,
 								labelStyle,
-								selectedDyanmicText,
-								setSelectedDyanmicText,
+								selectedDynamicText,
+								setSelectedDynamicText,
 								table,
 							}"
 						/>
@@ -144,22 +144,22 @@ const {
 	classes,
 	PreviewRowNo,
 	styleEditMode,
-	selectedDyanmicText,
+	selectedDynamicText,
 	DOMRef,
 } = toRefs(props.object);
 
-const setSelectedDyanmicText = (value, isLabel) => {
+const setSelectedDynamicText = (value, isLabel) => {
 	if (
-		selectedDyanmicText.value === value &&
+		selectedDynamicText.value === value &&
 		styleEditMode.value == (isLabel ? "label" : "main")
 	) {
-		selectedDyanmicText.value = null;
+		selectedDynamicText.value = null;
 	} else {
-		selectedDyanmicText.value = value;
+		selectedDynamicText.value = value;
 		let removeSelectedText = onClickOutside(DOMRef.value, (event) => {
 			for (let index = 0; index < event.composedPath().length; index++) {
 				if (event.composedPath()[index].id === "canvas") {
-					selectedDyanmicText.value = null;
+					selectedDynamicText.value = null;
 					removeSelectedText();
 				}
 			}
