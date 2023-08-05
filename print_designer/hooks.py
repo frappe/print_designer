@@ -66,7 +66,7 @@ jinja = {
 # Installation
 # ------------
 
-# before_install = "print_designer.install.before_install"
+before_install = "print_designer.install.before_install"
 after_install = "print_designer.install.after_install"
 
 # Uninstallation
