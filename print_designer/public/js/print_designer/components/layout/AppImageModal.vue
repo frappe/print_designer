@@ -7,7 +7,7 @@
 		@primaryClick="primaryClick"
 	>
 		<template #title>
-			Choose {{ openImageModal.isDynamic ? "Dyanmic Images" : "Static Images" }}
+			Choose {{ openImageModal.isDynamic ? "Dynamic Images" : "Static Images" }}
 		</template>
 		<template #body>
 			<div v-if="!openImageModal.isDynamic" class="modal-body">
@@ -149,7 +149,7 @@ const refFrappeControl = (ref) => {
 		body: $(ref),
 		fields: [
 			{
-				label: __(props.openImageModal.isDynamic ? "Static Images" : "Dyanmic Images"),
+				label: __(props.openImageModal.isDynamic ? "Static Images" : "Dynamic Images"),
 				fieldname: "image_type",
 				fieldtype: "Button",
 				btn_size: "sm",
@@ -159,7 +159,7 @@ const refFrappeControl = (ref) => {
 						(field) => field.fieldname == "image_type"
 					);
 					image_type.label = __(
-						props.openImageModal.isDynamic ? "Static Images" : "Dyanmic Images"
+						props.openImageModal.isDynamic ? "Static Images" : "Dynamic Images"
 					);
 					imageControl.fields_dict["upload_image"].wrapper.style.display = props
 						.openImageModal.isDynamic

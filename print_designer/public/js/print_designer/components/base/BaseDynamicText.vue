@@ -29,8 +29,8 @@
 					v-bind="{
 						field,
 						labelStyle,
-						selectedDyanmicText,
-						setSelectedDyanmicText,
+						selectedDynamicText,
+						setSelectedDynamicText,
 						index,
 						parentClass: '',
 					}"
@@ -79,7 +79,7 @@ const {
 	DOMRef,
 	isFixedSize,
 	dynamicContent,
-	selectedDyanmicText,
+	selectedDynamicText,
 	isDraggable,
 	isResizable,
 	startX,
@@ -91,23 +91,23 @@ const {
 	styleEditMode,
 	classes,
 } = toRefs(props.object);
-const setSelectedDyanmicText = (value, isLabel) => {
+const setSelectedDynamicText = (value, isLabel) => {
 	if (
 		MainStore.activeControl != "text" ||
 		MainStore.getCurrentElementsId.indexOf(id.value) == -1
 	)
 		return;
 	if (
-		selectedDyanmicText.value === value &&
+		selectedDynamicText.value === value &&
 		styleEditMode.value == (isLabel ? "label" : "main")
 	) {
-		selectedDyanmicText.value = null;
+		selectedDynamicText.value = null;
 	} else {
-		selectedDyanmicText.value = value;
+		selectedDynamicText.value = value;
 		let removeSelectedText = onClickOutside(DOMRef.value, (event) => {
 			for (let index = 0; index < event.composedPath().length; index++) {
 				if (event.composedPath()[index].id === "canvas") {
-					selectedDyanmicText.value = null;
+					selectedDynamicText.value = null;
 					removeSelectedText();
 				}
 			}
@@ -150,7 +150,7 @@ const handleMouseDown = (e, element) => {
 	}
 	e.stopPropagation();
 	if (e.target.parentElement === element.DOMRef) {
-		element.selectedDyanmicText = null;
+		element.selectedDynamicText = null;
 	}
 };
 
@@ -174,7 +174,7 @@ const handleDblClick = (e, element) => {
 };
 
 onMounted(() => {
-	selectedDyanmicText.value = null;
+	selectedDynamicText.value = null;
 	DOMRef.value.firstElementChild.dataset.placeholder = "Choose Dynamic Field...";
 });
 
@@ -200,7 +200,7 @@ p:empty:before {
 	box-sizing: border-box !important;
 	border-bottom: 1px solid var(--primary-color) !important;
 }
-.flexDyanmicText {
+.flexDynamicText {
 	.baseSpanTag {
 		display: flex;
 		.labelSpanTag {

@@ -100,7 +100,7 @@ background-image: url('{{frappe.get_url()}}{%if element.isDynamic %}{{element.im
 {% set span_value = render_spanvalue(field, element, row) %}
 <span class="{% if not field.is_static and field.is_labelled %}baseSpanTag{% endif %}">
     {% if not field.is_static and field.is_labelled and span_value %}
-    <span class="{% if row %}printTable{% else %}dyanmicText{% endif %} label-text labelSpanTag" style="user-select:auto;{%if element.labelStyle %}{{convert_css(element.labelStyle)}}{%endif%}{%if field.labelStyle %}{{convert_css(field.labelStyle)}}{%endif%}">
+    <span class="{% if row %}printTable{% else %}dynamicText{% endif %} label-text labelSpanTag" style="user-select:auto;{%if element.labelStyle %}{{convert_css(element.labelStyle)}}{%endif%}{%if field.labelStyle %}{{convert_css(field.labelStyle)}}{%endif%}">
         {{ field.label }}
     </span>
     {% endif %}
@@ -205,14 +205,14 @@ background-image: url('{{frappe.get_url()}}{%if element.isDynamic %}{{element.im
     tr td:last-child {
         border-right-style: solid !important;
     }
-    .flexDyanmicText .baseSpanTag {
+    .flexDynamicText .baseSpanTag {
 		 display: block;
     }
-	.flexDyanmicText .baseSpanTag .labelSpanTag {
+	.flexDynamicText .baseSpanTag .labelSpanTag {
 			display: inline-block;
 			vertical-align: top;
     }
-	.flexDyanmicText .baseSpanTag .valueSpanTag {
+	.flexDynamicText .baseSpanTag .valueSpanTag {
         display: inline-block;
 			vertical-align: top;
 		}

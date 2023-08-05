@@ -392,7 +392,7 @@ export const useMainStore = defineStore("MainStore", {
 			let styleEditMode = mapper[object.styleEditMode];
 			return !isFontStyle
 				? object[styleEditMode]
-				: object.selectedDyanmicText?.[styleEditMode] || object[styleEditMode];
+				: object.selectedDynamicText?.[styleEditMode] || object[styleEditMode];
 		},
 		getCurrentStyle: (state) => (propertyName) => {
 			let object = state.getCurrentElementsValues[0];
@@ -404,7 +404,7 @@ export const useMainStore = defineStore("MainStore", {
 			});
 			let styleEditMode = mapper[object.styleEditMode];
 			return (
-				object.selectedDyanmicText?.[styleEditMode][propertyName] ||
+				object.selectedDynamicText?.[styleEditMode][propertyName] ||
 				object[styleEditMode][propertyName] ||
 				state.getGlobalStyleObject[propertyName]
 			);

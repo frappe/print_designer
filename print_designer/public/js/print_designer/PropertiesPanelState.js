@@ -609,19 +609,19 @@ export const createPropertiesPanel = () => {
 								);
 							},
 							onChangeCallback: (value) => {
-								if (MainStore.getCurrentElementsValues[0]?.selectedDyanmicText) {
+								if (MainStore.getCurrentElementsValues[0]?.selectedDynamicText) {
 									if (
 										MainStore.getCurrentElementsValues[0].styleEditMode ==
 										"label"
 									) {
-										MainStore.getCurrentElementsValues[0].selectedDyanmicText.labelStyleEditing = true;
+										MainStore.getCurrentElementsValues[0].selectedDynamicText.labelStyleEditing = true;
 									} else {
-										MainStore.getCurrentElementsValues[0].selectedDyanmicText.labelStyleEditing = false;
+										MainStore.getCurrentElementsValues[0].selectedDynamicText.labelStyleEditing = false;
 										if (
 											MainStore.getCurrentElementsValues[0].styleEditMode ==
 											"header"
 										) {
-											MainStore.getCurrentElementsValues[0].selectedDyanmicText =
+											MainStore.getCurrentElementsValues[0].selectedDynamicText =
 												null;
 										}
 									}
@@ -662,7 +662,7 @@ export const createPropertiesPanel = () => {
 							options: () => {
 								return [
 									{ label: "Inline", value: "standard" },
-									{ label: "Row", value: "flexDyanmicText" },
+									{ label: "Row", value: "flexDynamicText" },
 									{ label: "Column", value: "flexDirectionColumn" },
 								];
 							},
@@ -686,20 +686,20 @@ export const createPropertiesPanel = () => {
 								if (object.labelDisplayStyle == "standard") {
 									object.classes = object.classes.filter(
 										(cls) =>
-											["flexDyanmicText", "flexDirectionColumn"].indexOf(
+											["flexDynamicText", "flexDirectionColumn"].indexOf(
 												cls
 											) == -1
 									);
-								} else if (object.labelDisplayStyle == "flexDyanmicText") {
-									if (object.classes.indexOf("flexDyanmicText") == -1) {
-										object.classes.push("flexDyanmicText");
+								} else if (object.labelDisplayStyle == "flexDynamicText") {
+									if (object.classes.indexOf("flexDynamicText") == -1) {
+										object.classes.push("flexDynamicText");
 									}
 									object.classes = object.classes.filter(
 										(cls) => cls != "flexDirectionColumn"
 									);
 								} else if (object.labelDisplayStyle == "flexDirectionColumn") {
-									if (object.classes.indexOf("flexDyanmicText") == -1) {
-										object.classes.push("flexDyanmicText");
+									if (object.classes.indexOf("flexDynamicText") == -1) {
+										object.classes.push("flexDynamicText");
 									}
 									if (object.classes.indexOf("flexDirectionColumn") == -1) {
 										object.classes.push("flexDirectionColumn");
