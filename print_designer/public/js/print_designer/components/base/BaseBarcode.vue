@@ -65,7 +65,7 @@ watch(()=> dynamicContent.value, () => {
 	if (dynamicContent.value) {
 		value.value = dynamicContent.value[0]?.value || "";
 	}
-}, { immediate: true });
+}, { deep:true, immediate: true });
 
 watch(() => [value.value, barcodeFormat.value, barcodeColor.value, barcodeBackgroundColor.value], async () => {
 	if (!value.value || !barcodeFormat.value) return;

@@ -131,7 +131,7 @@ export const fetchDoc = async (id = null) => {
 							{ inline: true },
 							MainStore.docData
 					  );
-				if (value.startsWith("<svg")) {
+				if (typeof value == "string" && value.startsWith("<svg")) {
 					value.match(new RegExp(`data-barcode-value="(.*?)">`));
 					value = result[1];
 				};

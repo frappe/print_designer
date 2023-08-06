@@ -105,7 +105,7 @@
 	</AppModal>
 </template>
 <script setup>
-import { ref, onMounted, watch, nextTick } from "vue";
+import { ref, toRefs, onMounted, watch, nextTick } from "vue";
 import { getMeta, getValue } from "../../store/fetchMetaAndData";
 import { useMainStore } from "../../store/MainStore";
 import AppModal from "./AppModal.vue";
@@ -123,6 +123,7 @@ const doctype = ref("");
 const selectedDoctypeLabel = ref("");
 const fieldnames = ref([]);
 const previewRef = ref(null);
+const { isDynamic } = toRefs(MainStore.getCurrentElementsValues[0]);
 
 const parentFieldWatcher = watch(
 	() => previewRef.value?.parentField,
@@ -191,7 +192,7 @@ const selectField = async (field, fieldtype) => {
 							{ inline: true },
 							MainStore.docData
 					  ) || `${field.fieldname}`
-		if (value.startsWith("<svg")) {
+		if (typeof value == "string" && value.startsWith("<svg")) {
 			const result = value.match(new RegExp(`data-barcode-value="(.*?)">`));
 			value = result[1];
 		};
@@ -207,9 +208,10 @@ const selectField = async (field, fieldtype) => {
 		style: {},
 		labelStyle: {},
 	};
-
+	isDynamic.value = true;
+	let index = MainStore.dynamicData.indexOf(dynamicField)
+	MainStore.dynamicData.splice(index, 1, dynamicField);
 	fieldnames.value = [dynamicField];
-	MainStore.dynamicData = [dynamicField]
 };
 
 const primaryClick = (e) => {

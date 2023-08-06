@@ -87,7 +87,7 @@ def convert_uom(
 def get_barcode(barcode_format, barcode_value, options={}, width=None, height=None, png_base64=False):
 	options = frappe.parse_json(options)
 
-	if (barcode_value.startswith("<svg")):
+	if (isinstance(barcode_value, str) and barcode_value.startswith("<svg")):
 		import re
 		barcode_value = re.search(r'data-barcode-value="(.*?)">', barcode_value).group(1)
 	

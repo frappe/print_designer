@@ -317,9 +317,9 @@ export const useElementStore = defineStore("ElementStore", {
 				const MainStore = useMainStore();
 				if (
 					element.type == "table" ||
-					(["text", "image"].indexOf(element.type) != -1 && element.isDynamic)
+					(["text", "image", "barcode"].indexOf(element.type) != -1 && element.isDynamic)
 				) {
-					if (element.type === "text") {
+					if (["text", "barcode"].indexOf(element.type) != -1) {
 						element.dynamicContent = [
 							...element.dynamicContent.map((el) => {
 								return { ...el };

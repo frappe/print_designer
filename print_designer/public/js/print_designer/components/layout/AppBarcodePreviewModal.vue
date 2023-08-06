@@ -111,7 +111,7 @@ const setLabel = (value) => {
 		label.value = value;
 	}
 };
-const { barcodeColor, barcodeBackgroundColor, barcodeFormat, style} = toRefs(MainStore.getCurrentElementsValues[0]);
+const { barcodeColor, barcodeBackgroundColor, isDynamic, barcodeFormat, style} = toRefs(MainStore.getCurrentElementsValues[0]);
 onMounted(() => {
 	label.value = props.modalLabel;
 });
@@ -233,6 +233,7 @@ const addStaticText = (event) => {
 	};
 	props.fieldnames.splice(0, 1, newText);
 	contenteditable.value = true;
+	isDynamic.value = false;
 	nextTick(() => {
 		props.fieldnames[0].spanRef.focus();
 		selectElementContents(props.fieldnames[0].spanRef);
