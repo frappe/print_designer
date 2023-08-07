@@ -11,7 +11,7 @@ export const fetchMeta = () => {
 			MainStore.rawMeta = markRaw(frappe.get_meta(print_format.doc_type));
 			let metaFields = frappe.get_meta(print_format.doc_type).fields.filter((df) => {
 				if (
-					["Section Break", "Column Break", "Tab Break"].includes(df.fieldtype) ||
+					["Section Break", "Column Break", "Tab Break", "Image"].includes(df.fieldtype) ||
 					(df.print_hide == 1 && df.fieldtype != "Link")
 				) {
 					return false;
@@ -133,6 +133,10 @@ export const fetchDoc = async (id = null) => {
 							{ inline: true },
 							MainStore.docData
 					  );
+				if (typeof value == "string" && value.startsWith("<svg")) {
+					value.match(new RegExp(`data-barcode-value="(.*?)">`));
+					value = result[1];
+				};
 				if (!value) {
 					if (["Image, Attach Image"].indexOf(el.fieldtype) != -1) {
 						value = null;

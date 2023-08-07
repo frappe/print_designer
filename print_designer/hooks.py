@@ -60,6 +60,7 @@ jinja = {
 	"methods": [
 		"print_designer.print_designer.page.print_designer.print_designer.convert_css",
 		"print_designer.print_designer.page.print_designer.print_designer.convert_uom",
+		"print_designer.print_designer.page.print_designer.print_designer.get_barcode",
 	]
 }
 

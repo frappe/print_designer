@@ -6,6 +6,7 @@ import {
 	createDynamicText,
 	createImage,
 	createTable,
+	createBarcode
 } from "../defaultObjects";
 import { handlePrintFonts } from "../utils";
 export const useElementStore = defineStore("ElementStore", {
@@ -28,6 +29,8 @@ export const useElementStore = defineStore("ElementStore", {
 				newElement = createImage(event, element);
 			} else if (MainStore.activeControl == "table") {
 				newElement = createTable(event, element);
+			} else if (MainStore.activeControl == "barcode") {
+				newElement = createBarcode(event, element);
 			}
 			return newElement;
 		},
@@ -314,9 +317,9 @@ export const useElementStore = defineStore("ElementStore", {
 				const MainStore = useMainStore();
 				if (
 					element.type == "table" ||
-					(["text", "image"].indexOf(element.type) != -1 && element.isDynamic)
+					(["text", "image", "barcode"].indexOf(element.type) != -1 && element.isDynamic)
 				) {
-					if (element.type === "text") {
+					if (["text", "barcode"].indexOf(element.type) != -1) {
 						element.dynamicContent = [
 							...element.dynamicContent.map((el) => {
 								return { ...el };

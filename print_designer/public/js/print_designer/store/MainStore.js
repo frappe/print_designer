@@ -1,7 +1,7 @@
 import { defineStore } from "pinia";
 import { markRaw } from "vue";
 import { useChangeValueUnit } from "../composables/ChangeValueUnit";
-import { GoogleFonts } from "../defaultObjects";
+import { GoogleFonts, barcodeFormats } from "../defaultObjects";
 import { globalStyles } from "../globalStyles";
 import { pageSizes } from "../pageSizes";
 export const useMainStore = defineStore("MainStore", {
@@ -27,6 +27,7 @@ export const useMainStore = defineStore("MainStore", {
 		isPDFSetupMode: false,
 		isHeaderFooterAuto: true,
 		isPreviewMode: false,
+		barcodeFormats,
 		fonts: GoogleFonts,
 		currentFonts: ["Inter"],
 		printHeaderFonts: null,
@@ -44,6 +45,7 @@ export const useMainStore = defineStore("MainStore", {
 		openModal: false,
 		openDynamicModal: null,
 		openImageModal: null,
+		openBarcodeModal: null,
 		openTableColumnModal: null,
 		frappeControls: {
 			documentControl: null,
@@ -130,13 +132,13 @@ export const useMainStore = defineStore("MainStore", {
 			// 	id: "components",
 			// 	cursor: "default",
 			// },
-			// Barcode: {
-			// 	icon: "fa fa-barcode",
-			// 	control: "Barcode",
-			// 	aria_label: __("Barcode (B)"),
-			// 	id: "barcode",
-			// 	cursor: "crosshair",
-			// },
+			Barcode: {
+				icon: "fa fa-barcode",
+				control: "Barcode",
+				aria_label: __("Barcode (B)"),
+				id: "barcode",
+				cursor: "crosshair",
+			},
 		},
 		propertiesPanel: [],
 	}),
@@ -308,6 +310,7 @@ export const useMainStore = defineStore("MainStore", {
 							["Link", "Image", "Attach", "Attach Image"].indexOf(field.fieldtype) ==
 								-1)
 					) {
+						if (!state.openBarcodeModal && field.fieldtype == "Barcode") return;
 						if (fields[field.fieldtype]) {
 							fields[field.fieldtype].push(field);
 						} else {

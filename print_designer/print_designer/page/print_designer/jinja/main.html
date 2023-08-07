@@ -47,6 +47,31 @@ background-image: url('{{frappe.get_url()}}{%if element.isDynamic %}{{element.im
 ></div>
 </div>
 {%- endmacro %}
+{% macro render_barcode(element) -%}
+{%- set field = element.dynamicContent[0] -%}
+{%- if field.is_static -%}
+{%- set value = field.value -%}
+{%- elif field.doctype -%}
+{%- set value = frappe.db.get_value(field.doctype, doc[field.parentField], field.fieldname) -%}
+{%- else -%}
+{%- set value = doc.get_formatted(field.fieldname) -%}
+{%- endif -%}
+<div
+    style="position: absolute; top:{% if 'printY' in element %}{{ element.printY }}{% else %}{{ element.startY }}{% endif %}px; left:{% if 'printX' in element %}{{ element.printX }}{% else %}{{ element.startX }}{% endif %}px;width:{{ element.width }}px;height:{{ element.height }}px;
+{{convert_css(element.style)}}"
+    class="{{ element.classes | join(' ') }}"
+>
+<div
+    style="width:100%;height:100%; {{convert_css(element.style)}}"
+    class="barcode {{ element.classes | join(' ') }}"
+>{% if value %}{{get_barcode(element.barcodeFormat, value|string, {
+    "module_color": element.barcodeColor or "#000000",
+    "foreground": element.barcodeColor or "#ffffff",
+    "background": element.barcodeBackgroundColor or "#ffffff",
+    "quiet_zone": 5,
+    }).value}}{% endif %}</div>
+</div>
+{%- endmacro %}
 {% macro render_table(element) -%}
 <div style="position: absolute; top:{% if 'printY' in element %}{{ element.printY }}{% else %}{{ element.startY }}{% endif %}px; left:{%if element.startX >= 1%}{{ element.startX }}{%else%}{{element.startX}}{%endif%}px;width:{{ element.width }}px;height:{{ element.height }}px;" class="
     table-container {{ element.classes | join(' ') }}">
@@ -70,9 +95,9 @@ background-image: url('{{frappe.get_url()}}{%if element.isDynamic %}{{element.im
             {% for column in element.columns%}
                 <td style="{{convert_css(element.style)}}{%if isLastRow%}border-bottom-style: solid !important;{%endif%}{%if loop.first%}border-left-style: solid !important;{%elif loop.last%}border-right-style: solid !important;{%endif%}">
             {% if column is mapping %}
-            {% for field in column.dynamicContent%}
-                {{ render_spantag(field, element, row) }}
-            {% endfor %}
+                {% for field in column.dynamicContent%}
+                    {{ render_spantag(field, element, row) }}
+                {% endfor %}
         {% endif %}
                 </td>
             {% endfor %}
@@ -130,6 +155,8 @@ background-image: url('{{frappe.get_url()}}{%if element.isDynamic %}{{element.im
 {% else%}
 {{render_statictext(element)}}
 {% endif %}
+{% elif element.type == "barcode" %}
+{{render_barcode(element)}}
 {% endif %}
 {%- endmacro %}
 {% macro getFontStyles(fonts) -%}{%for key, value in fonts.items()%}{{key ~ ':ital,wght@'}}{%for index, size in enumerate(value.weight)%}{%if index > 0%};{%endif%}0,{{size}}{%endfor%}{%for index, size in enumerate(value.italic)%}{%if index > 0%};{%endif%}1,{{size}}{%endfor%}{% if not loop.last %}{{'&display=swap&family='}}{%endif%}{%endfor%}{%- endmacro %}

@@ -69,7 +69,7 @@ watchEffect(() => {
 	if (MainStore.activeControl == "mouse-pointer") {
 		MainStore.isMarqueeActive = true;
 		MainStore.isDrawing = false;
-	} else if (["rectangle", "image", "table"].includes(MainStore.activeControl)) {
+	} else if (["rectangle", "image", "table", "barcode"].includes(MainStore.activeControl)) {
 		MainStore.isMarqueeActive = false;
 		MainStore.isDrawing = true;
 	} else {

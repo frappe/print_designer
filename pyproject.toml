@@ -1,0 +1,30 @@
+[project]
+name = "print_designer"
+authors = [
+    { name = "Frappe Technologies Pvt Ltd", email = "hello@frappe.io"}
+]
+description = "Frappe App to Design Print Formats using interactive UI."
+requires-python = ">=3.10"
+readme = "README.md"
+dynamic = ["version"]
+dependencies = [
+    "PyQRCode~=1.2.1",
+    "pypng~=0.20220715.0",
+    "python-barcode~=0.13.1",
+]
+
+[build-system]
+requires = ["flit_core >=3.4,<4"]
+build-backend = "flit_core.buildapi"
+
+[tool.black]
+line-length = 99
+
+[tool.isort]
+line_length = 99
+multi_line_output = 3
+include_trailing_comma = true
+force_grid_wrap = 0
+use_parentheses = true
+ensure_newline_before_comments = true
+indent = "\t"
