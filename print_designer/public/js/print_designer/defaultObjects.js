@@ -108,7 +108,7 @@ export const createBarcode = (cordinates, parent = null) => {
 		isResizable: false,
 		isDropZone: false,
 		isDynamic: false,
-		value: "9876543210",
+		value: "",
 		dynamicContent: [],
 		startX: cordinates.startX,
 		startY: cordinates.startY,
