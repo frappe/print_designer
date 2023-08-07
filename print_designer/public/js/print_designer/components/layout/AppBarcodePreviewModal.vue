@@ -242,7 +242,7 @@ const addStaticText = (event) => {
 };
 </script>
 
-<style lang="scss" deep>
+<style lang="scss" scoped>
 .preview-container {
 	flex: 1;
 	display: flex;
@@ -258,16 +258,6 @@ const addStaticText = (event) => {
 	padding-top: 10px;
 	.settings {
 		flex: 50%;
-	}
-	.preview {
-		flex: 50%;
-		* {
-			text-align: right;
-		}
-		.print-qrcode {
-			max-width: 120px;
-			max-height: 120px;
-		}
 	}
 
 	.dynamic-field {
@@ -358,5 +348,17 @@ const addStaticText = (event) => {
 
 .dropzone {
 	background-color: var(--gray-200);
+}
+</style>
+<style lang="scss" deep>
+.preview {
+	flex: 50%;
+	* {
+		text-align: right;
+	}
+	.print-qrcode {
+		max-width: 120px;
+		max-height: 120px;
+	}
 }
 </style>

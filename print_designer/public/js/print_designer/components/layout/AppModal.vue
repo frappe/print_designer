@@ -98,9 +98,6 @@ const handleInputKeydown = (e) => {
 		e.stopImmediatePropagation();
 	}
 };
-const handleInputKeyUp = (e) => {
-	e.stopImmediatePropagation();
-};
 watch(
 	() => modal.value,
 	() => {
@@ -137,12 +134,10 @@ onMounted(() => {
 	openModal.value = true;
 	watchPostEffect(() => {
 		document.body.addEventListener("keydown", handleInputKeydown);
-		document.body.addEventListener("keyup", handleInputKeyUp);
 	});
 });
 onUnmounted(() => {
 	document.body.removeEventListener("keydown", handleInputKeydown);
-	document.body.removeEventListener("keyup", handleInputKeyUp);
 });
 </script>
 <style deep>

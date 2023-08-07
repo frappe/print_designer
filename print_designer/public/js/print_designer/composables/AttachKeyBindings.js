@@ -52,7 +52,7 @@ export function useAttachKeyBindings() {
 	const handleKeyDown = async (e) => {
 		MainStore.isAltKey = e.altKey;
 		MainStore.isShiftKey = e.shiftKey;
-		if (e.target !== document.body || MainStore.mode != "editing") return;
+		if (e.target !== document.body || MainStore.mode != "editing" || MainStore.openModal) return;
 		if (e.ctrlKey || e.metaKey) {
 			if (["a", "A"].indexOf(e.key) != -1) {
 				ElementStore.Elements.forEach((element) => {
@@ -121,8 +121,8 @@ export function useAttachKeyBindings() {
 			MainStore.setActiveControl("Table");
 			// } else if (e.key == "C" || e.key == "c") {
 			// 	MainStore.setActiveControl("Components");
-			// } else if (e.key == "B" || e.key == "b") {
-			// 	MainStore.setActiveControl("Barcode");
+		} else if (e.key == "B" || e.key == "b") {
+			MainStore.setActiveControl("Barcode");
 		} else if (e.key === "Delete" || e.key === "Backspace") {
 			deleteCurrentElements();
 		}
