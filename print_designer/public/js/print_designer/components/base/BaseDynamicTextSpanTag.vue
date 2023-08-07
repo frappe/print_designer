@@ -10,10 +10,10 @@
 					'dynamic-span-hover':
 						parentClass == 'printTable' ? true : MainStore.activeControl == 'text',
 					'dynamic-span-selected':
-						selectedDyanmicText === field && field?.labelStyleEditing,
+						selectedDynamicText === field && field?.labelStyleEditing,
 				},
 			]"
-			@click="selectDyanmicText(true)"
+			@click="selectDynamicText(true)"
 			:style="[labelStyle, field?.labelStyle]"
 			v-html="
 				field.label ||
@@ -28,12 +28,12 @@
 					'dynamic-span-hover':
 						parentClass == 'printTable' ? true : MainStore.activeControl == 'text',
 					'dynamic-span-selected':
-						selectedDyanmicText === field && !field.labelStyleEditing,
+						selectedDynamicText === field && !field.labelStyleEditing,
 				},
 				{ valueSpanTag: !field.is_static && field.is_labelled },
 				getPageClass(field)
 			]"
-			@click="selectDyanmicText()"
+			@click="selectDynamicText()"
 			:style="[field?.style]"
 			v-html="getHTML(field, index)"
 		>
@@ -45,9 +45,9 @@
 <script setup>
 import { useMainStore } from "../../store/MainStore";
 
-const selectDyanmicText = (isLabel = false) => {
+const selectDynamicText = (isLabel = false) => {
 	props.field.labelStyleEditing = isLabel;
-	props.setSelectedDyanmicText(props.field, isLabel);
+	props.setSelectedDynamicText(props.field, isLabel);
 };
 
 const MainStore = useMainStore();
@@ -60,11 +60,11 @@ const props = defineProps({
 		type: Object,
 		required: true,
 	},
-	selectedDyanmicText: {
+	selectedDynamicText: {
 		type: Object,
 		required: false,
 	},
-	setSelectedDyanmicText: {
+	setSelectedDynamicText: {
 		type: Function,
 		required: true,
 	},

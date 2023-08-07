@@ -325,7 +325,7 @@ export const useElementStore = defineStore("ElementStore", {
 								return { ...el };
 							}),
 						];
-						element.selectedDyanmicText = null;
+						element.selectedDynamicText = null;
 						MainStore.dynamicData.push(...element.dynamicContent);
 					} else if (element.type === "table") {
 						element.columns = [
@@ -340,7 +340,7 @@ export const useElementStore = defineStore("ElementStore", {
 									return { ...el };
 								}),
 							];
-							col.selectedDyanmicText = null;
+							col.selectedDynamicText = null;
 							MainStore.dynamicData.push(...col.dynamicContent);
 						});
 					} else {
@@ -417,7 +417,7 @@ export const useElementStore = defineStore("ElementStore", {
 						},
 					],
 					PreviewRowNo: 1,
-					selectedDyanmicText: null,
+					selectedDynamicText: null,
 					startX: 11.338582677,
 					startY: 393.826771658,
 					pageX: 228,

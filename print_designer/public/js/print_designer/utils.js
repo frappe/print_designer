@@ -175,7 +175,7 @@ const childrensCleanUp = (parentElement, element, isClone, isMainElement) => {
 					return clone_el;
 				}),
 			];
-			element.selectedDyanmicText = null;
+			element.selectedDynamicText = null;
 			MainStore.dynamicData.push(...element.dynamicContent);
 		} else if (element.type === "table") {
 			element.columns = [
@@ -193,7 +193,7 @@ const childrensCleanUp = (parentElement, element, isClone, isMainElement) => {
 						return clone_el;
 					}),
 				];
-				col.selectedDyanmicText = null;
+				col.selectedDynamicText = null;
 				MainStore.dynamicData.push(...col.dynamicContent);
 			});
 		} else {
@@ -657,21 +657,21 @@ export const getConditonalObject = (field) => {
 			switch (object.styleEditMode) {
 				case "main":
 					if (field.isFontStyle) {
-						object = object.selectedDyanmicText?.style || object.style;
+						object = object.selectedDynamicText?.style || object.style;
 					} else {
 						object = object.style;
 					}
 					break;
 				case "label":
 					if (field.isFontStyle) {
-						object = object.selectedDyanmicText?.labelStyle || object.labelStyle;
+						object = object.selectedDynamicText?.labelStyle || object.labelStyle;
 					} else {
 						object = object.labelStyle;
 					}
 					break;
 				case "header":
 					if (field.isFontStyle) {
-						object = object.selectedDyanmicText?.headerStyle || object.headerStyle;
+						object = object.selectedDynamicText?.headerStyle || object.headerStyle;
 					} else {
 						object = object.headerStyle;
 					}

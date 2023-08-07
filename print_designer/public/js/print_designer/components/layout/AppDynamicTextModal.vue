@@ -301,7 +301,7 @@ const primaryClick = (e) => {
 	if (fieldnames.value.length) {
 		props.openDynamicModal.dynamicContent = fieldnames.value;
 	}
-	props.openDynamicModal.selectedDyanmicText = null;
+	props.openDynamicModal.selectedDynamicText = null;
 	MainStore.openDynamicModal = null;
 	MainStore.openTableColumnModal = null;
 };
@@ -316,7 +316,7 @@ const cancelClick = () => {
 			MainStore.dynamicData.splice(MainStore.dynamicData.indexOf(element), 1);
 		}
 	});
-	props.openDynamicModal.selectedDyanmicText = null;
+	props.openDynamicModal.selectedDynamicText = null;
 	MainStore.openDynamicModal = null;
 	MainStore.openTableColumnModal = null;
 };
