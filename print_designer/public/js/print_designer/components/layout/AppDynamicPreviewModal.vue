@@ -16,6 +16,7 @@
 		class="preview-container"
 		@click.self.stop="selectedEl = null"
 		@dragover="allowDrop"
+		@dblclick.self="addStaticText"
 		@drop.self="drop($event, fieldnames.length)"
 	>
 		<template v-for="(field, index) in fieldnames" :key="index">
@@ -113,7 +114,7 @@
 </template>
 
 <script setup>
-import { ref, nextTick, onMounted } from "vue";
+import { ref, nextTick, onMounted, onUnmounted, watchPostEffect } from "vue";
 import { useMainStore } from "../../store/MainStore";
 const MainStore = useMainStore();
 const props = defineProps({
@@ -132,14 +133,34 @@ const props = defineProps({
 });
 const draggableEl = ref(-1);
 const label = ref("");
+
 const setLabel = (value) => {
 	if (label.value != value) {
 		label.value = value;
 	}
 };
+
 onMounted(() => {
 	label.value = props.modalLabel;
+	watchPostEffect(() => {
+		document.body.addEventListener("keyup", handleInputKeyUp);
+	});
 });
+onUnmounted(() => {
+	document.body.removeEventListener("keyup", handleInputKeyUp);
+});
+
+const handleInputKeyUp = (e) => {
+	console.log(e.key);
+	if (document.activeElement.tagName == "INPUT") {
+		return;
+	}
+	if (selectedEl.value) {
+		if (e.key === "Delete" || e.key === "Backspace") {
+			handleDeleteClick();
+		}
+	}
+}
 
 const parentField = ref("");
 const setParentField = (value) => {
