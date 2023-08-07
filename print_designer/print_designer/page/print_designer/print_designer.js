@@ -82,8 +82,9 @@ const printDesignerDialog = () => {
 					})
 					.then((doc) => {
 						// Incase Route is Same, set_route() is needed to refresh.
-						frappe.set_route();
-						frappe.set_route("print-designer", doc.name);
+						set_current_doc(doc.name).then(() => {
+							frappe.set_route("print-designer", doc.name);
+						})
 					})
 					.finally(() => {
 						d.get_primary_btn().prop("disabled", false);
@@ -98,6 +99,23 @@ const printDesignerDialog = () => {
 	});
 	return d;
 };
+
+const set_current_doc = async (format_name) => {
+	let currentDoc = null;		
+	let doctype = await frappe.db.get_value("Print Format", format_name, "doc_type");
+	let route_history = [...frappe.route_history.filter((r) => ["print", "Form"].indexOf(r[0]) != -1 && r[1] == doctype.message.doc_type)].reverse();
+	if (route_history.length) {
+		currentDoc = route_history[0][2];			
+	};
+	if (!currentDoc) return;
+	let isdocvalid = await frappe.db.exists("Sales Invoice", currentDoc);
+	if (!isdocvalid) return;
+	let settings = await frappe.db.get_value("Print Format", format_name, "print_designer_settings");
+	if (!settings.message) return;
+	settings = JSON.parse(settings.message.print_designer_settings || '{}');
+	settings["currentDoc"] = currentDoc;	
+	await frappe.db.set_value("Print Format", format_name, "print_designer_settings", JSON.stringify(settings));
+}
 
 const load_print_designer = async (wrapper) => {
 	let route = frappe.get_route();
@@ -116,11 +134,11 @@ const load_print_designer = async (wrapper) => {
 	}
 	if (route.length > 1 && route[1].length) {
 		if (is_print_format) {
-			frappe.require("print_designer.bundle.js").then(() => {
-				frappe.print_designer = new frappe.ui.PrintDesigner({
-					wrapper: $parent,
-					print_format: route[1],
-				});
+			await set_current_doc(route[1]);
+			await frappe.require("print_designer.bundle.js")
+			frappe.print_designer = new frappe.ui.PrintDesigner({
+				wrapper: $parent,
+				print_format: route[1],
 			});
 		} else {
 			frappe.confirm(
