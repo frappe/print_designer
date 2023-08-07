@@ -86,18 +86,20 @@ export const getValue = async (doctype, name, fieldname) => {
 export const fetchDoc = async (id = null) => {
 	const MainStore = useMainStore();
 	const ElementStore = useElementStore();
-	ElementStore.loadElements(MainStore.printDesignName);
 	let doctype = MainStore.doctype;
 	let doc;
-	if (!id) {
-		let latestdoc = await frappe.db.get_list(doctype, {
-			fields: ["name"],
-			order_by: "modified desc",
-			limit: 1,
-		});
-		MainStore.currentDoc = latestdoc[0]?.name;
-	} else {
-		MainStore.currentDoc = id;
+	await ElementStore.loadElements(MainStore.printDesignName);
+	if (MainStore.currentDoc == null) {
+		if (!id) {
+			let latestdoc = await frappe.db.get_list(doctype, {
+				fields: ["name"],
+				order_by: "modified desc",
+				limit: 1,
+			});
+			MainStore.currentDoc = latestdoc[0]?.name;
+		} else {
+			MainStore.currentDoc = id;
+		}
 	}
 	watch(
 		() => MainStore.currentDoc,
