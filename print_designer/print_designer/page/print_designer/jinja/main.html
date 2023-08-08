@@ -68,7 +68,7 @@ background-image: url('{{frappe.get_url()}}{%if element.isDynamic %}{{element.im
     "module_color": element.barcodeColor or "#000000",
     "foreground": element.barcodeColor or "#ffffff",
     "background": element.barcodeBackgroundColor or "#ffffff",
-    "quiet_zone": 5,
+    "quiet_zone": 1,
     }).value}}{% endif %}</div>
 </div>
 {%- endmacro %}

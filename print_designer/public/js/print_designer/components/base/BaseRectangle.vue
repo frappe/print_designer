@@ -17,17 +17,14 @@
 			"
 		/>
 		<template v-for="(object, index) in object.childrens" :key="object.id">
-			<BaseRectangle v-if="object.type == 'rectangle'" v-bind="{ object, index }" />
-			<BaseStaticText
-				v-else-if="object.type == 'text' && !object.isDynamic"
-				v-bind="{ object, index }"
-			/>
-			<BaseDynamicText
-				v-else-if="object.type == 'text' && object.isDynamic"
-				v-bind="{ object, index }"
-			/>
-			<BaseTable v-else-if="object.type == 'table'" v-bind="{ object, index }" />
-			<BaseImage v-else-if="object.type == 'image'" v-bind="{ object, index }" />
+			<component
+				:is="
+					object.type == 'text'
+						? isComponent[object.type][object.isDynamic ? 'dynamic' : 'static']
+						: isComponent[object.type]
+				"
+				v-bind="{ object, index }">
+			</component>
 		</template>
 	</div>
 </template>
@@ -37,6 +34,7 @@ import BaseStaticText from "./BaseStaticText.vue";
 import BaseDynamicText from "./BaseDynamicText.vue";
 import BaseImage from "./BaseImage.vue";
 import BaseTable from "./BaseTable.vue";
+import BaseBarcode from "./BaseBarcode.vue";
 import BaseResizeHandles from "./BaseResizeHandles.vue";
 import { toRefs } from "vue";
 import { useMainStore } from "../../store/MainStore";
@@ -60,6 +58,16 @@ const props = defineProps({
 		type: Number,
 		required: true,
 	},
+});
+const isComponent = Object.freeze({
+	rectangle: "BaseRectangle",
+	text: {
+		static: BaseStaticText,
+		dynamic: BaseDynamicText,
+	},
+	image: BaseImage,
+	table: BaseTable,
+	barcode: BaseBarcode
 });
 const { id, startX, startY, width, height, style, classes } = toRefs(props.object);
 const ElementStore = useElementStore();
@@ -187,6 +195,12 @@ const handleMouseUp = (e, element = null, index) => {
 	MainStore.isMoved = MainStore.isMoveStart = false;
 	MainStore.lastCloned = null;
 };
+</script>
+
+<script>
+export default {
+	name: "BaseRectangle"
+}
 </script>
 
 <style lang="scss" scoped></style>
