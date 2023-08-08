@@ -42,9 +42,7 @@ frappe.ui.form.PrintView = class PrintView extends frappe.ui.form.PrintView {
 	make() {
 		super.make();
 		this.print_wrapper = this.page.main.append(
-			`<div class="print-designer-wrapper" style="display:flex; flex-direction:column; align-items:center;padding: 80px 0;
-			background-color: var(--control-bg);
-			border-radius: var(--border-radius);">
+			`<div class="print-designer-wrapper">
 				<div id="preview-container" class="preview-container"
 					style="background-color: white; position: relative;">
 					${frappe.render_template("print_skeleton_loading")}
@@ -144,7 +142,8 @@ frappe.ui.form.PrintView = class PrintView extends frappe.ui.form.PrintView {
 			}
 			this.pdf_download_btn.prop("disabled", false);
 			this.print_btn.prop("disabled", false);
-		} catch {
+		} catch(err) {
+			console.log(err);
 			frappe.show_alert(
 				{
 					message: "Unable to generate PDF",
