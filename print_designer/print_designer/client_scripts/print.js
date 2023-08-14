@@ -5,6 +5,7 @@ frappe.pages["print"].on_page_load = function (wrapper) {
 				frappe.boot.assets_json["pdf.worker.bundle.js"];
 		});
 	}
+	frappe.require(['pdfjs.bundle.css', 'print_designer.bundle.css'])
 	frappe.ui.make_app_page({
 		parent: wrapper,
 	});
