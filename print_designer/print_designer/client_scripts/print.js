@@ -1,10 +1,4 @@
 frappe.pages["print"].on_page_load = function (wrapper) {
-	if (!window.localStorage["desk_assets:assets/print_designer/js/pdf.min.js"]) {
-		frappe.require("assets/print_designer/js/pdf.min.js", () => {
-			pdfjsLib.GlobalWorkerOptions.workerSrc =
-				frappe.boot.assets_json["pdf.worker.bundle.js"];
-		});
-	}
 	frappe.require(['pdfjs.bundle.css', 'print_designer.bundle.css'])
 	frappe.ui.make_app_page({
 		parent: wrapper,
@@ -109,6 +103,12 @@ frappe.ui.form.PrintView = class PrintView extends frappe.ui.form.PrintView {
 		});
 	}
 	async designer_pdf(print_format) {
+		if (typeof pdfjsLib == "undefined"){
+			await frappe.require("assets/print_designer/js/pdf.min.js", () => {
+				pdfjsLib.GlobalWorkerOptions.workerSrc =
+					frappe.boot.assets_json["pdf.worker.bundle.js"];
+			});
+		}
 		let me = this;
 		let print_designer_settings = JSON.parse(print_format.print_designer_settings);
 		let page_settings = print_designer_settings.page;
