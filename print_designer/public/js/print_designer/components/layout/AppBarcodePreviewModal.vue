@@ -353,7 +353,7 @@ const addStaticText = (event) => {
 <style lang="scss" deep>
 .preview {
 	flex: 50%;
-	* {
+	.barcode {
 		text-align: right;
 	}
 	.print-qrcode {
