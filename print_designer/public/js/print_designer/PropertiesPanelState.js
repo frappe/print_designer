@@ -337,7 +337,7 @@ export const createPropertiesPanel = () => {
 						reactiveObject: MainStore,
 						propertyName: "currentPageSize",
 						onChangeCallback: (value = null) => {
-							if (value) {
+							if (value && value != "CUSTOM") {
 								MainStore.currentPageSize = value;
 								MainStore.page.width = MainStore.convertToPX(
 									MainStore.pageSizes[value][0],
