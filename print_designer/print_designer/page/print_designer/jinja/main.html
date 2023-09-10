@@ -3,7 +3,7 @@
     {{ element.classes | join(' ') }}">
     <p style="{% if element.isFixedSize %}width:{{ element.width }}px;height:{{ element.height }}px;{% else %}width:fit-content; height:fit-content; white-space:nowrap;{%endif%} {{convert_css(element.style)}}"
         class="staticText {{ element.classes | join(' ') }}">
-        {{element.content}}
+        {{_(element.content)}}
     </p>
 </div>
 {%- endmacro %}
@@ -112,7 +112,7 @@ background-image: url('{{frappe.get_url()}}{%if element.isDynamic %}{{element.im
 {%- endmacro %}
 {%- macro render_spanvalue(field, element, row) -%}
 {%- if field.is_static -%}
-{{ field.value }}
+{{ _(field.value) }}
 {%- elif field.doctype -%}
 {%- set value = frappe.db.get_value(field.doctype, doc[field.parentField], field.fieldname) -%}
 {{ frappe.format(value, {'fieldtype': field.fieldtype, 'options': field.options}) }}
@@ -126,7 +126,7 @@ background-image: url('{{frappe.get_url()}}{%if element.isDynamic %}{{element.im
 <span class="{% if not field.is_static and field.is_labelled %}baseSpanTag{% endif %}">
     {% if not field.is_static and field.is_labelled and span_value %}
     <span class="{% if row %}printTable{% else %}dynamicText{% endif %} label-text labelSpanTag" style="user-select:auto;{%if element.labelStyle %}{{convert_css(element.labelStyle)}}{%endif%}{%if field.labelStyle %}{{convert_css(field.labelStyle)}}{%endif%}">
-        {{ field.label }}
+        {{ _(field.label) }}
     </span>
     {% endif %}
     <span class="dynamic-span {% if not field.is_static and field.is_labelled %}valueSpanTag{%endif%} {{page_class(field)}} }}"
