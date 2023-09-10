@@ -151,8 +151,7 @@ onUnmounted(() => {
 });
 
 const handleInputKeyUp = (e) => {
-	console.log(e.key);
-	if (document.activeElement.tagName == "INPUT") {
+	if (document.activeElement.tagName == "INPUT" || document.activeElement.contentEditable == "true") {
 		return;
 	}
 	if (selectedEl.value) {

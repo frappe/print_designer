@@ -80,7 +80,7 @@ const emit = defineEmits(["primaryClick", "cancelClick"]);
 const handleEmits = (emitName) => {
 	openModal.value = false;
 	MainStore.isMoved = MainStore.isMoveStart = false;
-	if (document.activeElement.tagName == "INPUT") {
+	if (document.activeElement.tagName == "INPUT" || document.activeElement.contentEditable == "true") {
 		document.activeElement.blur();
 	}
 	nextTick(() => emit(emitName));
