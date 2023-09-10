@@ -247,7 +247,7 @@ const cancelClick = () => {
 	MainStore.openBarcodeModal = null;
 };
 </script>
-<style deep lang="scss">
+<style scoped lang="scss">
 small {
 	font-size: 90%;
 }
