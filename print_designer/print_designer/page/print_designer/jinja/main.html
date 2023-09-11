@@ -81,7 +81,7 @@ background-image: url('{{frappe.get_url()}}{%if element.isDynamic %}{{element.im
             <tr>
         {% for column in element.columns%}
                 <th style="{% if column.width %}width: {{column.width}}%; max-width: {{column.width}}%;{%endif%} {{convert_css(element.headerStyle)}}border-top-style: solid !important;border-bottom-style: solid !important;{%if loop.first%}border-left-style: solid !important;{%elif loop.last%}border-right-style: solid !important;{%endif%}">
-                {{ column.label }}
+                {{ _(column.label) }}
                 </th>
         {% endfor %}
             </tr>
@@ -114,7 +114,7 @@ background-image: url('{{frappe.get_url()}}{%if element.isDynamic %}{{element.im
 {%- if field.is_static -%}
 {{ _(field.value) }}
 {%- elif field.doctype -%}
-{%- set value = frappe.db.get_value(field.doctype, doc[field.parentField], field.fieldname) -%}
+{%- set value = _(frappe.db.get_value(field.doctype, doc[field.parentField], field.fieldname)) -%}
 {{ frappe.format(value, {'fieldtype': field.fieldtype, 'options': field.options}) }}
 {%- elif row -%}
 {{row.get_formatted(field.fieldname)}}
