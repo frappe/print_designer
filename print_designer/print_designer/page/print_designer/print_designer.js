@@ -108,7 +108,7 @@ const set_current_doc = async (format_name) => {
 		currentDoc = route_history[0][2];			
 	};
 	if (!currentDoc) return;
-	let isdocvalid = await frappe.db.exists("Sales Invoice", currentDoc);
+	let isdocvalid = await frappe.db.exists(doctype, currentDoc);
 	if (!isdocvalid) return;
 	let settings = await frappe.db.get_value("Print Format", format_name, "print_designer_settings");
 	if (!settings.message) return;
