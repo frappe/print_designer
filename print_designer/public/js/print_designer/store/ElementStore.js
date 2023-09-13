@@ -310,8 +310,10 @@ export const useElementStore = defineStore("ElementStore", {
 			let ElementsFooter = JSON.parse(printFormat.message.print_designer_footer);
 			let settings = JSON.parse(printFormat.message.print_designer_settings);
 			settings &&
-				Object.keys(settings).forEach((key) => {
-					MainStore[key] = settings[key];
+				Object.keys(settings).forEach( async (key) => {
+					if (key != "currentDoc" || await frappe.db.exists(MainStore.doctype, settings[key])) {
+						MainStore[key] = settings[key];
+					}
 				});
 			const handleDynamicContent = (element) => {
 				const MainStore = useMainStore();

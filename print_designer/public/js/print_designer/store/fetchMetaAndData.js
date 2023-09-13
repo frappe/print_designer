@@ -104,7 +104,7 @@ export const fetchDoc = async (id = null) => {
 	watch(
 		() => MainStore.currentDoc,
 		async () => {
-			if (!MainStore.currentDoc) return;
+			if (!(MainStore.currentDoc && await frappe.db.exists(MainStore.doctype, MainStore.currentDoc))) return;
 			doc = await frappe.db.get_doc(doctype, MainStore.currentDoc);
 			Object.keys(doc).forEach((element) => {
 				if (
