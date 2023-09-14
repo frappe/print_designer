@@ -1,11 +1,14 @@
 # Print Designer
 <div align="center" markdown="1">
-<img src="https://user-images.githubusercontent.com/39730881/234943112-28e1bfa8-8c41-4176-9cbe-3c3e10b1e347.svg" alt="Print Designer logo" height="200"/>
-</div>
+<img src="https://user-images.githubusercontent.com/39730881/234943112-28e1bfa8-8c41-4176-9cbe-3c3e10b1e347.svg" alt="Print Designer logo" height="150"/>
 
-<div align="center" markdown="1">
+
+</div>
+<div align="center" markdown="1" >
 
 ## Frappe app to design print formats using interactive UI.
+
+![](https://github.com/frappe/print_designer/assets/39730881/f5773202-e9c7-421a-8fce-f4ed5c078ae6)
 
 </div>
 
@@ -61,7 +64,9 @@ https://github.com/frappe/print_designer/assets/39730881/b9cb5db7-1336-475c-9d82
 </details>
 
 ## Installation
-Please note that print designer is only compatible with develop version of frappe framework.
+> **Warning**
+>
+> Please note that print designer is only compatible with develop and V15 version of frappe framework.
 ### Local
 
 To setup the repository locally follow the steps mentioned below:
