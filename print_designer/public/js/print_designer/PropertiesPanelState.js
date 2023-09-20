@@ -1203,34 +1203,70 @@ export const createPropertiesPanel = () => {
 			(MainStore.getCurrentElementsId.length === 1 &&
 				MainStore.getCurrentElementsValues[0].type === "barcode"),
 		fields: [
-			{
-				label: "Barcode Format",
-				name: "barcodeFormat",
-				isLabelled: true,
-				condtional: null,
-				frappeControl: (ref, name) => {
-					const MainStore = useMainStore();
-					const { barcodeFormats } = storeToRefs(MainStore);
-					makeFeild({
-						name: name,
-						ref: ref,
-						fieldtype: "Autocomplete",
-						requiredData: [
-							barcodeFormats,
-							MainStore.getCurrentElementsValues[0] ||
-								MainStore.globalStyles["barcode"],
-						],
-						options: () => barcodeFormats.value,
-						reactiveObject: () => {
-							return (
+			[
+				{
+					label: "Barcode Format",
+					name: "barcodeFormat",
+					isLabelled: true,
+					condtional: null,
+					frappeControl: (ref, name) => {
+						const MainStore = useMainStore();
+						const { barcodeFormats } = storeToRefs(MainStore);
+						makeFeild({
+							name: name,
+							ref: ref,
+							fieldtype: "Autocomplete",
+							requiredData: [
+								barcodeFormats,
 								MainStore.getCurrentElementsValues[0] ||
-								MainStore.globalStyles["barcode"]
-							);
-						},
-						propertyName: "barcodeFormat",
-					});
+									MainStore.globalStyles["barcode"],
+							],
+							options: () => barcodeFormats.value,
+							reactiveObject: () => {
+								return (
+									MainStore.getCurrentElementsValues[0] ||
+									MainStore.globalStyles["barcode"]
+								);
+							},
+							propertyName: "barcodeFormat",
+						});
+					},
 				},
-			},
+			],
+			[
+				{
+					label: "Show Text",
+					name: "barcodeShowText",
+					isLabelled: true,
+					condtional: () => {
+						return  MainStore.getCurrentElementsValues[0].barcodeFormat !== "qrcode";
+					},
+					frappeControl: (ref, name) => {
+						const MainStore = useMainStore();
+						console.log(MainStore.getCurrentElementsValues);
+						makeFeild({
+							name: name,
+							ref: ref,
+							fieldtype: "Select",
+							requiredData: [
+								MainStore.getCurrentElementsValues[0] ||
+									MainStore.globalStyles["barcode"],
+							],
+							options: () => ([
+								{ label: "Yes", value: "Yes" },
+								{ label: "No", value: "No" },
+							]),
+							reactiveObject: () => {
+								return (
+									MainStore.getCurrentElementsValues[0] ||
+									MainStore.globalStyles["barcode"]
+								);
+							},
+							propertyName: "barcodeShowText",
+						});
+					},
+				}
+			],
 			[
 				colorStyleFrappeControl("Color", "barcodeColor", "barcodeColor", false, false),
 				colorStyleFrappeControl(

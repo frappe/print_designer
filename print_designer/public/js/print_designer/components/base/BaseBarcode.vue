@@ -61,7 +61,7 @@ const {
 	value,
 	dynamicContent,
 	barcodeFormat,
-	barcodeColor,
+	barcodeShowText,barcodeColor,
 	barcodeBackgroundColor,
 	startX,
 	startY,
@@ -133,7 +133,7 @@ watch(
 				options["module_color"] = barcodeColor.value || "#000000";
 			} else {
 				options["foreground"] = barcodeColor.value || "#000000";
-			}
+			options["show_text"] = barcodeShowText.value || "Yes";}
 			let finalValue = value.value;
 			if (finalValue != "") {
 				try {
