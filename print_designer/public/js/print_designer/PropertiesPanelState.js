@@ -1262,6 +1262,16 @@ export const createPropertiesPanel = () => {
 								);
 							},
 							propertyName: "barcodeShowText",
+							formatValue: (object, property) => {
+								if (!object) return;
+								return (object[property] === undefined || object[property]) ? "Yes" : "No";
+							},
+							onChangeCallback: (value = null) => {
+								if (value && MainStore.getCurrentElementsValues[0]) {
+									MainStore.getCurrentElementsValues[0]["barcodeShowText"] = value !== "No"
+									MainStore.frappeControls["barcodeShowText"].$input.blur();
+								}
+							},
 						});
 					},
 				}
