@@ -263,7 +263,7 @@ def get_barcode(
 
 	stream = BytesIO()
 	show_text = options.pop("show_text")
-	barcode.write(stream, options, text="" if show_text == "No" else None)
+	barcode.write(stream, options, text="" if not show_text else None)
 	barcode_value = stream.getvalue().decode("utf-8")
 	stream.close()
 

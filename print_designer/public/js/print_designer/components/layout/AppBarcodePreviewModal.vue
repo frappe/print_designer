@@ -195,7 +195,7 @@ const setBarcode = async () => {
 			options["module_color"] = barcodeColor.value || "#000000";
 		} else {
 			options["foreground"] = barcodeColor.value || "#000000";
-			options["show_text"] = barcodeShowText.value || "Yes";
+			options["show_text"] = barcodeShowText.value;
 		}
 		let value = props.fieldnames[0].value;
 		if (props.fieldnames[0].parseJinja && value != "") {

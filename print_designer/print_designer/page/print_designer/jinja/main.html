@@ -75,7 +75,7 @@ background-image: url('{{frappe.get_url()}}{%if element.isDynamic %}{{element.im
     style="width:100%;height:100%; {{convert_css(element.style)}}"
     class="barcode {{ element.classes | join(' ') }}"
 >{% if value %}{{get_barcode(element.barcodeFormat, value|string, {
-	"show_text": element.barcodeShowText or "Yes",
+	"show_text": element.barcodeShowText,
     "module_color": element.barcodeColor or "#000000",
     "foreground": element.barcodeColor or "#ffffff",
     "background": element.barcodeBackgroundColor or "#ffffff",
