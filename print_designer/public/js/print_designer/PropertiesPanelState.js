@@ -1243,7 +1243,6 @@ export const createPropertiesPanel = () => {
 					},
 					frappeControl: (ref, name) => {
 						const MainStore = useMainStore();
-						console.log(MainStore.getCurrentElementsValues);
 						makeFeild({
 							name: name,
 							ref: ref,
