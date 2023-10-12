@@ -103,7 +103,8 @@ const printDesignerDialog = () => {
 const set_current_doc = async (format_name) => {
 	let currentDoc = null;		
 	let doctype = await frappe.db.get_value("Print Format", format_name, "doc_type");
-	let route_history = [...frappe.route_history.filter((r) => ["print", "Form"].indexOf(r[0]) != -1 && r[1] == doctype.message.doc_type)].reverse();
+	doctype = doctype.message?.doc_type;
+	let route_history = [...frappe.route_history.filter((r) => ["print", "Form"].indexOf(r[0]) != -1 && r[1] == doctype)].reverse();
 	if (route_history.length) {
 		currentDoc = route_history[0][2];			
 	};
