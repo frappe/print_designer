@@ -212,7 +212,7 @@ const selectField = async (field, fieldtype) => {
 	let value = previewRef.value.parentField
 					? await getValue(doctype.value, MainStore.docData[previewRef.value.parentField], field.fieldname)
 					: props.table
-					? typeof MainStore.docData[props.table.fieldname]?.[0][field.fieldname] != "undefined" ? frappe.format(
+					? MainStore.docData[props.table.fieldname]?.length && typeof MainStore.docData[props.table.fieldname][0][field.fieldname] != "undefined" ? frappe.format(
 							MainStore.docData[props.table.fieldname][0][field.fieldname],
 							{ fieldtype: field.fieldtype, options: field.options },
 							{ inline: true },
