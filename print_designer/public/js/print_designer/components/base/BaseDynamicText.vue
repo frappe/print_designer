@@ -11,7 +11,7 @@
 		:ref="setElements(object, index)"
 		:key="id"
 	>
-		<p
+		<div
 			:style="[
 				style,
 				widthHeightStyle(width, height),
@@ -36,7 +36,7 @@
 					}"
 				/>
 			</template>
-		</p>
+		</div>
 		<BaseResizeHandles
 			v-if="
 				MainStore.activeControl == 'mouse-pointer' &&
