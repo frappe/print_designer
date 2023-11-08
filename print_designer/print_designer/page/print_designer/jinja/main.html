@@ -15,12 +15,12 @@
 {% macro render_dynamictext(element) -%}
 <div style="position: absolute; top:{% if 'printY' in element %}{{ element.printY }}{% else %}{{ element.startY }}{% endif %}px; left:{% if 'printX' in element %}{{ element.printX }}{% else %}{{ element.startX }}{% endif %}px;{% if element.isFixedSize %}width:{{ element.width }}px;height:{{ element.height }}px;{% else %}width:fit-content; height:fit-content; white-space:nowrap;{%endif%}" class="
     {{ element.classes | join(' ') }}">
-        <p style="{% if element.isFixedSize %}width:{{ element.width }}px;height:{{ element.height }}px;{% else %}width:fit-content; height:fit-content; white-space:nowrap;{%endif%} {{convert_css(element.style)}}"
+        <div style="{% if element.isFixedSize %}width:{{ element.width }}px;height:{{ element.height }}px;{% else %}width:fit-content; height:fit-content; white-space:nowrap;{%endif%} {{convert_css(element.style)}}"
             class="dynamicText {{ element.classes | join(' ') }}">
             {% for field in element.dynamicContent %}
             {{ render_spantag(field, element)}}
             {% endfor %}
-        </p>
+        </div>
 </div>
 {%- endmacro %}
 {% macro render_rectangle(element) -%}
