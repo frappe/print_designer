@@ -1,6 +1,6 @@
 <template>
 	<div class="header">
-		<img class="app-icon" style="width: 32px" src="/assets/print_designer/dist/images/print-designer-logo.svg">
+		<img class="app-icon" style="width: 32px" src="/assets/print_designer/images/print-designer-logo.svg">
 		<h3 class="title">{{ print_format_name }}</h3>
 		<span class="indicator-pill no-indicator-dot ellipsis gray">Beta</span>
 		<!-- TODO: Add Exit Button -->

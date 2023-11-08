@@ -7,24 +7,24 @@
 		rel="stylesheet"
 	/>
 	<link rel="preload" 
-      href="/assets/print_designer/dist/images/mouse-pointer.svg"
+      href="/assets/print_designer/images/mouse-pointer.svg"
 
 	  as="image"
 	  type="image/svg+xml" />
 	<link rel="preload" 
-      href="/assets/print_designer/dist/images/add-text.svg"
+      href="/assets/print_designer/images/add-text.svg"
       as="image"
       type="image/svg+xml" />
 	<link rel="preload" 
-      href="/assets/print_designer/dist/images/add-image.svg"
+      href="/assets/print_designer/images/add-image.svg"
       as="image"
       type="image/svg+xml" />
 	<link rel="preload" 
-      href="/assets/print_designer/dist/images/add-table.svg"
+      href="/assets/print_designer/images/add-table.svg"
       as="image"
       type="image/svg+xml" />
 	<link rel="preload" 
-      href="/assets/print_designer/dist/images/add-rectangle.svg"
+      href="/assets/print_designer/images/add-rectangle.svg"
       as="image"
       type="image/svg+xml" />
 	<AppHeader :print_format_name="print_format_name" />

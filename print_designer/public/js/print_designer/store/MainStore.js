@@ -18,7 +18,7 @@ export const useMainStore = defineStore("MainStore", {
 		 * @type {'editing'|'pdfSetup'|'preview'} mode
 		 */
 		mode: "editing",
-		cursor: "cursor: url('/assets/print_designer/dist/images/mouse-pointer.svg'), default !important",
+		cursor: "cursor: url('/assets/print_designer/images/mouse-pointer.svg'), default !important",
 		isMarqueeActive: false,
 		isDrawing: false,
 		doctype: null,
@@ -90,7 +90,7 @@ export const useMainStore = defineStore("MainStore", {
 				control: "MousePointer",
 				aria_label: __("Mouse Pointer (M)"),
 				id: "mouse-pointer",
-				cursor:  "url('/assets/print_designer/dist/images/mouse-pointer.svg'), default",
+				cursor:  "url('/assets/print_designer/images/mouse-pointer.svg'), default",
 				isDisabled: false,
 			},
 			Text: {
@@ -98,7 +98,7 @@ export const useMainStore = defineStore("MainStore", {
 				control: "Text",
 				aria_label: __("Text (T)"),
 				id: "text",
-				cursor:  "url('/assets/print_designer/dist/images/add-text.svg') 10 10, text",
+				cursor:  "url('/assets/print_designer/images/add-text.svg') 10 10, text",
 				isDisabled: false,
 			},
 			Rectangle: {
@@ -106,7 +106,7 @@ export const useMainStore = defineStore("MainStore", {
 				control: "Rectangle",
 				aria_label: __("Rectangle (R)"),
 				id: "rectangle",
-				cursor:  "url('/assets/print_designer/dist/images/add-rectangle.svg') 6 6, crosshair",
+				cursor:  "url('/assets/print_designer/images/add-rectangle.svg') 6 6, crosshair",
 				isDisabled: false,
 			},
 			Image: {
@@ -114,7 +114,7 @@ export const useMainStore = defineStore("MainStore", {
 				control: "Image",
 				aria_label: __("Image (I)"),
 				id: "image",
-				cursor:  "url('/assets/print_designer/dist/images/add-image.svg') 6 6, crosshair",
+				cursor:  "url('/assets/print_designer/images/add-image.svg') 6 6, crosshair",
 				isDisabled: false,
 			},
 			Table: {
@@ -122,7 +122,7 @@ export const useMainStore = defineStore("MainStore", {
 				control: "Table",
 				aria_label: __("Table (A)"),
 				id: "table",
-				cursor:  "url('/assets/print_designer/dist/images/add-table.svg') 6 6, crosshair",
+				cursor:  "url('/assets/print_designer/images/add-table.svg') 6 6, crosshair",
 				isDisabled: false,
 			},
 			// Components: {
@@ -137,7 +137,7 @@ export const useMainStore = defineStore("MainStore", {
 				control: "Barcode",
 				aria_label: __("Barcode (B)"),
 				id: "barcode",
-				cursor:  "url('/assets/print_designer/dist/images/add-barcode.svg') 6 6, crosshair",
+				cursor:  "url('/assets/print_designer/images/add-barcode.svg') 6 6, crosshair",
 			},
 		},
 		propertiesPanel: [],

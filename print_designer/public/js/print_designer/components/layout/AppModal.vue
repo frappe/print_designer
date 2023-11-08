@@ -9,7 +9,7 @@
 				"
 				v-if="openModal"
 				class="modal-dialog modal-sm"
-				:style="[{ 'min-width': width, 'max-width': width, left, top }, MainStore.mode == 'editing' && { cursor: `url('/assets/print_designer/dist/images/mouse-pointer.svg'), default` }]"
+				:style="[{ 'min-width': width, 'max-width': width, left, top }, MainStore.mode == 'editing' && { cursor: `url('/assets/print_designer/images/mouse-pointer.svg'), default` }]"
 			>
 				<div class="modal-content">
 					<div class="modal-header">
