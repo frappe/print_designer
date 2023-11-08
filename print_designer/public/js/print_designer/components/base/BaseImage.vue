@@ -19,20 +19,22 @@
 		></div>
 		<div class="fallback-image" v-else>
 			<div class="content">
-				<div
+				<IconsUse
 					v-if="width >= 30 || height >= 30"
-					draggable="false"
-					v-html="frappe.utils.icon('image', 'lg')"
-				></div>
+					:draggable="false"
+					:size="18"
+					name="es-line-image-alt1"
+					key="es-line-image-alt1"
+				/>
 				<span
 					v-if="
-						(width >= 100 || height >= 100) && isDynamic
+						(width >= 120 || height >= 120) && isDynamic
 							? image && !Boolean(image.value)
 							: image && !Boolean(image.file_url)
 					"
 					>{{ isDynamic ? "Image not Linked" : "Unable to load Image :(" }}</span
 				>
-				<span v-else-if="width >= 100 || height >= 100"
+				<span v-else-if="width >= 120 || height >= 120"
 					>Please Double click to select Image</span
 				>
 			</div>
@@ -60,6 +62,7 @@ import {
 } from "../../utils";
 import { useDraw } from "../../composables/Draw";
 import BaseResizeHandles from "./BaseResizeHandles.vue";
+import IconsUse from "../../icons/IconsUse.vue";
 
 const MainStore = useMainStore();
 const props = defineProps({
@@ -156,12 +159,13 @@ const handleDblClick = (e, element) => {
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	background-color: var(--bg-color);
+	background-color: var(--gray-100);
 	.content {
 		display: flex;
 		flex-direction: column;
 		align-items: center;
 		justify-content: center;
+		gap: 6px;
 
 		span {
 			font-size: smaller;

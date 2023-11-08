@@ -62,6 +62,10 @@ onMounted(() => createPropertiesPanel());
 </script>
 <style deep lang="scss">
 .properties-container {
+	* {
+		user-select: none;
+	}
+	cursor: default;
 	position: relative;
 	overflow: auto;
 	.designer-icon {
@@ -73,8 +77,16 @@ onMounted(() => createPropertiesPanel());
 		display: flex;
 		justify-content: space-between;
 		align-items: center;
-		background-color: var(--bg-color);
+		background-color: var(--subtle-fg);
 		padding: 5px 10px;
+		.btn {
+			background-color: var(--bg-color);
+			font-size: var(--text-sm) !important;
+			font-size: var(--weight-regular);
+		}
+		.btn-primary {
+			background-color: var(--btn-primary);
+		}
 		button {
 			margin: 5px 10px;
 			min-width: 60px;
@@ -92,7 +104,7 @@ onMounted(() => createPropertiesPanel());
 		display: flex;
 		justify-content: center;
 		align-items: center;
-		background-color: var(--bg-color);
+		background-color: var(--subtle-fg);
 		.text-type {
 			padding: 6px 16px;
 			margin: 6px 0px;
@@ -146,11 +158,11 @@ onMounted(() => createPropertiesPanel());
 		margin: 0px 9px;
 		&.panel-border-top {
 			margin-top: 8px;
-			border-top: 1px solid var(--gray-100);
+			border-top: 1px solid var(--border-color);
 		}
 		&.panel-border-bottom {
 			margin-bottom: 8px;
-			border-bottom: 1px solid var(--gray-100);
+			border-bottom: 1px solid var(--border-color);
 		}
 		.flex-container {
 			display: flex !important;
@@ -163,9 +175,9 @@ onMounted(() => createPropertiesPanel());
 	}
 	.panel-input {
 		font-size: 10px;
-		color: black;
+		color: var(--invert-neutral);
 		background-color: var(--fg-color);
-		border-bottom: 1px solid var(--gray-100);
+		border-bottom: 1px solid var(--border-color);
 		border-radius: 0px;
 		box-shadow: none;
 		flex: 5;
@@ -219,7 +231,6 @@ onMounted(() => createPropertiesPanel());
 				.selected-color {
 					width: 18px;
 					height: 18px;
-					top: 7px;
 					left: 6px;
 				}
 			}

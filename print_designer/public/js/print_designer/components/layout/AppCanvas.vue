@@ -5,6 +5,7 @@
 			id="canvas"
 			v-marquee="marqueeOptions"
 			v-show="MainStore.mode != 'preview'"
+			:style="[MainStore.mode == 'editing' && { cursor: MainStore.cursor }]"
 		>
 			<div
 				class="main-container"
@@ -13,10 +14,7 @@
 						MainStore.mainContainer = el;
 					}
 				"
-				:style="[
-					MainStore.getPageSettings,
-					MainStore.mode == 'editing' && { cursor: MainStore.cursor },
-				]"
+				:style="MainStore.getPageSettings"
 				@mousedown.left="handleMouseDown"
 				@mousemove="handleMouseMove"
 				@mouseleave="handleMouseLeave"
@@ -526,10 +524,10 @@ watchEffect(() => {
 .active-elements {
 	will-change: left, top, width, height;
 	z-index: 1000 !important;
-	outline: 1px solid var(--primary-color) !important;
+	outline: 1px solid var(--primary) !important;
 }
 .inHeaderFooter {
-	outline: 1px solid var(--primary-color) !important;
+	outline: 1px solid var(--primary) !important;
 	outline-offset: -1px;
 }
 .overlappingHeaderFooter {
@@ -537,8 +535,8 @@ watchEffect(() => {
 	outline-offset: -1px;
 }
 .selection {
-	border: 1px solid var(--primary-color);
-	background-color: rgba(36, 144, 239, 0.2);
+	border: 1px solid var(--primary);
+	background-color: rgba(196, 183, 150, 0.1);
 	position: absolute;
 }
 .canvas {

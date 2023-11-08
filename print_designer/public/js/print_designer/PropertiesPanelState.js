@@ -521,8 +521,7 @@ export const createPropertiesPanel = () => {
 	});
 	MainStore.propertiesPanel.push({
 		title: "Text Tool",
-		sectionCondtional: () =>
-			MainStore.getCurrentElementsId.length === 0 && MainStore.activeControl === "text",
+		sectionCondtional: () => MainStore.activeControl === "text",
 		fields: [
 			[
 				{
@@ -530,7 +529,6 @@ export const createPropertiesPanel = () => {
 					name: "textControlType",
 					labelDirection: "column",
 					condtional: () =>
-						MainStore.getCurrentElementsId.length === 0 &&
 						MainStore.activeControl === "text",
 					frappeControl: (ref, name) => {
 						const MainStore = useMainStore();

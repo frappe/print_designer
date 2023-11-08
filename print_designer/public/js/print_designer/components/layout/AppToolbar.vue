@@ -9,7 +9,15 @@
 						:title="aria_label"
 						:class="iconClasses(id, icon)"
 						@click="MainStore.setActiveControl(key)"
-					></span>
+						>
+							<svg
+							:viewBox="`0 0 24 24`"
+							width="16"
+							height="16"
+							>
+								<use :href="`#${icon}`" :style="[MainStore.activeControl == icon && `color:var(--primary)`]" />
+							</svg>
+					</span>
 				</template>
 			</div>
 			<IconsUse
@@ -48,13 +56,31 @@ const iconClasses = (id, icon) => [
 	justify-content: space-between;
 }
 .tool-icons {
-	text-align: center;
+	display: flex;
+	align-items: center;
+	justify-content: center;
 	user-select: none;
-	width: 44px;
-	height: 44px;
+	cursor: pointer;
+	width: 32px;
+	height: 32px;
+	margin: 6px;
+}
+.active-layer-icon {
+	cursor: pointer;
+	--icon-stroke: #f9f3e6;
+	border-radius: var(--border-radius-sm);
+	background-color: var(--primary);
+	margin: 6px;
+}
+.active-tool-icon {
+	background-color: var(--primary);
+	--icon-stroke: #f9f3e6;
+	border-radius: var(--border-radius-sm);
 }
 
-.active-tool-icon {
-	color: var(--primary-color);
+.tool-icons:hover:not(.active-tool-icon) {
+	border-radius: var(--border-radius-md);
+	--icon-stroke: #f9f3e6;
+	background-color: var(--primary);
 }
 </style>

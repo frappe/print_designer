@@ -191,17 +191,17 @@ onUnmounted(() => {
 		width: 100%;
 		height: 100%;
 		opacity: 0.1;
-		background-color: var(--bg-color);
+		background-color: var(--subtle-fg);
 	}
 	.pdf-resize {
 		position: relative;
 		left: 0;
 		width: 100%;
 		z-index: 1001;
-		outline: 1px solid var(--success);
+		outline: 1px solid var(--primary);
 		.resize-handle {
 			display: none;
-			border-color: var(--success) !important;
+			border-color: var(--primary) !important;
 		}
 		&.pdf-resize-header {
 			.bottom-middle {
@@ -216,7 +216,7 @@ onUnmounted(() => {
 	}
 	.main {
 		flex: auto;
-		background-color: var(--bg-color);
+		background-color: var(--subtle-fg);
 		opacity: 0.7;
 		z-index: 1000;
 	}

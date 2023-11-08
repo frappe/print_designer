@@ -341,13 +341,16 @@ const size = {
 			display: flex;
 			align-items: center;
 			flex-direction: row;
-			background: var(--bg-color);
+			background: var(--subtle-fg);
 
 			.file-image {
 				max-height: 100%;
 				display: flex;
 				width: 100%;
 				min-width: 100%;
+				img {
+					object-fit: contain;
+				}
 			}
 		}
 		.file-footer {
@@ -373,13 +376,13 @@ const size = {
 		}
 	}
 	.selected-image {
-		border: 1px solid var(--success);
+		border: 1px solid var(--primary);
 		border-radius: var(--border-radius);
 
 		.icon-show {
 			display: unset;
 			font-size: 0.9rem;
-			color: var(--success);
+			color: var(--primary);
 		}
 	}
 }
@@ -391,7 +394,7 @@ const size = {
 	word-wrap: break-word;
 	align-items: center;
 	justify-content: center;
-	background-color: var(--bg-color);
+	background-color: var(--subtle-fg);
 	.content {
 		display: flex;
 		flex-direction: column;

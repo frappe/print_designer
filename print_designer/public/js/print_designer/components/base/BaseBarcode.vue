@@ -167,7 +167,7 @@ const handleDblClick = (e, element) => {
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	background-color: var(--bg-color);
+	background-color: var(--subtle-fg);
 	.content {
 		display: flex;
 		flex-direction: column;

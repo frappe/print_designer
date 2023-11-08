@@ -87,7 +87,7 @@
 					class="fa fa-tag"
 					:style="[selectedEl.field.is_labelled && 'color:var(--primary)']"
 				></span>
-				<span style="font-size: 12px; padding: 0px 5px">{{
+				<span :style="['font-size: 12px; padding: 0px 5px', selectedEl.field.is_labelled && 'color:var(--primary)']">{{
 					selectedEl.field.is_labelled ? "Remove Label" : "Add Label"
 				}}</span>
 			</div>
@@ -96,7 +96,7 @@
 					class="next-line fa fa-level-down"
 					:style="[selectedEl.field.nextLine && 'color:var(--primary)']"
 				></span>
-				<span style="font-size: 12px; padding: 0px 5px">New Line</span>
+				<span :style="['font-size: 12px; padding: 0px 5px', selectedEl.field.nextLine && 'color:var(--primary)']">{{selectedEl.field.nextLine ? "Remove Line" : "New Line"}}</span>
 			</div>
 		</div>
 		<div
@@ -301,7 +301,7 @@ const deleteField = (ev) => {
 	height: calc(23vh - 45px);
 	min-height: 100px;
 	width: 100%;
-	background-color: var(--bg-color);
+	background-color: var(--subtle-fg);
 	overflow: auto;
 	margin-top: 15px;
 	padding-top: 10px;
@@ -312,7 +312,8 @@ const deleteField = (ev) => {
 		vertical-align: top;
 		box-sizing: border-box;
 		padding: 8px 1px;
-		color: var(--text-light);
+		color: var(--text-muted);
+		cursor: pointer;
 
 		&:hover,
 		&.dynamic-field-selected {
@@ -351,7 +352,7 @@ const deleteField = (ev) => {
 
 		.next-line {
 			margin: 0px 7px;
-			color: var(--text-light);
+			color: var(--text-muted);
 		}
 	}
 }
@@ -366,7 +367,7 @@ const deleteField = (ev) => {
 		font-size: 16px;
 		justify-content: flex-start;
 		padding: 10px;
-		color: var(--text-light);
+		color: var(--text-muted);
 
 		& > * {
 			font-weight: 500;
@@ -376,6 +377,7 @@ const deleteField = (ev) => {
 				padding-left: 0px;
 				border-left: 0px;
 			}
+			cursor: pointer;
 		}
 	}
 	.deleteIcon {
@@ -389,6 +391,7 @@ const deleteField = (ev) => {
 		padding: 10px 20px;
 		margin-right: 6px;
 		color: var(--danger);
+		cursor: pointer;
 	}
 }
 

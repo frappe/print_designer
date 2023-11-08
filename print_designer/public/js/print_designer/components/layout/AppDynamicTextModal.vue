@@ -89,7 +89,12 @@
 									>
 										<div class="field-label">
 											<span>{{ field.label || field.fieldname }}</span>
-											<span class="fa fa-check-circle icon-show"></span>
+											<IconsUse
+												name="es-line-check"
+												key="es-line-check"
+												class="icon-show"
+												color="var(--primary)"
+											/>
 										</div>
 									</div>
 								</div>
@@ -114,6 +119,7 @@ import { ref, onMounted, watch, nextTick } from "vue";
 import { getMeta, getValue } from "../../store/fetchMetaAndData";
 import { useMainStore } from "../../store/MainStore";
 import AppModal from "./AppModal.vue";
+import IconsUse from "../../icons/IconsUse.vue";
 import AppDynamicPreviewModal from "./AppDynamicPreviewModal.vue";
 const MainStore = useMainStore();
 const props = defineProps({
@@ -312,7 +318,7 @@ const cancelClick = () => {
 		}
 	});
 	fieldnames.value.forEach((element) => {
-		if (props.openDynamicModal.dynamicContent.indexOf(element) == -1) {
+		if (props.openDynamicModal.dynamicContent?.indexOf(element) == -1) {
 			MainStore.dynamicData.splice(MainStore.dynamicData.indexOf(element), 1);
 		}
 	});
@@ -349,7 +355,7 @@ small {
 		}
 	}
 	.side-section {
-		background-color: var(--bg-color);
+		background-color: var(--subtle-accent);
 		overflow: hidden;
 		min-width: 16%;
 		max-width: 16%;
@@ -379,7 +385,7 @@ small {
 			}
 			&::-webkit-scrollbar-track,
 			&::-webkit-scrollbar-corner {
-				background: var(--bg-color);
+				background: var(--subtle-fg);
 			}
 			&::-webkit-scrollbar-thumb {
 				background: var(--gray-300);
@@ -473,14 +479,15 @@ small {
 						align-items: center;
 						padding: 8px 0;
 						margin: 0px 8px;
-						color: var(--text-light);
+						color: var(--text-muted);
+						cursor: pointer;
 						.field-label {
 							padding: 0px 15px;
 							flex: 0 0 100%;
 							max-width: 100%;
 						}
 						&:hover {
-							border: 1px solid var(--success);
+							border: 1px solid var(--gray-600);
 							padding: 7px 0px;
 							border-radius: var(--border-radius);
 							.field-label {
@@ -494,12 +501,14 @@ small {
 						display: none;
 					}
 					.field-selected {
-						border: 1px solid var(--success);
+						&, &:hover {
+							border: 1px solid var(--primary);
+						}
 						padding: 7px 0px;
 						border-radius: var(--border-radius);
 						.icon-show {
 							display: unset;
-							color: var(--success);
+							color: var(--primary);
 						}
 						.field-label {
 							font-weight: 600;
