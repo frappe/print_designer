@@ -252,7 +252,7 @@ const addStaticText = (event) => {
 	height: calc(23vh - 45px);
 	min-height: 100px;
 	width: 100%;
-	background-color: var(--bg-color);
+	background-color: var(--subtle-fg);
 	overflow: auto;
 	margin-top: 15px;
 	padding-top: 10px;
@@ -266,7 +266,8 @@ const addStaticText = (event) => {
 		vertical-align: top;
 		box-sizing: border-box;
 		padding: 8px 1px;
-		color: var(--text-light);
+		color: var(--text-muted);
+		cursor: pointer;
 
 		&:hover,
 		&.dynamic-field-selected {
@@ -305,7 +306,7 @@ const addStaticText = (event) => {
 
 		.next-line {
 			margin: 0px 7px;
-			color: var(--text-light);
+			color: var(--text-muted);
 		}
 	}
 }
@@ -320,7 +321,7 @@ const addStaticText = (event) => {
 		font-size: 16px;
 		justify-content: flex-start;
 		padding: 10px;
-		color: var(--text-light);
+		color: var(--text-muted);
 
 		& > * {
 			font-weight: 500;
@@ -343,6 +344,7 @@ const addStaticText = (event) => {
 		padding: 10px 20px;
 		margin-right: 6px;
 		color: var(--danger);
+		cursor: pointer;
 	}
 }
 

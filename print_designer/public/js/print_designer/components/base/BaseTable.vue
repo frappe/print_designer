@@ -18,6 +18,7 @@
 					<tr v-if="columns.length">
 						<th
 							:style="[
+								'cursor: pointer;',
 								column.width && {
 									width: `${column.width}%`,
 									maxWidth: `${column.width}%`,

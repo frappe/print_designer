@@ -4,8 +4,9 @@
 		:width="size"
 		:height="size"
 		:style="`padding: ${padding}px; margin-top: ${margin}px; margin-bottom: ${margin}px;`"
+		:class="class"
 	>
-		<use :href="`#${name}`" :style="`fill: ${color};`" />
+		<use :href="`#${name}`" :style="`fill: ${color}; --icon-stroke:${color};`" />
 	</svg>
 </template>
 
@@ -30,5 +31,9 @@ const props = defineProps({
 	color: {
 		default: "#000000",
 	},
+	class: {
+		type: String,
+		default: "",
+	}
 });
 </script>

@@ -6,6 +6,27 @@
 		:href="`https://fonts.googleapis.com/css2?family=${currentFont}:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap`"
 		rel="stylesheet"
 	/>
+	<link rel="preload" 
+      href="/assets/print_designer/dist/images/mouse-pointer.svg"
+
+	  as="image"
+	  type="image/svg+xml" />
+	<link rel="preload" 
+      href="/assets/print_designer/dist/images/add-text.svg"
+      as="image"
+      type="image/svg+xml" />
+	<link rel="preload" 
+      href="/assets/print_designer/dist/images/add-image.svg"
+      as="image"
+      type="image/svg+xml" />
+	<link rel="preload" 
+      href="/assets/print_designer/dist/images/add-table.svg"
+      as="image"
+      type="image/svg+xml" />
+	<link rel="preload" 
+      href="/assets/print_designer/dist/images/add-rectangle.svg"
+      as="image"
+      type="image/svg+xml" />
 	<AppHeader :print_format_name="print_format_name" />
 	<div class="main-layout" id="main-layout">
 		<AppToolbar :class="toolbarClasses" />
@@ -79,16 +100,16 @@ watchEffect(() => {
 });
 </script>
 <style deep lang="scss">
-* {
-	user-select: none;
-}
 .main-layout {
 	display: flex;
 	justify-content: space-between;
 	margin: 0;
+	cursor: default;
+	--primary: #6f5f35;
+	--primary-color: #6f5f35;
 	.app-sections {
 		flex: 1;
-		height: calc(100vh - 61px);
+		height: calc(100vh - var(--navbar-height));
 		padding: 0;
 		margin-top: 0;
 		background-color: var(--card-bg);
@@ -110,8 +131,8 @@ watchEffect(() => {
 		display: flex;
 		position: relative;
 		flex-direction: column;
-		height: calc(100vh - 61px);
-		background-color: #f2f3f3;
+		height: calc(100vh - var(--navbar-height));
+		background-color: var(--subtle-fg);
 	}
 	.properties-panel {
 		width: 250px;

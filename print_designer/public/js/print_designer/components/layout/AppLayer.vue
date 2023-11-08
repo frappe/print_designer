@@ -84,7 +84,7 @@ const props = defineProps({
 	border-right: 1px solid var(--gray-200);
 	width: 200px;
 	max-width: 200px;
-	height: calc(100vh - 61px);
+	height: calc(100vh - var(--navbar-height));
 	overflow-y: auto;
 	min-width: 200px;
 	padding-top: 10px;

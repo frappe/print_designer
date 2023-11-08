@@ -275,7 +275,7 @@ small {
 		}
 	}
 	.side-section {
-		background-color: var(--bg-color);
+		background-color: var(--subtle-accent);
 		overflow: hidden;
 		min-width: 16%;
 		max-width: 16%;
@@ -305,7 +305,7 @@ small {
 			}
 			&::-webkit-scrollbar-track,
 			&::-webkit-scrollbar-corner {
-				background: var(--bg-color);
+				background: var(--subtle-fg);
 			}
 			&::-webkit-scrollbar-thumb {
 				background: var(--gray-300);
@@ -399,14 +399,15 @@ small {
 						align-items: center;
 						padding: 8px 0;
 						margin: 0px 8px;
-						color: var(--text-light);
+						color: var(--text-muted);
+						cursor: pointer;
 						.field-label {
 							padding: 0px 15px;
 							flex: 0 0 100%;
 							max-width: 100%;
 						}
 						&:hover {
-							border: 1px solid var(--success);
+							border: 1px solid var(--primary);
 							padding: 7px 0px;
 							border-radius: var(--border-radius);
 							.field-label {
@@ -420,12 +421,12 @@ small {
 						display: none;
 					}
 					.field-selected {
-						border: 1px solid var(--success);
+						border: 1px solid var(--primary);
 						padding: 7px 0px;
 						border-radius: var(--border-radius);
 						.icon-show {
 							display: unset;
-							color: var(--success);
+							color: var(--primary);
 						}
 						.field-label {
 							font-weight: 600;

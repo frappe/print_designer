@@ -9,7 +9,7 @@
 				"
 				v-if="openModal"
 				class="modal-dialog modal-sm"
-				:style="[{ 'min-width': width, 'max-width': width, left, top }]"
+				:style="[{ 'min-width': width, 'max-width': width, left, top }, MainStore.mode == 'editing' && { cursor: `url('/assets/print_designer/dist/images/mouse-pointer.svg'), default` }]"
 			>
 				<div class="modal-content">
 					<div class="modal-header">
@@ -174,6 +174,8 @@ onUnmounted(() => {
 </style>
 <style lang="scss" scoped>
 .modal-dialog {
+	--primary: #6f5f35;
+	--primary-color: #6f5f35;
 	display: flex;
 	font-size: 0.75rem;
 	position: absolute;
