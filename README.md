@@ -1,7 +1,7 @@
 # Print Designer
 <div align="center" markdown="1">
-<img src="https://user-images.githubusercontent.com/39730881/234943112-28e1bfa8-8c41-4176-9cbe-3c3e10b1e347.svg" alt="Print Designer logo" height="150"/>
 
+![ Print Designer Logo ](print_designer/public/images/print-designer-logo.svg)
 
 </div>
 <div align="center" markdown="1" >
