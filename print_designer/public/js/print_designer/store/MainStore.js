@@ -265,10 +265,9 @@ export const useMainStore = defineStore("MainStore", {
 						];
 					}
 				} else if (
-					!selectedParentField &&
-					(typeof search_string != "string" ||
-						!search_string.length ||
-						"Name".toLowerCase().includes(search_string.toLowerCase()))
+					typeof search_string != "string" ||
+					!search_string.length ||
+					"Name".toLowerCase().includes(search_string.toLowerCase())
 				) {
 					fields["Document"] = [
 						{
@@ -277,31 +276,35 @@ export const useMainStore = defineStore("MainStore", {
 							label: "Name",
 							options: undefined,
 						},
-						{
-							fieldname: "page",
-							fieldtype: "Small Text",
-							label: "Current Page",
-							options: undefined,
-						},
-						{
-							fieldname: "topage",
-							fieldtype: "Small Text",
-							label: "Total Pages",
-							options: undefined,
-						},
-						{
-							fieldname: "time",
-							fieldtype: "Small Text",
-							label: "Print Time",
-							options: undefined,
-						},
-						{
-							fieldname: "date",
-							fieldtype: "Small Text",
-							label: "Print Date",
-							options: undefined,
-						},
 					];
+					if (!selectedParentField) {
+						fields["Document"].push(
+							{
+								fieldname: "page",
+								fieldtype: "Small Text",
+								label: "Current Page",
+								options: undefined,
+							},
+							{
+								fieldname: "topage",
+								fieldtype: "Small Text",
+								label: "Total Pages",
+								options: undefined,
+							},
+							{
+								fieldname: "time",
+								fieldtype: "Small Text",
+								label: "Print Time",
+								options: undefined,
+							},
+							{
+								fieldname: "date",
+								fieldtype: "Small Text",
+								label: "Print Date",
+								options: undefined,
+							}
+						);
+					}
 				}
 				metaFields.forEach((field) => {
 					if (
