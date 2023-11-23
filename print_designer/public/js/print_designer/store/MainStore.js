@@ -58,6 +58,7 @@ export const useMainStore = defineStore("MainStore", {
 		lastCloned: null,
 		currentDrawListener: null,
 		isMoved: false,
+		isHiddenFieldsVisible: false,
 		currentPageSize: "A4",
 		pageSizes,
 		lastCreatedElement: null,
@@ -231,6 +232,7 @@ export const useMainStore = defineStore("MainStore", {
 				selectedParentField = null,
 				selectedTable = null,
 				search_string = null,
+				show_hidden_fields = false,
 			}) => {
 				let fields = {};
 				let metaFields = state.metaFields;
@@ -240,6 +242,9 @@ export const useMainStore = defineStore("MainStore", {
 					).childfields;
 				} else if (selectedTable) {
 					metaFields = selectedTable.childfields;
+				}
+				if (!show_hidden_fields){
+					metaFields = metaFields.filter((field) => !field["print_hide"]);
 				}
 				if (typeof search_string == "string" && search_string.length) {
 					metaFields = metaFields.filter(
