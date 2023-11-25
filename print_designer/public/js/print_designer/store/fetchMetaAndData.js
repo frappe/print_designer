@@ -11,8 +11,7 @@ export const fetchMeta = () => {
 			MainStore.rawMeta = markRaw(frappe.get_meta(print_format.doc_type));
 			let metaFields = frappe.get_meta(print_format.doc_type).fields.filter((df) => {
 				if (
-					["Section Break", "Column Break", "Tab Break", "Image"].includes(df.fieldtype) ||
-					(df.print_hide == 1 && df.fieldtype != "Link")
+					["Section Break", "Column Break", "Tab Break", "Image"].includes(df.fieldtype)
 				) {
 					return false;
 				} else {
@@ -20,16 +19,17 @@ export const fetchMeta = () => {
 				}
 			});
 			metaFields.map((field) => {
-				if (field["print_hide"] && field["fieldtype"] != "Link") return;
+				
 				let obj = {};
-				["fieldname", "fieldtype", "label", "options"].forEach((attr) => {
+				["fieldname", "fieldtype", "label", "options", "print_hide"].forEach((attr) => {
 					obj[attr] = field[attr];
 				});
 				MainStore.metaFields.push({ ...obj });
 			});
 			metaFields.map((field) => {
-				if (field["fieldtype"] != "Table" || field["print_hide"]) return;
-				getMeta(field.options, field.fieldname);
+				if (field["fieldtype"] == "Table") {
+					getMeta(field.options, field.fieldname);
+				}
 			});
 			fetchDoc();
 			!MainStore.getTableMetaFields.length && (MainStore.controls.Table.isDisabled = true);

@@ -52,12 +52,28 @@
 								}, 300)
 							"
 						/>
+						<div class="hidden-toggle">
+							<label class="switch">
+								<input type="checkbox" :class="{ checked: hiddenFields }" :checked="hiddenFields"
+									@change="() => {
+										hiddenFields = !hiddenFields;
+									}"
+									@click="MainStore.isHiddenFieldsVisible = !MainStore.isHiddenFieldsVisible;"
+									>
+								<span class="slider round"></span>
+							</label>
+							<span>Hidden Fields</span>
+						</div>
+					</div>
+					<div class="form-message yellow" v-if="hiddenFields">
+						<div>Fields with <b>Print Hide</b> are now also visible and can be printed. please be careful while selecting fields </div>
 					</div>
 					<div class="container-main">
 						<div
 							v-for="(fields, fieldtype) in MainStore.getTypeWiseMetaFields({
 								selectedParentField: previewRef?.parentField,
 								search_string: search_text,
+								show_hidden_fields: hiddenFields,
 							})"
 							:key="fieldtype"
 						>
@@ -122,8 +138,28 @@ const search_text = ref("");
 const doctype = ref("");
 const selectedDoctypeLabel = ref("");
 const fieldnames = ref([]);
+const hiddenFields = ref(false);
 const previewRef = ref(null);
 const { isDynamic } = toRefs(MainStore.getCurrentElementsValues[0]);
+
+const allowHiddenFieldDisable = watch(
+	() => hiddenFields.value,
+	(newValue, oldValue) => {
+		if (newValue == false && oldValue == true) {
+			let hidden_fields = fieldnames.value.filter((el) => el.print_hide).map((el) => el.label || el.fieldname);
+			if (!hidden_fields.length) return;
+			hiddenFields.value = true;
+			message = __("Please First remove hidden fields [ " + [...hidden_fields].join(", ") + " ]");
+			frappe.show_alert(
+				{
+					message: message,
+					indicator: "red",
+				},
+				5
+			);
+		}
+	}
+);
 
 const parentFieldWatcher = watch(
 	() => previewRef.value?.parentField,
@@ -152,6 +188,10 @@ onMounted(() => {
 	if (props.openBarcodeModal) {
 		fieldnames.value = props.openBarcodeModal.dynamicContent;
 		selectedDoctypeLabel.value = MainStore.doctype;
+		fieldnames.value.findIndex((fd) => fd.print_hide) != -1 && (hiddenFields.value = true);
+		if (!hiddenFields.value) {
+			hiddenFields.value = MainStore.isHiddenFieldsVisible
+		}
 	}
 });
 
@@ -203,6 +243,7 @@ const selectField = async (field, fieldtype) => {
 		options: field.options,
 		value,
 		fieldtype,
+		print_hide: field.print_hide,
 		is_labelled: false,
 		is_static: false,
 		style: {},
@@ -364,11 +405,22 @@ small {
 			border-radius: 6px;
 		}
 		.searchbar-sticky {
+			display: flex;
 			margin-bottom: 0;
 			position: sticky;
 			top: 0;
 			z-index: 1;
 			background-color: var(--fg-color);
+
+			.searchbar {
+				flex: 5;
+			}
+
+			.hidden-toggle {
+				display: flex;
+				gap: 5px;
+				padding: var(--padding-sm);
+			}
 		}
 		.container-main {
 			padding: var(--padding-sm) 15px 0px var(--padding-sm);
