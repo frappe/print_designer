@@ -102,7 +102,7 @@ def get_barcode(barcode_format, barcode_value, options={}, width=None, height=No
 			SVGWriter.__init__(self)
 
 		def calculate_viewbox(self, code):
-			vw, vh = self.calculate_size(len(code[0]), len(code), self.dpi)
+			vw, vh = self.calculate_size(len(code[0]), len(code))
 			return vw, vh
 
 		def _init(self, code):
