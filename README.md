@@ -106,7 +106,19 @@ There are many ways you can contribute even if you don't code:
 ---
 
 ## FAQ
-1. Mac Installation Error
+1. Incorrect PDF Page Size
+
+    - Frappe / Print Designer requires at least  [version 0.12.5 with patched qt](https://frappeframework.com/docs/v14/user/en/installation#pre-requisites)
+
+    - Install correct version by following [installation guide](https://frappeframework.com/docs/v14/user/en/installation) and confirm : 
+
+    ```
+    wkhtmltopdf --version
+    ```
+    - output should be similar to `wkhtmltopdf 0.12.6 (with patched qt)`
+
+
+2. Mac Installation Error
     - If error has `npm ERR! node-pre-gyp WARN Pre-built binaries not found for canvas@x.x.x` it means that there aren't any pre-built binaries for your system so it will try to compile them and in order to do that you need 
     - Xcode Command Line Tools `xcode-select --install`
     - [HomeBrew](https://brew.sh/) and `brew install pkg-config cairo pango libpng jpeg giflib librsvg pixman`
