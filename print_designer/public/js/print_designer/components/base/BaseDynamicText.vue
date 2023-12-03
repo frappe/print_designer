@@ -5,7 +5,11 @@
 		@mouseup="handleMouseUp"
 		:style="[
 			postionalStyles(startX, startY, width, height),
-			!isFixedSize && 'width:fit-content; height:fit-content; white-space:nowrap;',
+			!isFixedSize && {
+				width:'fit-content', 
+				height:'fit-content', 
+				maxWidth: MainStore.page.width - MainStore.page.marginLeft - MainStore.page.marginRight - startX + 'px',
+			},
 		]"
 		:class="MainStore.getCurrentElementsId.includes(id) ? 'active-elements' : 'text-hover'"
 		:ref="setElements(object, index)"
@@ -15,7 +19,11 @@
 			:style="[
 				style,
 				widthHeightStyle(width, height),
-				!isFixedSize && 'width:fit-content; height:fit-content; white-space:nowrap;',
+				!isFixedSize && {
+					width:'fit-content', 
+					height:'fit-content', 
+					maxWidth: MainStore.page.width - MainStore.page.marginLeft - MainStore.page.marginRight - startX + 'px',
+				},
 			]"
 			:class="['dynamicText', classes]"
 			v-if="type == 'text'"
