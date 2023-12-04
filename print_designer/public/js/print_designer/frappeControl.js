@@ -56,10 +56,11 @@ export const makeFeild = ({
 						last_value = value;
 						obj_value = formatValue(object, propertyName, isStyle);
 
-						if (value && formatValue(object, propertyName, isStyle) != value) {
+						if ((value || fieldtype == "Color") && formatValue(object, propertyName, isStyle) != value) {
 							object[propertyName] = value;
 							onChangeCallback && onChangeCallback(value);
 						} else if (!value && formatValue(object, propertyName, isStyle)) {
+							if (fieldtype == "Color" && !value) return;
 							MainStore.frappeControls[name].set_value(
 								formatValue(object, propertyName, isStyle)
 							);
