@@ -101,18 +101,18 @@ def patch_formats(
     for pf in print_formats:
         updated_doc = frappe.get_doc("Print Format", pf[0]).update(
             {
-                "print_designer_header": patch_elements(
+                "print_designer_header": frappe.json.dumps(patch_elements(
                     frappe.json.loads(pf[1] or "[]"), callbacks, types
-                ),
-                "print_designer_body": patch_elements(
+                )),
+                "print_designer_body": frappe.json.dumps(patch_elements(
                     frappe.json.loads(pf[2] or "[]"), callbacks, types
-                ),
-                "print_designer_after_table": patch_elements(
+                )),
+                "print_designer_after_table": frappe.json.dumps(patch_elements(
                     frappe.json.loads(pf[3] or "[]"), callbacks, types
-                ),
-                "print_designer_footer": patch_elements(
+                )),
+                "print_designer_footer": frappe.json.dumps(patch_elements(
                     frappe.json.loads(pf[4] or "[]"), callbacks, types
-                ),
+                )),
             }
         )
         if save:
@@ -172,4 +172,4 @@ def patch_elements(
                 element["childrens"] = patch_elements(
                     data=childrens, callbacks=callbacks, types=types
                 )
-    return frappe.json.dumps(data)
+    return data
