@@ -73,11 +73,18 @@
 		</div>
 	</div>
 	<div class="footer">
-		<div class="icons" v-if="!fieldnames[0]?.is_static">
-			<div @click="addStaticText">
+		<div class="icons">
+			<div @click="addStaticText" v-if="!fieldnames[0]?.is_static">
 				<em style="font-weight: 900">T</em>
 				<sub style="font-weight: 600; font-size: 1em bottom:-0.15em">+</sub>
 				<span style="font-size: 12px; padding: 0px 5px">Static Text</span>
+			</div>
+			<div v-if="fieldnames[0] && fieldnames[0].is_static" @click="fieldnames[0].parseJinja = !fieldnames[0].parseJinja">
+				<span
+					class="jinja-toggle fa fa-code"
+					:style="[fieldnames[0].parseJinja && 'color:var(--primary)']"
+				></span>
+				<span :style="['font-size: 12px; padding: 0px 5px', fieldnames[0].parseJinja && 'color:var(--primary)']">{{fieldnames[0].parseJinja ? "Disable Jinja" : "Render Jinja"}}</span>
 			</div>
 		</div>
 	</div>
@@ -156,11 +163,26 @@ const setBarcode = async () => {
 		} else {
 			options["foreground"] = barcodeColor.value || "#000000";
 		}
+		let value = props.fieldnames[0].value;
+		if (props.fieldnames[0].parseJinja && value != "") {
+				try {
+					value = frappe.render(value, {doc: MainStore.docData})
+				} catch (error) {
+					console.error("Error in Jinja Template\n", { value_string: value, error });
+					frappe.show_alert(
+						{
+							message: "Unable Render Jinja Template. Please Check Console",
+							indicator: "red",
+						},
+						5
+					);
+				}
+			}
 		let barcode = await frappe.call(
 			"print_designer.print_designer.page.print_designer.print_designer.get_barcode",
 			{
 				barcode_format: barcodeFormat.value,
-				barcode_value: props.fieldnames[0].value,
+				barcode_value: value,
 				options,
 				height: 80.0,
 			}
@@ -361,6 +383,26 @@ const addStaticText = (event) => {
 	.print-qrcode {
 		max-width: 120px;
 		max-height: 120px;
+	}
+	.fallback-barcode {
+		width: 100%;
+		user-select: none;
+		height: 100%;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		background-color: var(--subtle-fg);
+		.content {
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+			justify-content: center;
+
+			span {
+				font-size: smaller;
+				text-align: center;
+			}
+		}
 	}
 }
 </style>

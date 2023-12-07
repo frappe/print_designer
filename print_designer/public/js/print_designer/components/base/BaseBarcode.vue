@@ -68,7 +68,7 @@ watch(()=> dynamicContent.value, () => {
 }, { deep:true, immediate: true });
 
 watch(() => [value.value, barcodeFormat.value, barcodeColor.value, barcodeBackgroundColor.value], async () => {
-	if (!value.value || !barcodeFormat.value) return;
+	if (!barcodeFormat.value) return;
 	try {
 		const options = {
 			background : barcodeBackgroundColor.value || "#ffffff",
@@ -79,11 +79,26 @@ watch(() => [value.value, barcodeFormat.value, barcodeColor.value, barcodeBackgr
 		} else {
 			options["foreground"] = barcodeColor.value || "#000000";
 		}
+		let finalValue = value.value;
+		if (finalValue != '') {
+			try {
+				finalValue = frappe.render(finalValue, {doc: MainStore.docData})
+			} catch (error) {
+				console.error("Error in Jinja Template\n", { value_string: finalValue, error });
+				frappe.show_alert(
+					{
+						message: "Unable Render Jinja Template. Please Check Console",
+						indicator: "red",
+					},
+					5
+				);
+			}
+		}
 		let barcode = await frappe.call(
 			"print_designer.print_designer.page.print_designer.print_designer.get_barcode",
 			{
 				barcode_format: barcodeFormat.value,
-				barcode_value: value.value,
+				barcode_value: finalValue,
 				options,
 			}
 		);
@@ -159,12 +174,13 @@ const handleDblClick = (e, element) => {
 };
 </script>
 
-<style lang="scss" scoped>
-.fallback-image {
+<style lang="scss" deep>
+.fallback-barcode {
 	width: 100%;
 	user-select: none;
 	height: 100%;
 	display: flex;
+	overflow: hidden;
 	align-items: center;
 	justify-content: center;
 	background-color: var(--subtle-fg);

@@ -98,6 +98,13 @@
 				></span>
 				<span :style="['font-size: 12px; padding: 0px 5px', selectedEl.field.nextLine && 'color:var(--primary)']">{{selectedEl.field.nextLine ? "Remove Line" : "New Line"}}</span>
 			</div>
+			<div v-if="selectedEl && selectedEl.field.is_static" @click="selectedEl.field.parseJinja = !selectedEl.field.parseJinja">
+				<span
+					class="jinja-toggle fa fa-code"
+					:style="[selectedEl.field.parseJinja && 'color:var(--primary)']"
+				></span>
+				<span :style="['font-size: 12px; padding: 0px 5px', selectedEl.field.parseJinja && 'color:var(--primary)']">{{selectedEl.field.parseJinja ? "Disable Jinja" : "Render Jinja"}}</span>
+			</div>
 		</div>
 		<div
 			class="deleteIcon"
@@ -218,6 +225,7 @@ const addStaticText = (event) => {
 		is_static: true,
 		is_labelled: false,
 		nextLine: false,
+		parseJinja: false,
 		style: {},
 	};
 	if (selectedEl.value) {
@@ -350,7 +358,7 @@ const deleteField = (ev) => {
 			}
 		}
 
-		.next-line {
+		.next-line, .jinja-toggle {
 			margin: 0px 7px;
 			color: var(--text-muted);
 		}

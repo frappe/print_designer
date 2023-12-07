@@ -520,6 +520,52 @@ export const createPropertiesPanel = () => {
 		],
 	});
 	MainStore.propertiesPanel.push({
+		title: "Enable Jinja Parsing",
+		sectionCondtional: () =>
+			MainStore.getCurrentElementsId.length === 1 &&
+			(MainStore.getCurrentElementsValues[0].type === "text" &&
+				!MainStore.getCurrentElementsValues[0].isDynamic),
+		fields: [
+			[
+				{
+					label: "Render Jinja",
+					name: "parseJinja",
+					labelDirection: "column",
+					condtional: () =>
+					MainStore.getCurrentElementsId.length === 1 &&
+					(MainStore.getCurrentElementsValues[0].type === "text" &&
+						!MainStore.getCurrentElementsValues[0].isDynamic),
+					frappeControl: (ref, name) => {
+						const MainStore = useMainStore();
+						makeFeild({
+							name: name,
+							ref: ref,
+							fieldtype: "Select",
+							requiredData: [MainStore.getCurrentElementsValues[0]],
+							options: () => [
+								{ label: "Yes", value: "Yes" },
+								{ label: "No", value: "No" },
+							],
+							formatValue: (object, property, isStyle) => {
+								if (!object) return;
+								return object[property] ? "Yes" : "No";
+							},
+							onChangeCallback: (value = null) => {
+								if (value && MainStore.getCurrentElementsValues[0]) {
+									MainStore.getCurrentElementsValues[0]["parseJinja"] =
+										value === "Yes";
+									MainStore.frappeControls[name].$input.blur();
+								}
+							},
+							reactiveObject: () => MainStore.getCurrentElementsValues[0],
+							propertyName: "parseJinja",
+						});
+					},
+				},
+			],
+		],
+	});
+	MainStore.propertiesPanel.push({
 		title: "Text Tool",
 		sectionCondtional: () => MainStore.activeControl === "text",
 		fields: [
