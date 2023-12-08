@@ -34,7 +34,7 @@
 			:class="['staticText', classes]"
 			v-if="type == 'text'"
 			data-placeholder=""
-			v-html="content"
+			v-html="getHTML(contenteditable, content, parseJinja )"
 		></p>
 		<BaseResizeHandles
 			v-if="!contenteditable && MainStore.getCurrentElementsId.includes(id)"
@@ -83,6 +83,7 @@ const {
 	height,
 	style,
 	classes,
+	parseJinja,
 } = toRefs(props.object);
 
 const { setElements } = useElement({
@@ -97,16 +98,24 @@ const toggleDragResize = (toggle) => {
 	isResizable.value = toggle;
 	props.object.contenteditable = !toggle;
 };
-watch(
-	() => MainStore.activeControl,
-	() => {
-		if (MainStore.activeControl == "text") {
-			toggleDragResize(false);
-		} else {
-			toggleDragResize(true);
+const getHTML = (contenteditable, content, parseJinja) => {
+	if (!contenteditable && content != '' && parseJinja) {
+		try {
+			return frappe.render(content, {doc: MainStore.docData})
+		} catch (error) {
+			console.error("Error in Jinja Template\n", { value_string: content, error });
+			frappe.show_alert(
+				{
+					message: "Unable Render Jinja Template. Please Check Console",
+					indicator: "red",
+				},
+				5
+			);
+			return content
 		}
 	}
-);
+	return content
+}
 
 const handleMouseDown = (e, element) => {
 	lockAxis(element, e.shiftKey);
@@ -169,6 +178,7 @@ const handleBlur = (e) => {
 	content.value = DOMRef.value.firstElementChild.innerHTML;
 	MainStore.getCurrentElementsId.includes(id.value) &&
 		DOMRef.value.classList.add("active-elements");
+	contenteditable.value = false;
 };
 
 const handleKeyDown = (e) => {

@@ -3,7 +3,11 @@
     {{ element.classes | join(' ') }}">
     <p style="{% if element.isFixedSize %}width:{{ element.width }}px;height:{{ element.height }}px;{% else %}width:fit-content; height:fit-content; max-width: {{ settings.page.width - settings.page.marginLeft - settings.page.marginRight - element.startX }}px; {%endif%} {{convert_css(element.style)}}"
         class="staticText {{ element.classes | join(' ') }}">
-        {{_(element.content)}}
+        {% if element.parseJinja %}
+            {{frappe.render_template(element.content, {'doc': doc})}}
+        {% else %}
+            {{_(element.content)}}
+        {% endif %}
     </p>
 </div>
 {%- endmacro %}
@@ -50,7 +54,11 @@ background-image: url('{{frappe.get_url()}}{%if element.isDynamic %}{{element.im
 {% macro render_barcode(element) -%}
 {%- set field = element.dynamicContent[0] -%}
 {%- if field.is_static -%}
-{%- set value = field.value -%}
+    {% if field.parseJinja %}
+        {%- set value = frappe.render_template(field.value, {'doc': doc}) -%}
+    {% else %}
+        {%- set value =  _(field.value) -%}
+{% endif %}
 {%- elif field.doctype -%}
 {%- set value = frappe.db.get_value(field.doctype, doc[field.parentField], field.fieldname) -%}
 {%- else -%}
@@ -112,7 +120,11 @@ background-image: url('{{frappe.get_url()}}{%if element.isDynamic %}{{element.im
 {%- endmacro %}
 {%- macro render_spanvalue(field, element, row) -%}
 {%- if field.is_static -%}
-{{ _(field.value) }}
+    {% if field.parseJinja %}
+        {{frappe.render_template(field.value, {'doc': doc, 'row': row})}}
+    {% else %}
+        {{ _(field.value) }}
+    {% endif %}
 {%- elif field.doctype -%}
 {%- set value = _(frappe.db.get_value(field.doctype, doc[field.parentField], field.fieldname)) -%}
 {{ frappe.format(value, {'fieldtype': field.fieldtype, 'options': field.options}) }}

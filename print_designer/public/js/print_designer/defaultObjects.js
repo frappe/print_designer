@@ -200,6 +200,7 @@ export const createText = (cordinates, parent = null) => {
 		isDraggable: false,
 		isResizable: false,
 		isDropZone: false,
+		parseJinja: false,
 		startX: cordinates.startX - 5,
 		startY: cordinates.startY - 16,
 		pageX: cordinates.pageX,

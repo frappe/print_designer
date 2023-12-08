@@ -81,10 +81,31 @@ const props = defineProps({
 		default: null,
 	},
 });
+
+const parseJinja = (value, context) => {
+	if (value == '') return '';
+	try {
+		return frappe.render(value, context)
+	} catch (error) {
+		console.error("Error in Jinja Template\n", { value_string: value, error });
+		frappe.show_alert(
+			{
+				message: "Unable Render Jinja Template. Please Check Console",
+				indicator: "red",
+			},
+			5
+		);
+		return value
+	}
+}
+
 const getHTML = (field, index) => {
 	if (props.table) {
 		if (field.is_static) {
-			return field.value;
+			if (field.parseJinja) {
+				return parseJinja(field.value, {doc: MainStore.docData, row: MainStore.docData[props.table.fieldname]?.[index - 1]})
+			}
+			return field.value
 		} else {
 			if (typeof MainStore.docData[props.table.fieldname]?.[index - 1][field.fieldname] != "undefined"){
 				return frappe.format(
@@ -97,10 +118,13 @@ const getHTML = (field, index) => {
 			return ["Image, Attach Image"].indexOf(field.fieldtype) != -1 ? null : `{{ ${ field.fieldname } }}`;
 			}
 	} else {
-		return (
-			field.value ||
-			`{{ ${field.parentField ? field.parentField + "." : ""}${field.fieldname} }}`
-		);
+		if (field.is_static) {
+			if (field.parseJinja) {
+				return parseJinja(field.value, {doc: MainStore.docData})
+			}
+			return field.value
+		}
+		return (field.value || `{{ ${field.parentField ? field.parentField + "." : ""}${field.fieldname} }}`);
 	}
 };
 

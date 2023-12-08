@@ -91,6 +91,16 @@ def get_barcode(barcode_format, barcode_value, options={}, width=None, height=No
 		import re
 		barcode_value = re.search(r'data-barcode-value="(.*?)">', barcode_value).group(1)
 	
+	if barcode_value == '':
+		fallback_html_string = '''
+			<div class="fallback-barcode">
+				<div class="content">
+					<span>No Value was Provided to Barcode</span>
+				</div>
+			</div>
+		'''
+		return { "type": "svg", "value": fallback_html_string }
+	
 	if barcode_format == "qrcode": return get_qrcode(barcode_value, options, png_base64)
 	
 	import barcode
