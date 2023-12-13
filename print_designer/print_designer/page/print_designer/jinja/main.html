@@ -81,7 +81,7 @@ background-image: url('{{frappe.get_url()}}{%if element.isDynamic %}{{element.im
 </div>
 {%- endmacro %}
 {% macro render_table(element) -%}
-<div style="position: absolute; top:{% if 'printY' in element %}{{ element.printY }}{% else %}{{ element.startY }}{% endif %}px; left:{%if element.startX >= 1%}{{ element.startX }}{%else%}{{element.startX}}{%endif%}px;width:{{ element.width }}px;height:{{ element.height }}px;" class="
+<div style="position: absolute; top:{% if 'printY' in element %}{{ element.printY }}{% else %}{{ element.startY }}{% endif %}px; left:{% if 'printX' in element %}{{ element.printX }}{% else %}{{ element.startX }}{% endif %}px;width:{{ element.width }}px;height:{{ element.height }}px;" class="
     table-container {{ element.classes | join(' ') }}">
     <table class="printTable" style="position: relative; width:100%; max-width:{{ element.width }}px;">
         <thead>
