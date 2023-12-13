@@ -17,7 +17,7 @@ export const useMainStore = defineStore("MainStore", {
 		/**
 		 * @type {'editing'|'pdfSetup'|'preview'} mode
 		 */
-		schema_version: "1.0.0",
+		schema_version: "1.0.1",
 		mode: "editing",
 		cursor: "cursor: url('/assets/print_designer/images/mouse-pointer.svg'), default !important",
 		isMarqueeActive: false,
