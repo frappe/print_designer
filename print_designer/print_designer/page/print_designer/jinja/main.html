@@ -114,8 +114,10 @@ background-image: url('{{frappe.get_url()}}{%if element.isDynamic %}{{element.im
         {% endif %}
         </tbody>
     </table>
-    {% set renderAfterTableElement =  render_element(afterTableElement) %}
-    {% if renderAfterTableElement %}<div style="position: relative; top:0px; left: 0px;">{{ renderAfterTableElement }}</div>{% endif %}
+    {% if element.get("isPrimaryTable", false) or settings.get("schema_version") == "1.0.0" %}
+        {% set renderAfterTableElement =  render_element(afterTableElement) %}
+        {% if renderAfterTableElement %}<div style="position: relative; top:0px; left: 0px;">{{ renderAfterTableElement }}</div>{% endif %}
+    {% endif %}
 </div>
 {%- endmacro %}
 {%- macro render_spanvalue(field, element, row) -%}
