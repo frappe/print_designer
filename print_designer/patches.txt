@@ -1,3 +1,4 @@
 print_designer.patches.update_white_space_property
 print_designer.patches.introduce_barcode
 print_designer.patches.introduce_jinja
+print_designer.patches.introduce_schema_versioning

@@ -287,6 +287,7 @@ export const useElementStore = defineStore("ElementStore", {
 				printHeaderFonts: MainStore.printHeaderFonts,
 				printFooterFonts: MainStore.printFooterFonts,
 				printBodyFonts: MainStore.printBodyFonts,
+				schema_version: MainStore.schema_version,
 			};
 			await frappe.dom.freeze();
 			const convertCsstoString = (stylesheet) => {
