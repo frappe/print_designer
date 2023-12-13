@@ -142,6 +142,27 @@ export const useElementStore = defineStore("ElementStore", {
 			let isBodyEmpty = true;
 			let isFooterEmpty = true;
 			let pageInfoInBody = [];
+			if (tableElement.length == 1) {
+				tableElement[0].isPrimaryTable = true;
+			}
+			else if (tableElement.length > 1) {
+				let primaryTableEl = tableElement.filter((el) => el.isPrimaryTable)
+				if (primaryTableEl.length == 1) {
+					tableElement = primaryTableEl
+				} else {
+					const message = __(
+						"As You have multiple tables, you have to select Primary Table. <br></br> 1. Go to Table Element that you wish to set as Primary. <br></br> 2. Select it and from properties panel select <b>Set as Primary Table</b> as <b>Yes</b> ")
+					frappe.msgprint(
+						{
+							title: __("Multiple Tables."),
+							message: message,
+							indicator: "red",
+						},
+						5
+					);
+					return;
+				}
+			}
 			this.Elements.forEach((element) => {
 				let is_header = false;
 				let is_footer = false;
@@ -458,5 +479,15 @@ export const useElementStore = defineStore("ElementStore", {
 			});
 			frappe.dom.unfreeze();
 		},
+		setPrimaryTable(tableEl, value) {
+			if (!value){
+				tableEl.isPrimaryTable = value;
+				return
+			}
+			tables = this.Elements.filter((el) => el.type == "table");
+			tables.forEach((t) => {
+				t.isPrimaryTable = t == tableEl
+			})
+		}
 	},
 });

@@ -1,4 +1,5 @@
 import { useMainStore } from "./store/MainStore";
+import { useElementStore } from "./store/ElementStore";
 import { makeFeild } from "./frappeControl";
 import { storeToRefs } from "pinia";
 import {
@@ -501,6 +502,43 @@ export const createPropertiesPanel = () => {
 									MainStore.frappeControls["no_of_rows"].set_value(
 										MainStore.frappeControls["no_of_rows"].last_value
 									);
+								}
+							},
+						});
+					},
+					flex: 1,
+				},
+			],
+			[
+				{
+					label: "Set as Primary Table",
+					name: "isPrimaryTable",
+					isLabelled: true,
+					labelDirection: "column",
+					condtional: () => MainStore.getCurrentElementsValues[0]?.table,
+					frappeControl: (ref, name) => {
+						const MainStore = useMainStore();
+						const ElementStore = useElementStore();
+						makeFeild({
+							name,
+							ref,
+							fieldtype: "Select",
+							requiredData: [MainStore.getCurrentElementsValues[0]],
+							reactiveObject: () => MainStore.getCurrentElementsValues[0],
+							propertyName: "isPrimaryTable",
+							isStyle: false,
+							options: () => [
+								{ label: "Yes", value: "Yes" },
+								{ label: "No", value: "No" },
+							],
+							formatValue: (object, property, isStyle) => {
+								if (!object) return;
+								return object[property] ? "Yes" : "No";
+							},
+							onChangeCallback: (value = null) => {
+								if (value && MainStore.getCurrentElementsValues[0]) {
+									ElementStore.setPrimaryTable(MainStore.getCurrentElementsValues[0], value === "Yes")
+									MainStore.frappeControls[name].$input.blur();
 								}
 							},
 						});
