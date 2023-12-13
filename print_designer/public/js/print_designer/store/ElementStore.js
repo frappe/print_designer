@@ -333,8 +333,11 @@ export const useElementStore = defineStore("ElementStore", {
 			let settings = JSON.parse(printFormat.message.print_designer_settings);
 			settings &&
 				Object.keys(settings).forEach( async (key) => {
-					if (key != "currentDoc" || await frappe.db.exists(MainStore.doctype, settings[key])) {
+					if (["currentDoc", "schema_version"].indexOf(key) == -1 || await frappe.db.exists(MainStore.doctype, settings[key])) {
 						MainStore[key] = settings[key];
+					}
+					if (key == "schema_version" && settings[key] != MainStore.schema_version) {
+						MainStore.old_schema_version = settings[key];
 					}
 				});
 			const handleDynamicContent = (element) => {
