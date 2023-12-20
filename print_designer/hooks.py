@@ -57,6 +57,7 @@ doctype_js = {"Print Format": "print_designer/client_scripts/print_format.js"}
 # add methods and filters to jinja environment
 jinja = {
 	"methods": [
+		"print_designer.print_designer.page.print_designer.print_designer.render_user_text",
 		"print_designer.print_designer.page.print_designer.print_designer.convert_css",
 		"print_designer.print_designer.page.print_designer.print_designer.convert_uom",
 		"print_designer.print_designer.page.print_designer.print_designer.get_barcode",

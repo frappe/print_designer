@@ -1,7 +1,4 @@
 frappe.pages["print-designer"].on_page_load = function (wrapper) {
-	// frappe.require("assets/frappe/js/pdf.min.js", () => {
-	// 	pdfjsLib.GlobalWorkerOptions.workerSrc = frappe.boot.assets_json['pdfjs.bundle.js'];
-	//   });
 	// hot reload in development
 	if (frappe.boot.developer_mode) {
 		frappe.hot_update = frappe.hot_update || [];

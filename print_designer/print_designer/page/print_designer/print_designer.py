@@ -1,5 +1,64 @@
 from typing import Literal
 import frappe
+from frappe.utils.jinja import get_jenv
+from frappe.model.document import BaseDocument
+
+@frappe.whitelist(allow_guest=False)
+def render_user_text_withdoc(string, doctype, docname, row={}, send_to_jinja={}):
+	doc = frappe.get_cached_doc(doctype, docname)
+	return render_user_text(string=string, doc=doc, row=row, send_to_jinja=send_to_jinja)
+
+@frappe.whitelist(allow_guest=False)
+def render_user_text(string, doc, row={}, send_to_jinja={}):
+	if not isinstance(send_to_jinja, dict):
+		if isinstance(send_to_jinja, str):
+			try:
+				send_to_jinja = frappe.parse_json(send_to_jinja)
+			except:
+				raise TypeError("send_to_jinja must be a dict")
+		else:
+			raise TypeError("send_to_jinja must be a dict")
+		
+	if not (isinstance(row, dict) or issubclass(row.__class__, BaseDocument)):
+		if isinstance(row, str):
+			try:
+				row = frappe.parse_json(row)
+			except:
+				raise TypeError("row must be a dict")
+		else:
+			raise TypeError("row must be a dict")
+
+	if not issubclass(doc.__class__, BaseDocument):
+		# This is when we send doc from client side as a json string
+		if isinstance(doc, str):
+			try:
+				doc = frappe.parse_json(doc)
+			except:
+				raise TypeError("doc must be a dict or subclass of BaseDocument")
+			
+
+	jenv = get_jenv()
+	result = jenv.from_string(string).render({'doc': doc, 'row': row, **send_to_jinja})
+	return result
+
+@frappe.whitelist(allow_guest=False)
+def get_data_from_main_template(string, doctype, docname, settings={}):
+	if string.find("send_to_jinja") == -1:
+		return
+	json_string = string + "{{ send_to_jinja|tojson }}"
+	if not isinstance(settings, dict):
+		if isinstance(settings, str):
+			try:
+				settings = frappe.parse_json(settings)
+			except:
+				raise TypeError("settings must be a dict")
+		else:
+			raise TypeError("settings must be a dict")
+	doc = frappe.get_cached_doc(doctype, docname)
+
+	jenv = get_jenv()
+	result_json = jenv.from_string(json_string).render({'doc': doc, 'settings': settings})
+	return result_json.strip()
 
 @frappe.whitelist(allow_guest=False)
 def get_image_docfields():

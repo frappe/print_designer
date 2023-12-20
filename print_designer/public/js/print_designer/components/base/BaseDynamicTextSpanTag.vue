@@ -35,7 +35,7 @@
 			]"
 			@click="selectDynamicText()"
 			:style="[field?.style]"
-			v-html="getHTML(field, index)"
+			v-html="parsedValue"
 		>
 		</span>
 		<br v-if="field.nextLine" />
@@ -44,6 +44,7 @@
 
 <script setup>
 import { useMainStore } from "../../store/MainStore";
+import { ref, watch, onMounted } from "vue";
 
 const selectDynamicText = (isLabel = false) => {
 	props.field.labelStyleEditing = isLabel;
@@ -82,51 +83,86 @@ const props = defineProps({
 	},
 });
 
-const parseJinja = (value, context) => {
-	if (value == '') return '';
-	try {
-		return frappe.render(value, context)
-	} catch (error) {
-		console.error("Error in Jinja Template\n", { value_string: value, error });
-		frappe.show_alert(
-			{
-				message: "Unable Render Jinja Template. Please Check Console",
-				indicator: "red",
-			},
-			5
-		);
-		return value
+const parsedValue = ref('');
+const row = ref({});
+
+onMounted(() => {
+	watch(() => [MainStore.docData], async () => {
+		if (Object.keys(MainStore.docData).length == 0) return;
+		if (props.table) {
+			row.value = MainStore.docData[props.table.fieldname]?.[props.index - 1];
+		}
+	}, { immediate: true, deep: true})
+})
+
+const parseJinja = async () => {
+	if ( props.field.value != '' && props.field.parseJinja) {
+		try {
+			// call render_user_text_withdoc method using frappe.call and return the result
+			const MainStore = useMainStore();
+			let result = await frappe.call({
+				method: "print_designer.print_designer.page.print_designer.print_designer.render_user_text_withdoc",
+				args: {
+					string: props.field.value,
+					doctype: MainStore.doctype,
+					docname: MainStore.currentDoc,
+					row: row.value,
+					send_to_jinja: MainStore.mainParsedJinjaData || {},
+				},
+			})
+			parsedValue.value = result.message
+		} catch (error) {
+			console.error("Error in Jinja Template\n", { value_string: props.field.value, error });
+			frappe.show_alert(
+				{
+					message: "Unable Render Jinja Template. Please Check Console",
+					indicator: "red",
+				},
+				5
+			);
+			parsedValue.value = props.field.value
+		}
+	} else {
+		parsedValue.value = props.field.value
 	}
 }
 
-const getHTML = (field, index) => {
+watch(() => [props.field.value, props.field.parseJinja, MainStore.docData, MainStore.mainParsedJinjaData, row.value], async () => {
+	if (Object.keys(MainStore.docData).length == 0 || props.table && !row.value) return;
 	if (props.table) {
-		if (field.is_static) {
-			if (field.parseJinja) {
-				return parseJinja(field.value, {doc: MainStore.docData, row: MainStore.docData[props.table.fieldname]?.[index - 1]})
+		if (props.field.is_static) {
+			if (props.field.parseJinja) {
+				return parseJinja()
 			}
-			return field.value
+			parsedValue.value = props.field.value;
+			return;
 		} else {
-			if (typeof MainStore.docData[props.table.fieldname]?.[index - 1][field.fieldname] != "undefined"){
-				return frappe.format(
-							MainStore.docData[props.table.fieldname][index - 1][field.fieldname],
-							{ fieldtype: field.fieldtype, options: field.options },
+			if (typeof row.value[props.field.fieldname] != "undefined"){
+				parsedValue.value = frappe.format(
+					row.value[props.field.fieldname],
+							{ fieldtype: props.field.fieldtype, options: props.field.options },
 							{ inline: true },
 							MainStore.docData
-					  )
+					  );
+				return;
 			}
-			return ["Image, Attach Image"].indexOf(field.fieldtype) != -1 ? null : `{{ ${ field.fieldname } }}`;
+			parsedValue.value = ["Image, Attach Image"].indexOf(props.field.fieldtype) != -1 ? null : `{{ ${ props.field.fieldname } }}`;
+			return;
 			}
 	} else {
-		if (field.is_static) {
-			if (field.parseJinja) {
-				return parseJinja(field.value, {doc: MainStore.docData})
+		if (props.field.is_static) {
+			if (props.field.parseJinja) {
+				parsedValue.value = parseJinja(props.field.value)
+				return;
 			}
-			return field.value
+			parsedValue.value = props.field.value;
+			return;
 		}
-		return (field.value || `{{ ${field.parentField ? field.parentField + "." : ""}${field.fieldname} }}`);
+		parsedValue.value = (props.field.value || `{{ ${props.field.parentField ? props.field.parentField + "." : ""}${props.field.fieldname} }}`);
+		return;
 	}
-};
+},	{ immediate: true, deep: true })
+
 
 const getPageClass = (field) => {
 	if (["page", "frompage", "time", "date"].indexOf(field.fieldname) == -1) return "";

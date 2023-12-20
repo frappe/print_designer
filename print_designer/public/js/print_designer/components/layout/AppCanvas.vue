@@ -50,6 +50,9 @@
 				v-if="!!MainStore.openImageModal"
 				:openImageModal="MainStore.openImageModal"
 			/>
+			<AppUserProvidedJinjaModal
+				v-if="!!MainStore.openJinjaModal"
+			/>
 		</div>
 		<AppPreviewPdf v-if="MainStore.mode == 'preview'" />
 	</div>
@@ -64,6 +67,7 @@ import AppPdfSetup from "./AppPdfSetup.vue";
 import AppPreviewPdf from "./AppPreviewPdf.vue";
 import AppWidthHeightModal from "./AppWidthHeightModal.vue";
 import AppDynamicTextModal from "./AppDynamicTextModal.vue";
+import AppUserProvidedJinjaModal from "./AppUserProvidedJinjaModal.vue";
 import AppBarcodeModal from "./AppBarcodeModal.vue";
 import AppImageModal from "./AppImageModal.vue";
 import { watch, watchEffect, onMounted, nextTick } from "vue";
@@ -518,6 +522,20 @@ watchEffect(() => {
 			],
 		]);
 	}
+});
+
+watch(() => [MainStore.userProvidedJinja, MainStore.doctype, MainStore.currentDoc], async () => {
+	if ([MainStore.currentDoc, MainStore.currentDoc].includes(null)) return;
+	let result = await frappe.call({
+		method: "print_designer.print_designer.page.print_designer.print_designer.get_data_from_main_template",
+		args: {
+			string: MainStore.userProvidedJinja,
+			doctype: MainStore.doctype,
+			docname: MainStore.currentDoc,
+			settings: {},
+		},
+	})
+	MainStore.mainParsedJinjaData = result.message;
 });
 </script>
 <style deep lang="scss">
