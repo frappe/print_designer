@@ -34,7 +34,7 @@
 			:class="['staticText', classes]"
 			v-if="type == 'text'"
 			data-placeholder=""
-			v-html="getHTML(contenteditable, content, parseJinja )"
+			v-html="parsedValue"
 		></p>
 		<BaseResizeHandles
 			v-if="!contenteditable && MainStore.getCurrentElementsId.includes(id)"
@@ -44,7 +44,7 @@
 
 <script setup>
 import BaseResizeHandles from "./BaseResizeHandles.vue";
-import { toRefs, watch, onMounted, onUpdated } from "vue";
+import { toRefs, watch, onMounted, onUpdated, ref } from "vue";
 import { useMainStore } from "../../store/MainStore";
 import { useElement } from "../../composables/Element";
 import { useDraw } from "../../composables/Draw";
@@ -86,6 +86,8 @@ const {
 	parseJinja,
 } = toRefs(props.object);
 
+const parsedValue = ref('');
+
 const { setElements } = useElement({
 	draggable: true,
 	resizable: true,
@@ -93,17 +95,24 @@ const { setElements } = useElement({
 
 const { drawEventHandler, parameters } = useDraw();
 
-const toggleDragResize = (toggle) => {
-	isDraggable.value = toggle;
-	isResizable.value = toggle;
-	props.object.contenteditable = !toggle;
-};
-const getHTML = (contenteditable, content, parseJinja) => {
-	if (!contenteditable && content != '' && parseJinja) {
+
+watch(() => [contenteditable.value, content.value, parseJinja.value, MainStore.docData, MainStore.mainParsedJinjaData], async () => {
+	if (!contenteditable.value && content.value != '' && parseJinja.value && Object.keys(MainStore.docData).length > 0) {
 		try {
-			return frappe.render(content, {doc: MainStore.docData})
+			// call render_user_text_withdoc method using frappe.call and return the result
+			const MainStore = useMainStore();
+			let result = await frappe.call({
+				method: "print_designer.print_designer.page.print_designer.print_designer.render_user_text_withdoc",
+				args: {
+					string: content.value,
+					doctype: MainStore.doctype,
+					docname: MainStore.currentDoc,
+					send_to_jinja: MainStore.mainParsedJinjaData || {},
+				},
+			})
+			parsedValue.value = result.message
 		} catch (error) {
-			console.error("Error in Jinja Template\n", { value_string: content, error });
+			console.error("Error in Jinja Template\n", { value_string: content.value, error });
 			frappe.show_alert(
 				{
 					message: "Unable Render Jinja Template. Please Check Console",
@@ -111,11 +120,12 @@ const getHTML = (contenteditable, content, parseJinja) => {
 				},
 				5
 			);
-			return content
+			parsedValue.value = content.value
 		}
+	} else {
+		parsedValue.value = content.value
 	}
-	return content
-}
+},	{ immediate: true, deep: true })
 
 const handleMouseDown = (e, element) => {
 	lockAxis(element, e.shiftKey);

@@ -67,7 +67,34 @@ watch(()=> dynamicContent.value, () => {
 	}
 }, { deep:true, immediate: true });
 
-watch(() => [value.value, barcodeFormat.value, barcodeColor.value, barcodeBackgroundColor.value], async () => {
+const parseJinja = async () => {
+	if (Object.keys(MainStore.docData).length == 0 || !MainStore.currentDoc) return value.value;
+	try {
+		// call render_user_text_withdoc method using frappe.call and return the result
+		let result = await frappe.call({
+			method: "print_designer.print_designer.page.print_designer.print_designer.render_user_text_withdoc",
+			args: {
+				string: value.value,
+				doctype: MainStore.doctype,
+				docname: MainStore.currentDoc,
+				send_to_jinja: MainStore.mainParsedJinjaData || {},
+			},
+		})
+		return result.message;
+	} catch (error) {
+		console.error("Error in Jinja Template\n", { value_string: content.value, error });
+		frappe.show_alert(
+			{
+				message: "Unable Render Jinja Template. Please Check Console",
+				indicator: "red",
+			},
+			5
+		);
+		return value.value
+	}
+}
+
+watch(() => [value.value, barcodeFormat.value, barcodeColor.value, barcodeBackgroundColor.value, MainStore.docData, MainStore.mainParsedJinjaData], async () => {
 	if (!barcodeFormat.value) return;
 	try {
 		const options = {
@@ -82,7 +109,7 @@ watch(() => [value.value, barcodeFormat.value, barcodeColor.value, barcodeBackgr
 		let finalValue = value.value;
 		if (finalValue != '') {
 			try {
-				finalValue = frappe.render(finalValue, {doc: MainStore.docData})
+				finalValue = await parseJinja()
 			} catch (error) {
 				console.error("Error in Jinja Template\n", { value_string: finalValue, error });
 				frappe.show_alert(

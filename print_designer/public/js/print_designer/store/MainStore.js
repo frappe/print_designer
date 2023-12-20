@@ -48,6 +48,9 @@ export const useMainStore = defineStore("MainStore", {
 		openImageModal: null,
 		openBarcodeModal: null,
 		openTableColumnModal: null,
+		openJinjaModal: false,
+		mainParsedJinjaData: "",
+		userProvidedJinja: "",
 		frappeControls: {
 			documentControl: null,
 			tableControl: null,

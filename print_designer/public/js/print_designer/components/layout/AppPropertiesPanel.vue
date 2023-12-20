@@ -41,6 +41,13 @@
 				Save
 			</button>
 		</div>
+		<div class="secondary-actions">
+			<button
+					class="btn btn-sm add-data-button"
+					@click="(event) => MainStore.openJinjaModal = true">
+					Manage Custom Data
+			</button>
+		</div>
 		<AppPropertiesPanelSection
 			v-for="section in MainStore.propertiesPanel"
 			:section="section"
@@ -94,6 +101,14 @@ onMounted(() => createPropertiesPanel());
 				margin: 2px 10px 2px 0px;
 				font-size: 16px;
 			}
+		}
+	}
+	.secondary-actions {
+		@extend .primary-actions;
+		background-color: var(--bg-color);
+		.add-data-button {
+			flex: 1;
+			background-color: var(--subtle-fg);
 		}
 	}
 	.text-type-container,

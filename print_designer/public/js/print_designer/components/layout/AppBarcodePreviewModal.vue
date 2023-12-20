@@ -152,6 +152,33 @@ const fd = {
 		},
 	}
 
+const parseJinja = async () => {
+	let value = props.fieldnames[0].value;
+	try {
+		// call render_user_text_withdoc method using frappe.call and return the result
+		let result = await frappe.call({
+			method: "print_designer.print_designer.page.print_designer.print_designer.render_user_text_withdoc",
+			args: {
+				string: value,
+				doctype: MainStore.doctype,
+				docname: MainStore.currentDoc,
+				send_to_jinja: MainStore.mainParsedJinjaData || {},
+			},
+		})
+		return result.message;
+	} catch (error) {
+		console.error("Error in Jinja Template\n", { value_string: content.value, error });
+		frappe.show_alert(
+			{
+				message: "Unable Render Jinja Template. Please Check Console",
+				indicator: "red",
+			},
+			5
+		);
+		return value
+	}
+}
+
 const setBarcode = async () => {
 	try {
 		const options = {
@@ -166,7 +193,7 @@ const setBarcode = async () => {
 		let value = props.fieldnames[0].value;
 		if (props.fieldnames[0].parseJinja && value != "") {
 				try {
-					value = frappe.render(value, {doc: MainStore.docData})
+					value = await parseJinja()
 				} catch (error) {
 					console.error("Error in Jinja Template\n", { value_string: value, error });
 					frappe.show_alert(
@@ -193,7 +220,7 @@ const setBarcode = async () => {
 	}
 };
 
-watch(() => [props.fieldnames, barcodeFormat.value], () => setBarcode(), { deep: true, immediate: true });
+watch(() => [props.fieldnames, barcodeFormat.value, MainStore.mainParsedJinjaData], () => setBarcode(), { deep: true, immediate: true });
 
 const parentField = ref("");
 const setParentField = (value) => {

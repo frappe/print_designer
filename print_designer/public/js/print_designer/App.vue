@@ -63,9 +63,6 @@ const toolbarClasses = computed(() => {
 
 useAttachKeyBindings();
 onMounted(() => {
-	frappe.require("assets/print_designer/js/pdf.min.js", () => {
-		pdfjsLib.GlobalWorkerOptions.workerSrc = frappe.boot.assets_json["pdf.worker.bundle.js"];
-	});
 	MainStore.printDesignName = props.print_format_name;
 	fetchMeta();
 	const screen_stylesheet = document.createElement("style");

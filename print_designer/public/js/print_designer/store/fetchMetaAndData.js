@@ -115,56 +115,60 @@ export const fetchDoc = async (id = null) => {
 				}
 			});
 			MainStore.docData = doc;
-			await frappe.dom.freeze();
-			MainStore.dynamicData.forEach(async (el) => {
-				if (el.is_static) return;
-				let value = el.parentField
-					? await getValue(el.doctype, MainStore.docData[el.parentField], el.fieldname)
-					: el.tableName
-					? frappe.format(
-							MainStore.docData[el.tableName][0][el.fieldname],
-							{ fieldtype: el.fieldtype, options: el.options },
-							{ inline: true },
-							MainStore.docData
-					  )
-					: frappe.format(
-							MainStore.docData[el.fieldname],
-							{ fieldtype: el.fieldtype, options: el.options },
-							{ inline: true },
-							MainStore.docData
-					  );
-				if (typeof value == "string" && value.startsWith("<svg")) {
-					value.match(new RegExp(`data-barcode-value="(.*?)">`));
-					value = result[1];
-				};
-				if (!value) {
-					if (["Image, Attach Image"].indexOf(el.fieldtype) != -1) {
-						value = null;
-					} else {
-						switch (el.fieldname) {
-							case "page":
-								value = "0";
-								break;
-							case "topage":
-								value = "999";
-								break;
-							case "date":
-								value = frappe.datetime.now_date();
-								break;
-							case "time":
-								value = frappe.datetime.now_time();
-								break;
-							default:
-								value = `{{ ${el.parentField ? el.parentField + "." : ""}${
-									el.fieldname
-								} }}`;
-						}
-					}
-				}
-				el.value = value;
-			});
-			await frappe.dom.unfreeze();
 		},
 		{ immediate: true }
 	);
+
+	watch(() => MainStore.docData, async() => {
+		if (!Object.keys(MainStore.docData).length) return;
+		await frappe.dom.freeze();
+		MainStore.dynamicData.forEach(async (el) => {
+			if (el.is_static) return;
+			let value = el.parentField
+				? await getValue(el.doctype, MainStore.docData[el.parentField], el.fieldname)
+				: el.tableName
+				? frappe.format(
+						MainStore.docData[el.tableName][0][el.fieldname],
+						{ fieldtype: el.fieldtype, options: el.options },
+						{ inline: true },
+						MainStore.docData
+				  )
+				: frappe.format(
+						MainStore.docData[el.fieldname],
+						{ fieldtype: el.fieldtype, options: el.options },
+						{ inline: true },
+						MainStore.docData
+				  );
+			if (typeof value == "string" && value.startsWith("<svg")) {
+				value.match(new RegExp(`data-barcode-value="(.*?)">`));
+				value = result[1];
+			}
+			if (!value) {
+				if (["Image, Attach Image"].indexOf(el.fieldtype) != -1) {
+					value = null;
+				} else {
+					switch (el.fieldname) {
+						case "page":
+							value = "0";
+							break;
+						case "topage":
+							value = "999";
+							break;
+						case "date":
+							value = frappe.datetime.now_date();
+							break;
+						case "time":
+							value = frappe.datetime.now_time();
+							break;
+						default:
+							value = `{{ ${el.parentField ? el.parentField + "." : ""}${
+								el.fieldname
+							} }}`;
+					}
+				}
+			}
+			el.value = value;
+		});
+		await frappe.dom.unfreeze();
+	});
 };
