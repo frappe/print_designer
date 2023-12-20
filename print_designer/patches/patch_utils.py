@@ -143,6 +143,16 @@ def patch_elements(
         callback = callbacks
     for element in data:
         if element.get("type") not in types:
+            if element.get("type") == "rectangle":
+                childrens = (
+                    frappe.json.loads(element.get("childrens", "[]"))
+                    if isinstance(element.get("childrens"), str)
+                    else element.get("childrens")
+                )
+                if len(childrens) > 0:
+                    element["childrens"] = patch_elements(
+                        data=childrens, callbacks=callbacks, types=types
+                    )
             continue
         if callback:
             callback(element)
