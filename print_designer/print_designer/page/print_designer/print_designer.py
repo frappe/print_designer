@@ -4,20 +4,22 @@ from frappe.utils.jinja import get_jenv
 from frappe.model.document import BaseDocument
 
 @frappe.whitelist(allow_guest=False)
-def render_user_text_withdoc(string, doctype, docname, row={}, send_to_jinja={}):
+def render_user_text_withdoc(string, doctype, docname=None, row={}, send_to_jinja={}):
+	if not docname:
+		return render_user_text(string=string, doc={}, row=row, send_to_jinja=send_to_jinja)
 	doc = frappe.get_cached_doc(doctype, docname)
 	return render_user_text(string=string, doc=doc, row=row, send_to_jinja=send_to_jinja)
 
 @frappe.whitelist(allow_guest=False)
 def render_user_text(string, doc, row={}, send_to_jinja={}):
-	if not isinstance(send_to_jinja, dict):
-		if isinstance(send_to_jinja, str):
+	jinja_vars = {};
+	if isinstance(send_to_jinja, dict):
+		jinja_vars = send_to_jinja
+	elif send_to_jinja != "" and isinstance(send_to_jinja, str):
 			try:
-				send_to_jinja = frappe.parse_json(send_to_jinja)
+				jinja_vars = frappe.parse_json(send_to_jinja)
 			except:
-				raise TypeError("send_to_jinja must be a dict")
-		else:
-			raise TypeError("send_to_jinja must be a dict")
+				pass
 		
 	if not (isinstance(row, dict) or issubclass(row.__class__, BaseDocument)):
 		if isinstance(row, str):
@@ -38,11 +40,11 @@ def render_user_text(string, doc, row={}, send_to_jinja={}):
 			
 
 	jenv = get_jenv()
-	result = jenv.from_string(string).render({'doc': doc, 'row': row, **send_to_jinja})
+	result = jenv.from_string(string).render({'doc': doc, 'row': row, **jinja_vars})
 	return result
 
 @frappe.whitelist(allow_guest=False)
-def get_data_from_main_template(string, doctype, docname, settings={}):
+def get_data_from_main_template(string, doctype, docname=None, settings={}):
 	if string.find("send_to_jinja") == -1:
 		return
 	json_string = string + "{{ send_to_jinja|tojson }}"
@@ -54,7 +56,10 @@ def get_data_from_main_template(string, doctype, docname, settings={}):
 				raise TypeError("settings must be a dict")
 		else:
 			raise TypeError("settings must be a dict")
-	doc = frappe.get_cached_doc(doctype, docname)
+	if not docname:
+		doc = {}
+	else:
+		doc = frappe.get_cached_doc(doctype, docname)
 
 	jenv = get_jenv()
 	result_json = jenv.from_string(json_string).render({'doc': doc, 'settings': settings})
