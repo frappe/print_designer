@@ -525,7 +525,6 @@ watchEffect(() => {
 });
 
 watch(() => [MainStore.userProvidedJinja, MainStore.doctype, MainStore.currentDoc], async () => {
-	if ([MainStore.currentDoc, MainStore.currentDoc].includes(null)) return;
 	let result = await frappe.call({
 		method: "print_designer.print_designer.page.print_designer.print_designer.get_data_from_main_template",
 		args: {

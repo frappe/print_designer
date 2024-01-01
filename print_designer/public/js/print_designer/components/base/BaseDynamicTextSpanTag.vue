@@ -128,32 +128,40 @@ const parseJinja = async () => {
 }
 
 watch(() => [props.field.value, props.field.parseJinja, MainStore.docData, MainStore.mainParsedJinjaData, row.value], async () => {
-	if (Object.keys(MainStore.docData).length == 0 || props.table && !row.value) return;
+	const isDataAvailable = props.table ? row.value : Object.keys(MainStore.docData).length > 0;
 	if (props.table) {
 		if (props.field.is_static) {
 			if (props.field.parseJinja) {
 				return parseJinja()
 			}
-			parsedValue.value = props.field.value;
-			return;
-		} else {
-			if (typeof row.value[props.field.fieldname] != "undefined"){
+			if (typeof row.value[props.field.fieldname] != "undefined" && isDataAvailable){
 				parsedValue.value = frappe.format(
 					row.value[props.field.fieldname],
-							{ fieldtype: props.field.fieldtype, options: props.field.options },
-							{ inline: true },
-							MainStore.docData
-					  );
-				return;
+					{ fieldtype: props.field.fieldtype, options: props.field.options },
+					{ inline: true },
+					row.value
+					);
+			} else {
+				parsedValue.value = props.field.value;
 			}
-			parsedValue.value = ["Image, Attach Image"].indexOf(props.field.fieldtype) != -1 ? null : `{{ ${ props.field.fieldname } }}`;
 			return;
+		} else {
+				if (isDataAvailable){
+					parsedValue.value = frappe.format(
+						MainStore.docData[props.field.fieldname],
+						{ fieldtype: props.field.fieldtype, options: props.field.options },
+						{ inline: true },
+						MainStore.docData
+					);
+					return;
+				}
+				parsedValue.value = ["Image, Attach Image"].indexOf(props.field.fieldtype) != -1 ? null : `{{ ${ props.field.fieldname } }}`;
+				return;
 			}
 	} else {
 		if (props.field.is_static) {
 			if (props.field.parseJinja) {
-				parsedValue.value = parseJinja(props.field.value)
-				return;
+				return parseJinja()
 			}
 			parsedValue.value = props.field.value;
 			return;
