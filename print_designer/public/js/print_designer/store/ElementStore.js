@@ -65,6 +65,14 @@ export const useElementStore = defineStore("ElementStore", {
 			const afterTableElements = [];
 			const footerElements = [];
 			let tableElement = this.Elements.filter((el) => el.type == "table");
+			if (tableElement.some((el) => el.table == null)){
+				let message = __("You have Empty Table. Please add table fields or remove table.")
+				frappe.show_alert({
+					message: message,
+					indicator: "red",
+				}, 5);
+				return;
+			}
 			let isOverlapping = false;
 			if (tableElement.length == 1 && MainStore.isHeaderFooterAuto) {
 				this.Elements.forEach((element) => {
