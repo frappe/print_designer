@@ -5,7 +5,7 @@
         class="staticText {{ element.classes | join(' ') }}">
         {% if element.parseJinja %}
         <!-- third Arg is row which is not sent outside table -->
-           {{ render_user_text(element.content, doc, {}, send_to_jinja) }}
+           {{ render_user_text(element.content, doc, {}, send_to_jinja).get("message", "") }}
         {% else %}
             {{_(element.content)}}
         {% endif %}
@@ -57,7 +57,7 @@ background-image: url('{{frappe.get_url()}}{%if element.isDynamic %}{{element.im
 {%- set field = element.dynamicContent[0] -%}
 {%- if field.is_static -%}
     {% if field.parseJinja %}
-        {%- set value = render_user_text(field.value, doc, {}, send_to_jinja) -%}
+        {%- set value = render_user_text(field.value, doc, {}, send_to_jinja).get("message", "") -%}
     {% else %}
         {%- set value =  _(field.value) -%}
 {% endif %}
@@ -125,7 +125,7 @@ background-image: url('{{frappe.get_url()}}{%if element.isDynamic %}{{element.im
 {%- macro render_spanvalue(field, element, row, send_to_jinja) -%}
 {%- if field.is_static -%}
     {% if field.parseJinja %}
-    {{ render_user_text(field.value, doc, row, send_to_jinja) }}
+    {{ render_user_text(field.value, doc, row, send_to_jinja).get("message", "") }}
     {% else %}
         {{ _(field.value) }}
     {% endif %}

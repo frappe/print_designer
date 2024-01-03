@@ -110,7 +110,12 @@ watch(() => [contenteditable.value, content.value, parseJinja.value, MainStore.d
 					send_to_jinja: MainStore.mainParsedJinjaData || {},
 				},
 			})
-			parsedValue.value = result.message
+			result = result.message
+			if (result.success) {
+				parsedValue.value = result.message;
+			} else {
+				console.error("Error From User Provided Jinja String\n\n", result.error)
+			}
 		} catch (error) {
 			console.error("Error in Jinja Template\n", { value_string: content.value, error });
 			frappe.show_alert(

@@ -534,7 +534,13 @@ watch(() => [MainStore.userProvidedJinja, MainStore.doctype, MainStore.currentDo
 			settings: {},
 		},
 	})
-	MainStore.mainParsedJinjaData = result.message;
+	result = result.message
+	if (result.success) {
+		MainStore.mainParsedJinjaData = result.message;
+		console.log('%cUser Provided Custom Data Template was successfully rendered. You can ignore any User Provided Custom Data Template errors that are shown before this', 'background: #185A37; color: #ffffff; font-size: 14px;')
+	} else {
+		console.error("Error From User Provided Custom Data Template\n\n", result.error)
+	}
 });
 </script>
 <style deep lang="scss">
