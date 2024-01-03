@@ -80,7 +80,12 @@ const parseJinja = async () => {
 				send_to_jinja: MainStore.mainParsedJinjaData || {},
 			},
 		})
-		return result.message;
+		result = result.message
+		if (result.success) {
+			return result.message;
+		} else {
+			console.error("Error From User Provided Jinja String\n\n", result.error)
+		}
 	} catch (error) {
 		console.error("Error in Jinja Template\n", { value_string: content.value, error });
 		frappe.show_alert(

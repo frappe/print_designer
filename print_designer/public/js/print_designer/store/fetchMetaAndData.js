@@ -127,7 +127,7 @@ export const fetchDoc = async (id = null) => {
 			let value = el.parentField
 				? await getValue(el.doctype, MainStore.docData[el.parentField], el.fieldname)
 				: el.tableName
-				? frappe.format(
+				? MainStore.docData[el.tableName][0] && frappe.format(
 						MainStore.docData[el.tableName][0][el.fieldname],
 						{ fieldtype: el.fieldtype, options: el.options },
 						{ inline: true },

@@ -5,7 +5,7 @@ from frappe.model.document import BaseDocument
 
 @frappe.whitelist(allow_guest=False)
 def render_user_text_withdoc(string, doctype, docname=None, row={}, send_to_jinja={}):
-	if not docname:
+	if not docname or docname == "":
 		return render_user_text(string=string, doc={}, row=row, send_to_jinja=send_to_jinja)
 	doc = frappe.get_cached_doc(doctype, docname)
 	return render_user_text(string=string, doc=doc, row=row, send_to_jinja=send_to_jinja)
@@ -40,14 +40,26 @@ def render_user_text(string, doc, row={}, send_to_jinja={}):
 			
 
 	jenv = get_jenv()
-	result = jenv.from_string(string).render({'doc': doc, 'row': row, **jinja_vars})
+	result = {}
+	try:
+		result["success"] = 1
+		result["message"] = jenv.from_string(string).render({'doc': doc, 'row': row, **jinja_vars})
+	except Exception as e:
+		'''
+		string is provided by user and there is no way to know if it is correct or not so log the error from client side
+		'''
+		result["success"] = 0
+		result["error"] = e
 	return result
 
 @frappe.whitelist(allow_guest=False)
 def get_data_from_main_template(string, doctype, docname=None, settings={}):
+	result = {}
 	if string.find("send_to_jinja") == -1:
-		return
-	json_string = string + "{{ send_to_jinja|tojson }}"
+		result["success"] = 1
+		result["message"] = ''
+		return result
+	string = string + "{{ send_to_jinja|tojson }}"
 	if not isinstance(settings, dict):
 		if isinstance(settings, str):
 			try:
@@ -56,14 +68,25 @@ def get_data_from_main_template(string, doctype, docname=None, settings={}):
 				raise TypeError("settings must be a dict")
 		else:
 			raise TypeError("settings must be a dict")
-	if not docname:
+	if not docname or docname == "":
 		doc = {}
 	else:
 		doc = frappe.get_cached_doc(doctype, docname)
 
 	jenv = get_jenv()
-	result_json = jenv.from_string(json_string).render({'doc': doc, 'settings': settings})
-	return result_json.strip()
+	try:
+		result["success"] = 1
+		result["message"] = jenv.from_string(string).render({'doc': doc, 'settings': settings}).strip()
+	except Exception as e:
+		'''
+		string is provided by user and there is no way to know if it is correct or not
+		also doc is required if used in string else it is not required so there is no way 
+		for us to decide whether to run this or not if doc is not available
+		'''
+		result["success"] = 0
+		result["error"] = e
+
+	return result
 
 @frappe.whitelist(allow_guest=False)
 def get_image_docfields():
