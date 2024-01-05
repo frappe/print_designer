@@ -214,7 +214,7 @@ frappe.ui.form.PrintView = class PrintView extends frappe.ui.form.PrintView {
 	printit() {
 		let me = this;
 		// Enable Network Printing
-		if(this.print_settings.enable_print_server) {
+		if(parseInt(this.print_settings.enable_print_server)) {
 			super.printit();
 			return;
 		}
