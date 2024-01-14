@@ -3,7 +3,8 @@
 		class="editor"
 		:style="{
 			height: height,
-		}">
+		}"
+	>
 		<h3 class="mb-1 text-xs font-bold uppercase text-gray-600" v-if="label">
 			{{ label }}
 		</h3>
@@ -24,7 +25,7 @@ const props = defineProps({
 	},
 	type: {
 		type: String,
-        Options: ["HTML", "CSS", "JavaScript", "Python", "JSON"],
+		Options: ["HTML", "CSS", "JavaScript", "Python", "JSON"],
 		default: "JSON",
 	},
 	label: {

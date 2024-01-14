@@ -6,7 +6,7 @@ import {
 	createDynamicText,
 	createImage,
 	createTable,
-	createBarcode
+	createBarcode,
 } from "../defaultObjects";
 import { handlePrintFonts } from "../utils";
 export const useElementStore = defineStore("ElementStore", {
@@ -65,12 +65,15 @@ export const useElementStore = defineStore("ElementStore", {
 			const afterTableElements = [];
 			const footerElements = [];
 			let tableElement = this.Elements.filter((el) => el.type == "table");
-			if (tableElement.some((el) => el.table == null)){
-				let message = __("You have Empty Table. Please add table fields or remove table.")
-				frappe.show_alert({
-					message: message,
-					indicator: "red",
-				}, 5);
+			if (tableElement.some((el) => el.table == null)) {
+				let message = __("You have Empty Table. Please add table fields or remove table.");
+				frappe.show_alert(
+					{
+						message: message,
+						indicator: "red",
+					},
+					5
+				);
 				return;
 			}
 			let isOverlapping = false;
@@ -138,7 +141,9 @@ export const useElementStore = defineStore("ElementStore", {
 						{
 							message: `Please resolve overlapping ${
 								isHeaderOverlapping ? "header" : ""
-							} ${isHeaderOverlapping && isFooterOverlapping ? " and " : ""} ${isFooterOverlapping ? "footer" : ""}`,
+							} ${isHeaderOverlapping && isFooterOverlapping ? " and " : ""} ${
+								isFooterOverlapping ? "footer" : ""
+							}`,
 							indicator: "red",
 						},
 						5
@@ -152,14 +157,14 @@ export const useElementStore = defineStore("ElementStore", {
 			let pageInfoInBody = [];
 			if (tableElement.length == 1) {
 				tableElement[0].isPrimaryTable = true;
-			}
-			else if (tableElement.length > 1) {
-				let primaryTableEl = tableElement.filter((el) => el.isPrimaryTable)
+			} else if (tableElement.length > 1) {
+				let primaryTableEl = tableElement.filter((el) => el.isPrimaryTable);
 				if (primaryTableEl.length == 1) {
-					tableElement = primaryTableEl
+					tableElement = primaryTableEl;
 				} else {
 					const message = __(
-						"As You have multiple tables, you have to select Primary Table. <br></br> 1. Go to Table Element that you wish to set as Primary. <br></br> 2. Select it and from properties panel select <b>Set as Primary Table</b> as <b>Yes</b> ")
+						"As You have multiple tables, you have to select Primary Table. <br></br> 1. Go to Table Element that you wish to set as Primary. <br></br> 2. Select it and from properties panel select <b>Set as Primary Table</b> as <b>Yes</b> "
+					);
 					frappe.msgprint(
 						{
 							title: __("Multiple Tables."),
@@ -189,9 +194,14 @@ export const useElementStore = defineStore("ElementStore", {
 					is_footer = true;
 				} else {
 					if (element.type == "text" && element.isDynamic) {
-						element.dynamicContent.filter((el) => ["page", "topage", "date", "time"].indexOf(el.fieldname) != -1).forEach((field) =>  {
-							pageInfoInBody.push(field.fieldname);
-						});
+						element.dynamicContent
+							.filter(
+								(el) =>
+									["page", "topage", "date", "time"].indexOf(el.fieldname) != -1
+							)
+							.forEach((field) => {
+								pageInfoInBody.push(field.fieldname);
+							});
 					}
 				}
 				let printFonts = is_header
@@ -260,9 +270,10 @@ export const useElementStore = defineStore("ElementStore", {
 				}
 				MainStore.printBodyFonts = null;
 			}
-			if (pageInfoInBody.length){
+			if (pageInfoInBody.length) {
 				frappe.show_alert({
-					message: "Please move <b>" + pageInfoInBody.join(", ") + "</b> to header / footer",
+					message:
+						"Please move <b>" + pageInfoInBody.join(", ") + "</b> to header / footer",
 					indicator: "orange",
 				});
 				return;
@@ -341,8 +352,11 @@ export const useElementStore = defineStore("ElementStore", {
 			let ElementsFooter = JSON.parse(printFormat.message.print_designer_footer);
 			let settings = JSON.parse(printFormat.message.print_designer_settings);
 			settings &&
-				Object.keys(settings).forEach( async (key) => {
-					if (["currentDoc", "schema_version"].indexOf(key) == -1 || await frappe.db.exists(MainStore.doctype, settings[key])) {
+				Object.keys(settings).forEach(async (key) => {
+					if (
+						["currentDoc", "schema_version"].indexOf(key) == -1 ||
+						(await frappe.db.exists(MainStore.doctype, settings[key]))
+					) {
 						MainStore[key] = settings[key];
 					}
 					if (key == "schema_version" && settings[key] != MainStore.schema_version) {
@@ -493,14 +507,14 @@ export const useElementStore = defineStore("ElementStore", {
 			frappe.dom.unfreeze();
 		},
 		setPrimaryTable(tableEl, value) {
-			if (!value){
+			if (!value) {
 				tableEl.isPrimaryTable = value;
-				return
+				return;
 			}
 			tables = this.Elements.filter((el) => el.type == "table");
 			tables.forEach((t) => {
-				t.isPrimaryTable = t == tableEl
-			})
-		}
+				t.isPrimaryTable = t == tableEl;
+			});
+		},
 	},
 });

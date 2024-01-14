@@ -361,18 +361,21 @@ const handleBlur = ({
 				element.startX -= convertedValue.value - object[property];
 			});
 		}
-		if (["width", "height"].indexOf(property)){
+		if (["width", "height"].indexOf(property)) {
 			let propertyValue = useChangeValueUnit({
 				inputString: e.target.value,
 				defaultInputUnit: MainStore.page.UOM,
 				convertionUnit: "mm",
 			});
-			cps = [MainStore.convertToPageUOM(MainStore.page.width), MainStore.convertToPageUOM(MainStore.page.height)];
+			cps = [
+				MainStore.convertToPageUOM(MainStore.page.width),
+				MainStore.convertToPageUOM(MainStore.page.height),
+			];
 			if (!propertyValue.error) {
-				cps.splice(["width", "height"].indexOf(property), 1, propertyValue.value)
+				cps.splice(["width", "height"].indexOf(property), 1, propertyValue.value);
 			}
 			const currentPageSize = Object.entries(MainStore.pageSizes).find((ps) => {
-				return ( ps[1][0] == cps[0] && ps[1][1] == cps[1]);
+				return ps[1][0] == cps[0] && ps[1][1] == cps[1];
 			});
 			if (currentPageSize) {
 				MainStore.currentPageSize = currentPageSize[0];

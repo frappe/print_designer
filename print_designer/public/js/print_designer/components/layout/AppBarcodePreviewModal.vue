@@ -1,16 +1,9 @@
 <template>
 	<div class="barcode-format-selector">
-				<AppPropertiesFrappeControl
-					:key="`FC_${fd.name}`"
-					class="barcode-format"
-					:field="fd"
-				/>
-			</div>
+		<AppPropertiesFrappeControl :key="`FC_${fd.name}`" class="barcode-format" :field="fd" />
+	</div>
 	<div class="preview-container">
-		<div
-		class="settings"
-		@click.self.stop="selectedEl = null"
-		>
+		<div class="settings" @click.self.stop="selectedEl = null">
 			<template v-for="(field, index) in fieldnames" :key="index">
 				<div
 					:class="[
@@ -27,7 +20,10 @@
 					<span
 						v-if="!field.is_static && field.is_labelled"
 						:contenteditable="contenteditable"
-						:class="['label-text', selectedEl?.field == field && 'label-text-selected']"
+						:class="[
+							'label-text',
+							selectedEl?.field == field && 'label-text-selected',
+						]"
 						:ref="(el) => (field.labelRef = el)"
 						@dblclick="handleDblClick($event, field)"
 						@blur="handleBlur($event, field)"
@@ -62,13 +58,11 @@
 		<div class="preview">
 			<div>
 				<div
-				:style="[
-					style
-				]"
-				:class="['barcode', classes]"
-				:key="id"
-				v-html="barcodeSvg || ''"
-			></div>
+					:style="[style]"
+					:class="['barcode', classes]"
+					:key="id"
+					v-html="barcodeSvg || ''"
+				></div>
 			</div>
 		</div>
 	</div>
@@ -79,12 +73,21 @@
 				<sub style="font-weight: 600; font-size: 1em bottom:-0.15em">+</sub>
 				<span style="font-size: 12px; padding: 0px 5px">Static Text</span>
 			</div>
-			<div v-if="fieldnames[0] && fieldnames[0].is_static" @click="fieldnames[0].parseJinja = !fieldnames[0].parseJinja">
+			<div
+				v-if="fieldnames[0] && fieldnames[0].is_static"
+				@click="fieldnames[0].parseJinja = !fieldnames[0].parseJinja"
+			>
 				<span
 					class="jinja-toggle fa fa-code"
 					:style="[fieldnames[0].parseJinja && 'color:var(--primary)']"
 				></span>
-				<span :style="['font-size: 12px; padding: 0px 5px', fieldnames[0].parseJinja && 'color:var(--primary)']">{{fieldnames[0].parseJinja ? "Disable Jinja" : "Render Jinja"}}</span>
+				<span
+					:style="[
+						'font-size: 12px; padding: 0px 5px',
+						fieldnames[0].parseJinja && 'color:var(--primary)',
+					]"
+					>{{ fieldnames[0].parseJinja ? "Disable Jinja" : "Render Jinja" }}</span
+				>
 			</div>
 		</div>
 	</div>
@@ -118,39 +121,37 @@ const setLabel = (value) => {
 		label.value = value;
 	}
 };
-const { barcodeColor, barcodeBackgroundColor, isDynamic, barcodeFormat, style} = toRefs(MainStore.getCurrentElementsValues[0]);
+const { barcodeColor, barcodeBackgroundColor, isDynamic, barcodeFormat, style } = toRefs(
+	MainStore.getCurrentElementsValues[0]
+);
 onMounted(() => {
 	label.value = props.modalLabel;
 });
 
 const fd = {
-		label: "Format:",
-		name: "barcodeFormatModal",
-		isLabelled: true,
-		condtional: null,
-		frappeControl: (ref, name) => {
-			const MainStore = useMainStore();
-			const { barcodeFormats } = storeToRefs(MainStore);
-			makeFeild({
-				name: name,
-				ref: ref,
-				fieldtype: "Autocomplete",
-				requiredData: [
-					barcodeFormats,
-					MainStore.getCurrentElementsValues[0] ||
-						MainStore.globalStyles["barcode"],
-				],
-				options: () => barcodeFormats.value,
-				reactiveObject: () => {
-					return (
-						MainStore.getCurrentElementsValues[0] ||
-						MainStore.globalStyles["barcode"]
-					);
-				},
-				propertyName: "barcodeFormat",
-			});
-		},
-	}
+	label: "Format:",
+	name: "barcodeFormatModal",
+	isLabelled: true,
+	condtional: null,
+	frappeControl: (ref, name) => {
+		const MainStore = useMainStore();
+		const { barcodeFormats } = storeToRefs(MainStore);
+		makeFeild({
+			name: name,
+			ref: ref,
+			fieldtype: "Autocomplete",
+			requiredData: [
+				barcodeFormats,
+				MainStore.getCurrentElementsValues[0] || MainStore.globalStyles["barcode"],
+			],
+			options: () => barcodeFormats.value,
+			reactiveObject: () => {
+				return MainStore.getCurrentElementsValues[0] || MainStore.globalStyles["barcode"];
+			},
+			propertyName: "barcodeFormat",
+		});
+	},
+};
 
 const parseJinja = async () => {
 	let value = props.fieldnames[0].value;
@@ -164,12 +165,12 @@ const parseJinja = async () => {
 				docname: MainStore.currentDoc,
 				send_to_jinja: MainStore.mainParsedJinjaData || {},
 			},
-		})
-		result = result.message
+		});
+		result = result.message;
 		if (result.success) {
 			return result.message;
 		} else {
-			console.error("Error From User Provided Jinja String\n\n", result.error)
+			console.error("Error From User Provided Jinja String\n\n", result.error);
 		}
 	} catch (error) {
 		console.error("Error in Jinja Template\n", { value_string: content.value, error });
@@ -180,14 +181,14 @@ const parseJinja = async () => {
 			},
 			5
 		);
-		return value
+		return value;
 	}
-}
+};
 
 const setBarcode = async () => {
 	try {
 		const options = {
-			background : barcodeBackgroundColor.value || "#ffffff",
+			background: barcodeBackgroundColor.value || "#ffffff",
 			quiet_zone: 1,
 		};
 		if (barcodeFormat.value == "qrcode") {
@@ -197,19 +198,19 @@ const setBarcode = async () => {
 		}
 		let value = props.fieldnames[0].value;
 		if (props.fieldnames[0].parseJinja && value != "") {
-				try {
-					value = await parseJinja()
-				} catch (error) {
-					console.error("Error in Jinja Template\n", { value_string: value, error });
-					frappe.show_alert(
-						{
-							message: "Unable Render Jinja Template. Please Check Console",
-							indicator: "red",
-						},
-						5
-					);
-				}
+			try {
+				value = await parseJinja();
+			} catch (error) {
+				console.error("Error in Jinja Template\n", { value_string: value, error });
+				frappe.show_alert(
+					{
+						message: "Unable Render Jinja Template. Please Check Console",
+						indicator: "red",
+					},
+					5
+				);
 			}
+		}
 		let barcode = await frappe.call(
 			"print_designer.print_designer.page.print_designer.print_designer.get_barcode",
 			{
@@ -225,7 +226,11 @@ const setBarcode = async () => {
 	}
 };
 
-watch(() => [props.fieldnames, barcodeFormat.value, MainStore.mainParsedJinjaData], () => setBarcode(), { deep: true, immediate: true });
+watch(
+	() => [props.fieldnames, barcodeFormat.value, MainStore.mainParsedJinjaData],
+	() => setBarcode(),
+	{ deep: true, immediate: true }
+);
 
 const parentField = ref("");
 const setParentField = (value) => {

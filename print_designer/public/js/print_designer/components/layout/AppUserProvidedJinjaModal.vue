@@ -11,13 +11,14 @@
 		</template>
 		<template #body>
 			<AppCodeEditor
-					:modelValue="MainStore.userProvidedJinja"
-					@update:aceEditor="updateEditor"
-					v-bind="{ aceEditor }"
-					type="HTML"
-					class="flex-1"
-					height="auto"
-					:show-line-numbers="true"></AppCodeEditor>
+				:modelValue="MainStore.userProvidedJinja"
+				@update:aceEditor="updateEditor"
+				v-bind="{ aceEditor }"
+				type="HTML"
+				class="flex-1"
+				height="auto"
+				:show-line-numbers="true"
+			></AppCodeEditor>
 		</template>
 	</AppModal>
 </template>
@@ -44,18 +45,17 @@ const updateEditor = (value) => {
 const primaryClick = async (e) => {
 	MainStore.openJinjaModal = false;
 	try {
-			let value = aceEditor.value.getValue();
-			
-			if (value === MainStore.userProvidedJinja) return;
+		let value = aceEditor.value.getValue();
 
-			MainStore.userProvidedJinja = value;
+		if (value === MainStore.userProvidedJinja) return;
+
+		MainStore.userProvidedJinja = value;
 	} catch (e) {
 		// do nothing
 	}
 };
 const cancelClick = () => {
-	MainStore.openJinjaModal = false
-	};
+	MainStore.openJinjaModal = false;
+};
 </script>
-<style scoped lang="scss">
-</style>
+<style scoped lang="scss"></style>

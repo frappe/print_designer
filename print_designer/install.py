@@ -1,9 +1,9 @@
 import click
 import frappe
-from frappe.custom.doctype.custom_field.custom_field import \
-    create_custom_fields
+from frappe.custom.doctype.custom_field.custom_field import create_custom_fields
 
 from print_designer.custom_fields import CUSTOM_FIELDS
+
 
 def check_frappe_version():
 	def major_version(v: str) -> str:
@@ -11,7 +11,7 @@ def check_frappe_version():
 
 	frappe_version = major_version(frappe.__version__)
 	if int(frappe_version) >= 15:
-	    return
+		return
 
 	click.secho(
 		f"You're attempting to install Print Designer with Frappe version {frappe_version}. "
@@ -20,8 +20,10 @@ def check_frappe_version():
 	)
 	raise SystemExit(1)
 
+
 def before_install():
 	check_frappe_version()
+
 
 def after_install():
 	create_custom_fields(CUSTOM_FIELDS, ignore_validate=True)
