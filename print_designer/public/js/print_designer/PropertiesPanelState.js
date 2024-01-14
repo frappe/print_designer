@@ -249,7 +249,13 @@ export const createPropertiesPanel = () => {
 			condtional,
 			...args,
 		});
-	const colorStyleFrappeControl = (label, name, propertyName, isFontStyle = false, isStyle=true) => {
+	const colorStyleFrappeControl = (
+		label,
+		name,
+		propertyName,
+		isFontStyle = false,
+		isStyle = true
+	) => {
 		return {
 			label,
 			name,
@@ -537,7 +543,10 @@ export const createPropertiesPanel = () => {
 							},
 							onChangeCallback: (value = null) => {
 								if (value && MainStore.getCurrentElementsValues[0]) {
-									ElementStore.setPrimaryTable(MainStore.getCurrentElementsValues[0], value === "Yes")
+									ElementStore.setPrimaryTable(
+										MainStore.getCurrentElementsValues[0],
+										value === "Yes"
+									);
 									MainStore.frappeControls[name].$input.blur();
 								}
 							},
@@ -561,8 +570,8 @@ export const createPropertiesPanel = () => {
 		title: "Enable Jinja Parsing",
 		sectionCondtional: () =>
 			MainStore.getCurrentElementsId.length === 1 &&
-			(MainStore.getCurrentElementsValues[0].type === "text" &&
-				!MainStore.getCurrentElementsValues[0].isDynamic),
+			MainStore.getCurrentElementsValues[0].type === "text" &&
+			!MainStore.getCurrentElementsValues[0].isDynamic,
 		fields: [
 			[
 				{
@@ -570,9 +579,9 @@ export const createPropertiesPanel = () => {
 					name: "parseJinja",
 					labelDirection: "column",
 					condtional: () =>
-					MainStore.getCurrentElementsId.length === 1 &&
-					(MainStore.getCurrentElementsValues[0].type === "text" &&
-						!MainStore.getCurrentElementsValues[0].isDynamic),
+						MainStore.getCurrentElementsId.length === 1 &&
+						MainStore.getCurrentElementsValues[0].type === "text" &&
+						!MainStore.getCurrentElementsValues[0].isDynamic,
 					frappeControl: (ref, name) => {
 						const MainStore = useMainStore();
 						makeFeild({
@@ -612,8 +621,7 @@ export const createPropertiesPanel = () => {
 					label: "Text Control :",
 					name: "textControlType",
 					labelDirection: "column",
-					condtional: () =>
-						MainStore.activeControl === "text",
+					condtional: () => MainStore.activeControl === "text",
 					frappeControl: (ref, name) => {
 						const MainStore = useMainStore();
 						makeFeild({
@@ -719,20 +727,25 @@ export const createPropertiesPanel = () => {
 					label: "Label Style :",
 					name: "labelDisplayOptions",
 					labelDirection: "column",
-					condtional: ()=> {
+					condtional: () => {
 						let styleClass = "table";
-								if (MainStore.activeControl == "text") {
-									if (MainStore.textControlType == "dynamic") {
-										styleClass = "dynamicText";
-									} else {
-										styleClass = "staticText";
-									}
-								}
-						let curObj = MainStore.getCurrentElementsValues[0] || MainStore.globalStyles[styleClass]
-						if (curObj.type == "table" || curObj.type == "text" && curObj.isDynamic) {
-							return true
+						if (MainStore.activeControl == "text") {
+							if (MainStore.textControlType == "dynamic") {
+								styleClass = "dynamicText";
+							} else {
+								styleClass = "staticText";
+							}
 						}
-						return false
+						let curObj =
+							MainStore.getCurrentElementsValues[0] ||
+							MainStore.globalStyles[styleClass];
+						if (
+							curObj.type == "table" ||
+							(curObj.type == "text" && curObj.isDynamic)
+						) {
+							return true;
+						}
+						return false;
 					},
 					frappeControl: (ref, name) => {
 						const MainStore = useMainStore();
@@ -1041,8 +1054,9 @@ export const createPropertiesPanel = () => {
 	MainStore.propertiesPanel.push({
 		title: "Barcode Settings",
 		sectionCondtional: () =>
-			(!MainStore.getCurrentElementsId.length && MainStore.activeControl === "barcode") || 
-			(MainStore.getCurrentElementsId.length === 1 && MainStore.getCurrentElementsValues[0].type === "barcode"),
+			(!MainStore.getCurrentElementsId.length && MainStore.activeControl === "barcode") ||
+			(MainStore.getCurrentElementsId.length === 1 &&
+				MainStore.getCurrentElementsValues[0].type === "barcode"),
 		fields: [
 			{
 				label: "Barcode Format",
@@ -1072,7 +1086,16 @@ export const createPropertiesPanel = () => {
 					});
 				},
 			},
-			[colorStyleFrappeControl("Color", "barcodeColor", "barcodeColor", false, false), colorStyleFrappeControl("Background", "barcodeBackgroundColor", "barcodeBackgroundColor", false, false)],
+			[
+				colorStyleFrappeControl("Color", "barcodeColor", "barcodeColor", false, false),
+				colorStyleFrappeControl(
+					"Background",
+					"barcodeBackgroundColor",
+					"barcodeBackgroundColor",
+					false,
+					false
+				),
+			],
 		],
 	});
 };

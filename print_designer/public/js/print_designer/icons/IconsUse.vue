@@ -34,6 +34,6 @@ const props = defineProps({
 	class: {
 		type: String,
 		default: "",
-	}
+	},
 });
 </script>

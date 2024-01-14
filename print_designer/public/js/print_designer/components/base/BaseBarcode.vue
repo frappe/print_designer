@@ -1,6 +1,6 @@
 <template>
 	<div
-		:style="[postionalStyles(startX, startY, width, height), ]"
+		:style="[postionalStyles(startX, startY, width, height)]"
 		:ref="setElements(object, index)"
 		:class="[MainStore.getCurrentElementsId.includes(id) && 'active-elements']"
 		@mousedown.left="handleMouseDown($event, object)"
@@ -9,17 +9,16 @@
 	>
 		<div
 			v-if="barcodeSvg"
-			:style="[
-				widthHeightStyle(width, height),
-				style,
-			]"
+			:style="[widthHeightStyle(width, height), style]"
 			:class="['barcode', classes]"
 			:key="id"
 			v-html="barcodeSvg"
 		></div>
 		<div class="fallback-image" v-else>
 			<div class="content">
-				<span v-if="width >= 100 || height >= 100">Please Double click to select Barcode</span>
+				<span v-if="width >= 100 || height >= 100"
+					>Please Double click to select Barcode</span
+				>
 			</div>
 		</div>
 		<BaseResizeHandles
@@ -57,15 +56,30 @@ const props = defineProps({
 		required: true,
 	},
 });
-const { id, value, dynamicContent, barcodeFormat, barcodeColor, barcodeBackgroundColor, startX, startY, width, height, style, classes } = toRefs(
-	props.object
-);
+const {
+	id,
+	value,
+	dynamicContent,
+	barcodeFormat,
+	barcodeColor,
+	barcodeBackgroundColor,
+	startX,
+	startY,
+	width,
+	height,
+	style,
+	classes,
+} = toRefs(props.object);
 const barcodeSvg = ref(null);
-watch(()=> dynamicContent.value, () => {
-	if (dynamicContent.value) {
-		value.value = dynamicContent.value[0]?.value || "";
-	}
-}, { deep:true, immediate: true });
+watch(
+	() => dynamicContent.value,
+	() => {
+		if (dynamicContent.value) {
+			value.value = dynamicContent.value[0]?.value || "";
+		}
+	},
+	{ deep: true, immediate: true }
+);
 
 const parseJinja = async () => {
 	if (Object.keys(MainStore.docData).length == 0 || !MainStore.currentDoc) return value.value;
@@ -79,12 +93,12 @@ const parseJinja = async () => {
 				docname: MainStore.currentDoc,
 				send_to_jinja: MainStore.mainParsedJinjaData || {},
 			},
-		})
-		result = result.message
+		});
+		result = result.message;
 		if (result.success) {
 			return result.message;
 		} else {
-			console.error("Error From User Provided Jinja String\n\n", result.error)
+			console.error("Error From User Provided Jinja String\n\n", result.error);
 		}
 	} catch (error) {
 		console.error("Error in Jinja Template\n", { value_string: content.value, error });
@@ -95,50 +109,64 @@ const parseJinja = async () => {
 			},
 			5
 		);
-		return value.value
+		return value.value;
 	}
-}
+};
 
-watch(() => [value.value, barcodeFormat.value, barcodeColor.value, barcodeBackgroundColor.value, MainStore.docData, MainStore.mainParsedJinjaData], async () => {
-	if (!barcodeFormat.value) return;
-	try {
-		const options = {
-			background : barcodeBackgroundColor.value || "#ffffff",
-			quiet_zone: 1,
-		};
-		if (barcodeFormat.value == "qrcode") {
-			options["module_color"] = barcodeColor.value || "#000000";
-		} else {
-			options["foreground"] = barcodeColor.value || "#000000";
-		}
-		let finalValue = value.value;
-		if (finalValue != '') {
-			try {
-				finalValue = await parseJinja()
-			} catch (error) {
-				console.error("Error in Jinja Template\n", { value_string: finalValue, error });
-				frappe.show_alert(
-					{
-						message: "Unable Render Jinja Template. Please Check Console",
-						indicator: "red",
-					},
-					5
-				);
+watch(
+	() => [
+		value.value,
+		barcodeFormat.value,
+		barcodeColor.value,
+		barcodeBackgroundColor.value,
+		MainStore.docData,
+		MainStore.mainParsedJinjaData,
+	],
+	async () => {
+		if (!barcodeFormat.value) return;
+		try {
+			const options = {
+				background: barcodeBackgroundColor.value || "#ffffff",
+				quiet_zone: 1,
+			};
+			if (barcodeFormat.value == "qrcode") {
+				options["module_color"] = barcodeColor.value || "#000000";
+			} else {
+				options["foreground"] = barcodeColor.value || "#000000";
 			}
-		}
-		let barcode = await frappe.call(
-			"print_designer.print_designer.page.print_designer.print_designer.get_barcode",
-			{
-				barcode_format: barcodeFormat.value,
-				barcode_value: finalValue,
-				options,
+			let finalValue = value.value;
+			if (finalValue != "") {
+				try {
+					finalValue = await parseJinja();
+				} catch (error) {
+					console.error("Error in Jinja Template\n", {
+						value_string: finalValue,
+						error,
+					});
+					frappe.show_alert(
+						{
+							message: "Unable Render Jinja Template. Please Check Console",
+							indicator: "red",
+						},
+						5
+					);
+				}
 			}
-		);
-		barcodeSvg.value = barcode.message.value;
-	} catch (e) {
-		barcodeSvg.value = null;
-	}
-}, { immediate: true });
+			let barcode = await frappe.call(
+				"print_designer.print_designer.page.print_designer.print_designer.get_barcode",
+				{
+					barcode_format: barcodeFormat.value,
+					barcode_value: finalValue,
+					options,
+				}
+			);
+			barcodeSvg.value = barcode.message.value;
+		} catch (e) {
+			barcodeSvg.value = null;
+		}
+	},
+	{ immediate: true }
+);
 
 const { setElements } = useElement({
 	draggable: true,

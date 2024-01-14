@@ -46,6 +46,8 @@ def pdf_body_html(print_format, jenv, args, template):
 			}
 		)
 		# replace placeholder comment with user provided jinja code
-		template_source = template.replace('<!-- user_generated_jinja_code -->', args["settings"].get("userProvidedJinja", ""))
+		template_source = template.replace(
+			"<!-- user_generated_jinja_code -->", args["settings"].get("userProvidedJinja", "")
+		)
 		template = jenv.from_string(template_source)
 	return template.render(args, filters={"len": len})

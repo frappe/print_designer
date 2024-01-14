@@ -2,21 +2,25 @@
 	<div class="sidebar">
 		<div class="toolbar-section mt-3">
 			<div>
-				<template v-for="({ id, aria_label, icon, isDisabled }, key) in MainStore.controls" :key="id">
+				<template
+					v-for="({ id, aria_label, icon, isDisabled }, key) in MainStore.controls"
+					:key="id"
+				>
 					<span
 						v-if="!isDisabled"
 						:key="id"
 						:title="aria_label"
 						:class="iconClasses(id, icon)"
 						@click="MainStore.setActiveControl(key)"
-						>
-							<svg
-							:viewBox="`0 0 24 24`"
-							width="16"
-							height="16"
-							>
-								<use :href="`#${icon}`" :style="[MainStore.activeControl == icon && `color:var(--primary)`]" />
-							</svg>
+					>
+						<svg :viewBox="`0 0 24 24`" width="16" height="16">
+							<use
+								:href="`#${icon}`"
+								:style="[
+									MainStore.activeControl == icon && `color:var(--primary)`,
+								]"
+							/>
+						</svg>
 					</span>
 				</template>
 			</div>

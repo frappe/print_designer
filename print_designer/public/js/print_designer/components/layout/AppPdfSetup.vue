@@ -146,7 +146,8 @@ onMounted(() => {
 				switch (location) {
 					case "main":
 						element.classes = element.classes.filter(
-							(name) => ["inHeaderFooter", "overlappingHeaderFooter"].indexOf(name) == -1
+							(name) =>
+								["inHeaderFooter", "overlappingHeaderFooter"].indexOf(name) == -1
 						);
 						break;
 					case "inside":

@@ -43,9 +43,10 @@
 		</div>
 		<div class="secondary-actions">
 			<button
-					class="btn btn-sm add-data-button"
-					@click="(event) => MainStore.openJinjaModal = true">
-					Manage Custom Data
+				class="btn btn-sm add-data-button"
+				@click="(event) => (MainStore.openJinjaModal = true)"
+			>
+				Manage Custom Data
 			</button>
 		</div>
 		<AppPropertiesPanelSection

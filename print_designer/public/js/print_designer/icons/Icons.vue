@@ -6,49 +6,137 @@
 		style="display: none"
 	>
 		<symbol id="layerPanel" fill="none" viewBox="0 0 16 16">
-		<g filter="url(#a)">
-			<path fill="var(--icon-stroke)" fill-rule="evenodd" d="M8.347 2.123a.7.7 0 0 0-.694 0L4.252 4.066 1.056 5.892a.7.7 0 0 0 0 1.216l3.196 1.826 3.4 1.943a.7.7 0 0 0 .695 0l3.401-1.943 3.196-1.826a.7.7 0 0 0 0-1.216l-6.597-3.77ZM4.748 4.934 8 3.076 13.992 6.5l-2.74 1.566L8 9.924 4.748 8.066 2.008 6.5l2.74-1.566Zm-3.5 4.132a.5.5 0 0 0-.496.868l3.5 2 3.4 1.943a.7.7 0 0 0 .695 0l3.401-1.943 3.5-2a.5.5 0 0 0-.496-.868l-3.5 2L8 12.924l-3.252-1.858-3.5-2Z" class="Union" clip-rule="evenodd"/>
-		</g>
-		<defs>
-			<filter id="a" width="24" height="24" x="-4" y="-4" class="a" color-interpolation-filters="sRGB" filterUnits="userSpaceOnUse">
-			<feFlood flood-opacity="0" result="BackgroundImageFix"/>
-			<feGaussianBlur in="BackgroundImageFix" stdDeviation="2"/>
-			<feComposite in2="SourceAlpha" operator="in" result="effect1_backgroundBlur_84_50838"/>
-			<feBlend in="SourceGraphic" in2="effect1_backgroundBlur_84_50838" result="shape"/>
-			</filter>
-		</defs>
+			<g filter="url(#a)">
+				<path
+					fill="var(--icon-stroke)"
+					fill-rule="evenodd"
+					d="M8.347 2.123a.7.7 0 0 0-.694 0L4.252 4.066 1.056 5.892a.7.7 0 0 0 0 1.216l3.196 1.826 3.4 1.943a.7.7 0 0 0 .695 0l3.401-1.943 3.196-1.826a.7.7 0 0 0 0-1.216l-6.597-3.77ZM4.748 4.934 8 3.076 13.992 6.5l-2.74 1.566L8 9.924 4.748 8.066 2.008 6.5l2.74-1.566Zm-3.5 4.132a.5.5 0 0 0-.496.868l3.5 2 3.4 1.943a.7.7 0 0 0 .695 0l3.401-1.943 3.5-2a.5.5 0 0 0-.496-.868l-3.5 2L8 12.924l-3.252-1.858-3.5-2Z"
+					class="Union"
+					clip-rule="evenodd"
+				/>
+			</g>
+			<defs>
+				<filter
+					id="a"
+					width="24"
+					height="24"
+					x="-4"
+					y="-4"
+					class="a"
+					color-interpolation-filters="sRGB"
+					filterUnits="userSpaceOnUse"
+				>
+					<feFlood flood-opacity="0" result="BackgroundImageFix" />
+					<feGaussianBlur in="BackgroundImageFix" stdDeviation="2" />
+					<feComposite
+						in2="SourceAlpha"
+						operator="in"
+						result="effect1_backgroundBlur_84_50838"
+					/>
+					<feBlend
+						in="SourceGraphic"
+						in2="effect1_backgroundBlur_84_50838"
+						result="shape"
+					/>
+				</filter>
+			</defs>
 		</symbol>
 		<symbol id="mouseTool" fill="none" viewBox="0 0 16 16">
 			<g clip-path="url(#a)">
-				<path fill="var(--icon-stroke)" fill-rule="evenodd" d="M.646.646a.5.5 0 0 0-.119.517l4.828 14a.5.5 0 0 0 .927.046L9.1 9.102l1.781-.823 4.328-1.996a.5.5 0 0 0-.047-.927l-14-4.828a.5.5 0 0 0-.517.12Zm7.478 8.185-2.23 4.83L1.808 1.807l11.854 4.088-3.198 1.475-1.632.754-2.167-2.167a.5.5 0 1 0-.707.707L8.124 8.83Z" clip-rule="evenodd"/>
+				<path
+					fill="var(--icon-stroke)"
+					fill-rule="evenodd"
+					d="M.646.646a.5.5 0 0 0-.119.517l4.828 14a.5.5 0 0 0 .927.046L9.1 9.102l1.781-.823 4.328-1.996a.5.5 0 0 0-.047-.927l-14-4.828a.5.5 0 0 0-.517.12Zm7.478 8.185-2.23 4.83L1.808 1.807l11.854 4.088-3.198 1.475-1.632.754-2.167-2.167a.5.5 0 1 0-.707.707L8.124 8.83Z"
+					clip-rule="evenodd"
+				/>
 			</g>
 			<defs>
 				<clipPath id="a">
-				<path fill="#fff" d="M16 0H0v16h16z"/>
+					<path fill="#fff" d="M16 0H0v16h16z" />
 				</clipPath>
 			</defs>
 		</symbol>
 		<symbol id="textTool" fill="none" viewBox="0 0 16 16">
-			<path fill="var(--icon-stroke)" fill-rule="evenodd" d="M5.6 1.5a.5.5 0 0 0 0 1 1.9 1.9 0 0 1 1.9 1.9v7.221A1.9 1.9 0 0 1 5.6 13.5a.5.5 0 0 0 0 1A2.9 2.9 0 0 0 8 13.228a2.9 2.9 0 0 0 2.4 1.272.5.5 0 1 0 0-1 1.9 1.9 0 0 1-1.9-1.9V4.379A1.9 1.9 0 0 1 10.4 2.5a.5.5 0 1 0 0-1A2.9 2.9 0 0 0 8 2.772 2.9 2.9 0 0 0 5.6 1.5Z" clip-rule="evenodd"/>
+			<path
+				fill="var(--icon-stroke)"
+				fill-rule="evenodd"
+				d="M5.6 1.5a.5.5 0 0 0 0 1 1.9 1.9 0 0 1 1.9 1.9v7.221A1.9 1.9 0 0 1 5.6 13.5a.5.5 0 0 0 0 1A2.9 2.9 0 0 0 8 13.228a2.9 2.9 0 0 0 2.4 1.272.5.5 0 1 0 0-1 1.9 1.9 0 0 1-1.9-1.9V4.379A1.9 1.9 0 0 1 10.4 2.5a.5.5 0 1 0 0-1A2.9 2.9 0 0 0 8 2.772 2.9 2.9 0 0 0 5.6 1.5Z"
+				clip-rule="evenodd"
+			/>
 		</symbol>
 		<symbol id="tableTool" fill="none" viewBox="0 0 16 16">
-			<path fill="var(--icon-stroke)" fill-rule="evenodd" d="M4.5 2h-1A1.5 1.5 0 0 0 2 3.5v9A1.5 1.5 0 0 0 3.5 14h1V2ZM5 1H3.5A2.5 2.5 0 0 0 1 3.5v9A2.5 2.5 0 0 0 3.5 15h9a2.5 2.5 0 0 0 2.5-2.5v-9A2.5 2.5 0 0 0 12.5 1H5Zm.5 1v3H14V3.5A1.5 1.5 0 0 0 12.5 2h-7Zm0 4v3.5H14V6H5.5Zm0 4.5V14h7a1.5 1.5 0 0 0 1.5-1.5v-2H5.5Z" clip-rule="evenodd"/>
+			<path
+				fill="var(--icon-stroke)"
+				fill-rule="evenodd"
+				d="M4.5 2h-1A1.5 1.5 0 0 0 2 3.5v9A1.5 1.5 0 0 0 3.5 14h1V2ZM5 1H3.5A2.5 2.5 0 0 0 1 3.5v9A2.5 2.5 0 0 0 3.5 15h9a2.5 2.5 0 0 0 2.5-2.5v-9A2.5 2.5 0 0 0 12.5 1H5Zm.5 1v3H14V3.5A1.5 1.5 0 0 0 12.5 2h-7Zm0 4v3.5H14V6H5.5Zm0 4.5V14h7a1.5 1.5 0 0 0 1.5-1.5v-2H5.5Z"
+				clip-rule="evenodd"
+			/>
 		</symbol>
 		<symbol id="imageTool" fill="none" viewBox="0 0 16 16">
-			<path fill="var(--icon-stroke)" fill-rule="evenodd" d="M12.5 2.5h-9A1.5 1.5 0 0 0 2 4v8a1.5 1.5 0 0 0 1.102 1.447.502.502 0 0 1 .053-.06l6.429-6.112a.9.9 0 0 1 1.1-.11L14 9.252V4a1.5 1.5 0 0 0-1.5-1.5Zm0 11H4.488l5.729-5.447 3.767 2.37.016.01V12a1.5 1.5 0 0 1-1.5 1.5Zm-9-12h9A2.5 2.5 0 0 1 15 4v8a2.5 2.5 0 0 1-2.5 2.5h-9A2.5 2.5 0 0 1 1 12V4a2.5 2.5 0 0 1 2.5-2.5ZM6 5.75a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0ZM5.25 7.5a1.75 1.75 0 1 0 0-3.5 1.75 1.75 0 0 0 0 3.5Z" clip-rule="evenodd"/>
+			<path
+				fill="var(--icon-stroke)"
+				fill-rule="evenodd"
+				d="M12.5 2.5h-9A1.5 1.5 0 0 0 2 4v8a1.5 1.5 0 0 0 1.102 1.447.502.502 0 0 1 .053-.06l6.429-6.112a.9.9 0 0 1 1.1-.11L14 9.252V4a1.5 1.5 0 0 0-1.5-1.5Zm0 11H4.488l5.729-5.447 3.767 2.37.016.01V12a1.5 1.5 0 0 1-1.5 1.5Zm-9-12h9A2.5 2.5 0 0 1 15 4v8a2.5 2.5 0 0 1-2.5 2.5h-9A2.5 2.5 0 0 1 1 12V4a2.5 2.5 0 0 1 2.5-2.5ZM6 5.75a.75.75 0 1 1-1.5 0 .75.75 0 0 1 1.5 0ZM5.25 7.5a1.75 1.75 0 1 0 0-3.5 1.75 1.75 0 0 0 0 3.5Z"
+				clip-rule="evenodd"
+			/>
 		</symbol>
 		<symbol id="rectangleTool" fill="none" viewBox="0 0 16 16">
-			<path fill-rule="evenodd" clip-rule="evenodd" d="M12.5 2H3.5C2.67157 2 2 2.67157 2 3.5V12.5C2 13.3284 2.67157 14 3.5 14H12.5C13.3284 14 14 13.3284 14 12.5V3.5C14 2.67157 13.3284 2 12.5 2ZM3.5 1C2.11929 1 1 2.11929 1 3.5V12.5C1 13.8807 2.11929 15 3.5 15H12.5C13.8807 15 15 13.8807 15 12.5V3.5C15 2.11929 13.8807 1 12.5 1H3.5Z" fill="var(--icon-stroke)"/>
+			<path
+				fill-rule="evenodd"
+				clip-rule="evenodd"
+				d="M12.5 2H3.5C2.67157 2 2 2.67157 2 3.5V12.5C2 13.3284 2.67157 14 3.5 14H12.5C13.3284 14 14 13.3284 14 12.5V3.5C14 2.67157 13.3284 2 12.5 2ZM3.5 1C2.11929 1 1 2.11929 1 3.5V12.5C1 13.8807 2.11929 15 3.5 15H12.5C13.8807 15 15 13.8807 15 12.5V3.5C15 2.11929 13.8807 1 12.5 1H3.5Z"
+				fill="var(--icon-stroke)"
+			/>
 		</symbol>
 		<symbol id="barcodeTool" fill="none" viewBox="0 0 16 16">
-			<path fill-rule="evenodd" clip-rule="evenodd" d="M0.5 4C0.776142 4 1 4.18172 1 4.40588V12.2191C1 12.4433 0.776142 12.625 0.5 12.625C0.223858 12.625 0 12.4433 0 12.2191V4.40588C0 4.18172 0.223858 4 0.5 4Z" fill="var(--icon-stroke)"/>
-			<path fill-rule="evenodd" clip-rule="evenodd" d="M2.12354 4C2.39968 4 2.62354 4.18172 2.62354 4.40588V12.2191C2.62354 12.4433 2.39968 12.625 2.12354 12.625C1.84739 12.625 1.62354 12.4433 1.62354 12.2191V4.40588C1.62354 4.18172 1.84739 4 2.12354 4Z" fill="var(--icon-stroke)"/>
-			<path fill-rule="evenodd" clip-rule="evenodd" d="M5.25293 4C5.52907 4 5.75293 4.18172 5.75293 4.40588V12.2191C5.75293 12.4433 5.52907 12.625 5.25293 12.625C4.97679 12.625 4.75293 12.4433 4.75293 12.2191V4.40588C4.75293 4.18172 4.97679 4 5.25293 4Z" fill="var(--icon-stroke)"/>
-			<path fill-rule="evenodd" clip-rule="evenodd" d="M6.87646 4C7.15261 4 7.37646 4.18172 7.37646 4.40588V12.2191C7.37646 12.4433 7.15261 12.625 6.87646 12.625C6.60032 12.625 6.37646 12.4433 6.37646 12.2191V4.40588C6.37646 4.18172 6.60032 4 6.87646 4Z" fill="var(--icon-stroke)"/>
-			<path fill-rule="evenodd" clip-rule="evenodd" d="M8.5 4C8.77614 4 9 4.18172 9 4.40588V12.2191C9 12.4433 8.77614 12.625 8.5 12.625C8.22386 12.625 8 12.4433 8 12.2191V4.40588C8 4.18172 8.22386 4 8.5 4Z" fill="var(--icon-stroke)"/>
-			<path fill-rule="evenodd" clip-rule="evenodd" d="M10.9351 4C11.2112 4 11.4351 4.18172 11.4351 4.40588V12.2191C11.4351 12.4433 11.2112 12.625 10.9351 12.625C10.6589 12.625 10.4351 12.4433 10.4351 12.2191V4.40588C10.4351 4.18172 10.6589 4 10.9351 4Z" fill="var(--icon-stroke)"/>
-			<path fill-rule="evenodd" clip-rule="evenodd" d="M12.5586 4C12.8347 4 13.0586 4.18172 13.0586 4.40588V12.2191C13.0586 12.4433 12.8347 12.625 12.5586 12.625C12.2825 12.625 12.0586 12.4433 12.0586 12.2191V4.40588C12.0586 4.18172 12.2825 4 12.5586 4Z" fill="var(--icon-stroke)"/>
-			<path fill-rule="evenodd" clip-rule="evenodd" d="M14.9941 4C15.2703 4 15.4941 4.18172 15.4941 4.40588V12.2191C15.4941 12.4433 15.2703 12.625 14.9941 12.625C14.718 12.625 14.4941 12.4433 14.4941 12.2191V4.40588C14.4941 4.18172 14.718 4 14.9941 4Z" fill="var(--icon-stroke)"/>
+			<path
+				fill-rule="evenodd"
+				clip-rule="evenodd"
+				d="M0.5 4C0.776142 4 1 4.18172 1 4.40588V12.2191C1 12.4433 0.776142 12.625 0.5 12.625C0.223858 12.625 0 12.4433 0 12.2191V4.40588C0 4.18172 0.223858 4 0.5 4Z"
+				fill="var(--icon-stroke)"
+			/>
+			<path
+				fill-rule="evenodd"
+				clip-rule="evenodd"
+				d="M2.12354 4C2.39968 4 2.62354 4.18172 2.62354 4.40588V12.2191C2.62354 12.4433 2.39968 12.625 2.12354 12.625C1.84739 12.625 1.62354 12.4433 1.62354 12.2191V4.40588C1.62354 4.18172 1.84739 4 2.12354 4Z"
+				fill="var(--icon-stroke)"
+			/>
+			<path
+				fill-rule="evenodd"
+				clip-rule="evenodd"
+				d="M5.25293 4C5.52907 4 5.75293 4.18172 5.75293 4.40588V12.2191C5.75293 12.4433 5.52907 12.625 5.25293 12.625C4.97679 12.625 4.75293 12.4433 4.75293 12.2191V4.40588C4.75293 4.18172 4.97679 4 5.25293 4Z"
+				fill="var(--icon-stroke)"
+			/>
+			<path
+				fill-rule="evenodd"
+				clip-rule="evenodd"
+				d="M6.87646 4C7.15261 4 7.37646 4.18172 7.37646 4.40588V12.2191C7.37646 12.4433 7.15261 12.625 6.87646 12.625C6.60032 12.625 6.37646 12.4433 6.37646 12.2191V4.40588C6.37646 4.18172 6.60032 4 6.87646 4Z"
+				fill="var(--icon-stroke)"
+			/>
+			<path
+				fill-rule="evenodd"
+				clip-rule="evenodd"
+				d="M8.5 4C8.77614 4 9 4.18172 9 4.40588V12.2191C9 12.4433 8.77614 12.625 8.5 12.625C8.22386 12.625 8 12.4433 8 12.2191V4.40588C8 4.18172 8.22386 4 8.5 4Z"
+				fill="var(--icon-stroke)"
+			/>
+			<path
+				fill-rule="evenodd"
+				clip-rule="evenodd"
+				d="M10.9351 4C11.2112 4 11.4351 4.18172 11.4351 4.40588V12.2191C11.4351 12.4433 11.2112 12.625 10.9351 12.625C10.6589 12.625 10.4351 12.4433 10.4351 12.2191V4.40588C10.4351 4.18172 10.6589 4 10.9351 4Z"
+				fill="var(--icon-stroke)"
+			/>
+			<path
+				fill-rule="evenodd"
+				clip-rule="evenodd"
+				d="M12.5586 4C12.8347 4 13.0586 4.18172 13.0586 4.40588V12.2191C13.0586 12.4433 12.8347 12.625 12.5586 12.625C12.2825 12.625 12.0586 12.4433 12.0586 12.2191V4.40588C12.0586 4.18172 12.2825 4 12.5586 4Z"
+				fill="var(--icon-stroke)"
+			/>
+			<path
+				fill-rule="evenodd"
+				clip-rule="evenodd"
+				d="M14.9941 4C15.2703 4 15.4941 4.18172 15.4941 4.40588V12.2191C15.4941 12.4433 15.2703 12.625 14.9941 12.625C14.718 12.625 14.4941 12.4433 14.4941 12.2191V4.40588C14.4941 4.18172 14.718 4 14.9941 4Z"
+				fill="var(--icon-stroke)"
+			/>
 		</symbol>
 		<symbol id="alignTop">
 			<path

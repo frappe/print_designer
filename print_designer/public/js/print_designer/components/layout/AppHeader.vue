@@ -1,13 +1,23 @@
 <template>
 	<div class="header">
 		<a class="navbar-brand navbar-home" href="/app">
-			<img class="app-icon" style="width: 32px" src="/assets/print_designer/images/print-designer-logo.svg">
+			<img
+				class="app-icon"
+				style="width: 32px"
+				src="/assets/print_designer/images/print-designer-logo.svg"
+			/>
 		</a>
 		<h3 class="title">{{ print_format_name }}</h3>
 		<span class="indicator-pill no-indicator-dot ellipsis gray">Beta</span>
 		<button class="btn btn-sm btn-default exit-btn" @click="goToLastPage">
-			<svg width="14" height="14" viewBox="0 0 16 16" fill="none" xmlns="http://www.w3.org/2000/svg">
-				<use href="#es-line-log-out" style="--icon-stroke: var(--invert-neutral);" />
+			<svg
+				width="14"
+				height="14"
+				viewBox="0 0 16 16"
+				fill="none"
+				xmlns="http://www.w3.org/2000/svg"
+			>
+				<use href="#es-line-log-out" style="--icon-stroke: var(--invert-neutral)" />
 			</svg>
 			<span>Exit</span>
 		</button>

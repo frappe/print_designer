@@ -44,5 +44,5 @@ export const pageSizes = {
 	"ANSI B (ledger & tabloid)": [279, 432],
 	"ANSI E": [864, 1118],
 	"ANSI D": [559, 864],
-	"CUSTOM": ["*", "*"]
+	CUSTOM: ["*", "*"],
 };

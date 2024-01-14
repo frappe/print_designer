@@ -1,5 +1,5 @@
 frappe.pages["print"].on_page_load = function (wrapper) {
-	frappe.require(['pdfjs.bundle.css', 'print_designer.bundle.css'])
+	frappe.require(["pdfjs.bundle.css", "print_designer.bundle.css"]);
 	frappe.ui.make_app_page({
 		parent: wrapper,
 	});
@@ -103,7 +103,7 @@ frappe.ui.form.PrintView = class PrintView extends frappe.ui.form.PrintView {
 		});
 	}
 	async designer_pdf(print_format) {
-		if (typeof pdfjsLib == "undefined"){
+		if (typeof pdfjsLib == "undefined") {
 			await frappe.require("assets/print_designer/js/pdf.min.js", () => {
 				pdfjsLib.GlobalWorkerOptions.workerSrc =
 					frappe.boot.assets_json["pdf.worker.bundle.js"];
@@ -143,7 +143,7 @@ frappe.ui.form.PrintView = class PrintView extends frappe.ui.form.PrintView {
 			}
 			this.pdf_download_btn.prop("disabled", false);
 			this.print_btn.prop("disabled", false);
-		} catch(err) {
+		} catch (err) {
 			console.log(err);
 			frappe.show_alert(
 				{
@@ -214,7 +214,7 @@ frappe.ui.form.PrintView = class PrintView extends frappe.ui.form.PrintView {
 	printit() {
 		let me = this;
 		// Enable Network Printing
-		if(parseInt(this.print_settings.enable_print_server)) {
+		if (parseInt(this.print_settings.enable_print_server)) {
 			super.printit();
 			return;
 		}

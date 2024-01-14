@@ -50,9 +50,7 @@
 				v-if="!!MainStore.openImageModal"
 				:openImageModal="MainStore.openImageModal"
 			/>
-			<AppUserProvidedJinjaModal
-				v-if="!!MainStore.openJinjaModal"
-			/>
+			<AppUserProvidedJinjaModal v-if="!!MainStore.openJinjaModal" />
 		</div>
 		<AppPreviewPdf v-if="MainStore.mode == 'preview'" />
 	</div>
@@ -86,7 +84,7 @@ const isComponent = Object.freeze({
 	},
 	image: BaseImage,
 	table: BaseTable,
-	barcode: BaseBarcode
+	barcode: BaseBarcode,
 });
 const MainStore = useMainStore();
 const ElementStore = useElementStore();
@@ -238,12 +236,20 @@ const handleMouseUp = (e) => {
 		MainStore.isMoveStart = false;
 		MainStore.isMoved = false;
 	}
-	if (MainStore.isDrawing && MainStore.isMoved && MainStore.lastCreatedElement?.type == "image") {
+	if (
+		MainStore.isDrawing &&
+		MainStore.isMoved &&
+		MainStore.lastCreatedElement?.type == "image"
+	) {
 		!MainStore.openImageModal &&
 			nextTick(() => (MainStore.openImageModal = MainStore.lastCreatedElement));
 		MainStore.setActiveControl("MousePointer");
 	}
-	if (MainStore.isDrawing && MainStore.isMoved && MainStore.lastCreatedElement?.type == "barcode") {
+	if (
+		MainStore.isDrawing &&
+		MainStore.isMoved &&
+		MainStore.lastCreatedElement?.type == "barcode"
+	) {
 		!MainStore.openBarcodeModal &&
 			nextTick(() => (MainStore.openBarcodeModal = MainStore.lastCreatedElement));
 		MainStore.setActiveControl("MousePointer");
@@ -524,24 +530,30 @@ watchEffect(() => {
 	}
 });
 
-watch(() => [MainStore.userProvidedJinja, MainStore.doctype, MainStore.currentDoc], async () => {
-	let result = await frappe.call({
-		method: "print_designer.print_designer.page.print_designer.print_designer.get_data_from_main_template",
-		args: {
-			string: MainStore.userProvidedJinja,
-			doctype: MainStore.doctype,
-			docname: MainStore.currentDoc,
-			settings: {},
-		},
-	})
-	result = result.message
-	if (result.success) {
-		MainStore.mainParsedJinjaData = result.message;
-		console.log('%cUser Provided Custom Data Template was successfully rendered. You can ignore any User Provided Custom Data Template errors that are shown before this', 'background: #185A37; color: #ffffff; font-size: 14px;')
-	} else {
-		console.error("Error From User Provided Custom Data Template\n\n", result.error)
+watch(
+	() => [MainStore.userProvidedJinja, MainStore.doctype, MainStore.currentDoc],
+	async () => {
+		let result = await frappe.call({
+			method: "print_designer.print_designer.page.print_designer.print_designer.get_data_from_main_template",
+			args: {
+				string: MainStore.userProvidedJinja,
+				doctype: MainStore.doctype,
+				docname: MainStore.currentDoc,
+				settings: {},
+			},
+		});
+		result = result.message;
+		if (result.success) {
+			MainStore.mainParsedJinjaData = result.message;
+			console.log(
+				"%cUser Provided Custom Data Template was successfully rendered. You can ignore any User Provided Custom Data Template errors that are shown before this",
+				"background: #185A37; color: #ffffff; font-size: 14px;"
+			);
+		} else {
+			console.error("Error From User Provided Custom Data Template\n\n", result.error);
+		}
 	}
-});
+);
 </script>
 <style deep lang="scss">
 .active-elements {

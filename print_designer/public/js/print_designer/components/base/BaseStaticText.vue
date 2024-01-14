@@ -6,9 +6,14 @@
 		:style="[
 			postionalStyles(startX, startY, width, height),
 			!isFixedSize && {
-				width:'fit-content', 
-				height:'fit-content', 
-				maxWidth: MainStore.page.width - MainStore.page.marginLeft - MainStore.page.marginRight - startX + 'px',
+				width: 'fit-content',
+				height: 'fit-content',
+				maxWidth:
+					MainStore.page.width -
+					MainStore.page.marginLeft -
+					MainStore.page.marginRight -
+					startX +
+					'px',
 			},
 		]"
 		:class="MainStore.getCurrentElementsId.includes(id) ? 'active-elements' : 'text-hover'"
@@ -25,11 +30,15 @@
 				style,
 				widthHeightStyle(width, height),
 				!isFixedSize && {
-					width:'fit-content', 
-					height:'fit-content', 
-					maxWidth: MainStore.page.width - MainStore.page.marginLeft - MainStore.page.marginRight - startX + 'px',
+					width: 'fit-content',
+					height: 'fit-content',
+					maxWidth:
+						MainStore.page.width -
+						MainStore.page.marginLeft -
+						MainStore.page.marginRight -
+						startX +
+						'px',
 				},
-
 			]"
 			:class="['staticText', classes]"
 			v-if="type == 'text'"
@@ -86,7 +95,7 @@ const {
 	parseJinja,
 } = toRefs(props.object);
 
-const parsedValue = ref('');
+const parsedValue = ref("");
 
 const { setElements } = useElement({
 	draggable: true,
@@ -95,42 +104,56 @@ const { setElements } = useElement({
 
 const { drawEventHandler, parameters } = useDraw();
 
-
-watch(() => [contenteditable.value, content.value, parseJinja.value, MainStore.docData, MainStore.mainParsedJinjaData], async () => {
-	if (!contenteditable.value && content.value != '' && parseJinja.value && Object.keys(MainStore.docData).length > 0) {
-		try {
-			// call render_user_text_withdoc method using frappe.call and return the result
-			const MainStore = useMainStore();
-			let result = await frappe.call({
-				method: "print_designer.print_designer.page.print_designer.print_designer.render_user_text_withdoc",
-				args: {
-					string: content.value,
-					doctype: MainStore.doctype,
-					docname: MainStore.currentDoc,
-					send_to_jinja: MainStore.mainParsedJinjaData || {},
-				},
-			})
-			result = result.message
-			if (result.success) {
-				parsedValue.value = result.message;
-			} else {
-				console.error("Error From User Provided Jinja String\n\n", result.error)
+watch(
+	() => [
+		contenteditable.value,
+		content.value,
+		parseJinja.value,
+		MainStore.docData,
+		MainStore.mainParsedJinjaData,
+	],
+	async () => {
+		if (
+			!contenteditable.value &&
+			content.value != "" &&
+			parseJinja.value &&
+			Object.keys(MainStore.docData).length > 0
+		) {
+			try {
+				// call render_user_text_withdoc method using frappe.call and return the result
+				const MainStore = useMainStore();
+				let result = await frappe.call({
+					method: "print_designer.print_designer.page.print_designer.print_designer.render_user_text_withdoc",
+					args: {
+						string: content.value,
+						doctype: MainStore.doctype,
+						docname: MainStore.currentDoc,
+						send_to_jinja: MainStore.mainParsedJinjaData || {},
+					},
+				});
+				result = result.message;
+				if (result.success) {
+					parsedValue.value = result.message;
+				} else {
+					console.error("Error From User Provided Jinja String\n\n", result.error);
+				}
+			} catch (error) {
+				console.error("Error in Jinja Template\n", { value_string: content.value, error });
+				frappe.show_alert(
+					{
+						message: "Unable Render Jinja Template. Please Check Console",
+						indicator: "red",
+					},
+					5
+				);
+				parsedValue.value = content.value;
 			}
-		} catch (error) {
-			console.error("Error in Jinja Template\n", { value_string: content.value, error });
-			frappe.show_alert(
-				{
-					message: "Unable Render Jinja Template. Please Check Console",
-					indicator: "red",
-				},
-				5
-			);
-			parsedValue.value = content.value
+		} else {
+			parsedValue.value = content.value;
 		}
-	} else {
-		parsedValue.value = content.value
-	}
-},	{ immediate: true, deep: true })
+	},
+	{ immediate: true, deep: true }
+);
 
 const handleMouseDown = (e, element) => {
 	lockAxis(element, e.shiftKey);

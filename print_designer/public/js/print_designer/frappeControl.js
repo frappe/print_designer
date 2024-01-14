@@ -103,7 +103,8 @@ export const makeFeild = ({
 					hidePicker = onClickOutside(
 						MainStore.frappeControls[name].picker.parent,
 						() => {
-							MainStore.frappeControls[name] && MainStore.frappeControls[name].$wrapper.popover("hide");
+							MainStore.frappeControls[name] &&
+								MainStore.frappeControls[name].$wrapper.popover("hide");
 						}
 					);
 				});
