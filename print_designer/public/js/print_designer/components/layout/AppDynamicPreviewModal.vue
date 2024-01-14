@@ -142,6 +142,7 @@
 <script setup>
 import { ref, nextTick, onMounted, onUnmounted, watchPostEffect } from "vue";
 import { useMainStore } from "../../store/MainStore";
+import { selectElementContents } from "../../utils";
 const MainStore = useMainStore();
 const props = defineProps({
 	fieldnames: {
@@ -208,14 +209,6 @@ defineExpose({ parentField, setParentField, selectedEl, setSelectedEl, label, se
 const handleClick = (event, field, index) => {
 	selectedEl.value = { index, field };
 	parentField.value = field.parentField;
-};
-
-const selectElementContents = (el) => {
-	const range = document.createRange();
-	range.selectNodeContents(el);
-	const sel = window.getSelection();
-	sel.removeAllRanges();
-	sel.addRange(range);
 };
 
 const handleDblClick = (event, field) => {
