@@ -10,3 +10,6 @@
 
 # Inital Codebase formatted using pre-commit
 6bf1c3f3d9f61219fffa4507cb77bc34ad9ad279
+
+# Codebase reformatted using pre-commit as it was not working correctly due to config error.
+224eb6e652ec808628930a272e7704f3d8ececa5
