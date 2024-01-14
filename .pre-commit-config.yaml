@@ -36,7 +36,7 @@ repos:
                 print_designer/public/dist/.*|
                 .*node_modules.*|
                 .*boilerplate.*|
-                *.min.js|
+                \.min\.js|
                 print_designer/www/website_script.js|
                 print_designer/templates/includes/.*|
                 print_designer/public/js/lib/.*
