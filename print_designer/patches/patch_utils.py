@@ -71,7 +71,7 @@ While developing patches, pass save=False to function so that it will not save t
 
 def patch_formats(
     callbacks: Union[Callable[[Dict], None], Dict[str, Callable[[Dict], None]]],
-    types: Optional[List[str]] = ["text", "image", "barcode", "rectangle", "table"],
+    types: Optional[List[str]] = None,
     save: bool = True,
 ) -> None:
     """
@@ -86,6 +86,10 @@ def patch_formats(
     :param types: A list of print format types to which the callback function should be applied.
                               If not provided, it defaults to ["text", "image", "barcode", "rectangle", "table"].
     """
+
+    if not types:
+        types = ["text", "image", "barcode", "rectangle", "table"]
+
     print_formats = frappe.get_all(
         "Print Format",
         filters={"print_designer": 1},
@@ -122,7 +126,7 @@ def patch_formats(
 def patch_elements(
     data: List[Dict],
     callbacks: Union[Callable[[Dict], None], Dict[str, Callable[[Dict], None]]],
-    types: Optional[List[str]] = ["text", "image", "barcode", "rectangle", "table"],
+    types: Optional[List[str]] = None,
 ) -> List[Dict]:
     """
     This function iterates over a list of elements, applying a callback function to each element of a specified type.
@@ -134,6 +138,10 @@ def patch_elements(
                     Defaults to ["text", "image", "barcode", "rectangle", "table"].
     return: The original data list, with the callback function applied to each element of the specified types.
     """
+
+    if not types:
+        types = ["text", "image", "barcode", "rectangle", "table"]
+
     if isinstance(callbacks, dict):
         callback = callbacks.get("element", None)
         dynamic_content_callback = callbacks.get("dynamic_content", None)

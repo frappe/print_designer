@@ -4,28 +4,38 @@ from frappe.utils.jinja import get_jenv
 from frappe.model.document import BaseDocument
 
 @frappe.whitelist(allow_guest=False)
-def render_user_text_withdoc(string, doctype, docname=None, row={}, send_to_jinja={}):
+def render_user_text_withdoc(string, doctype, docname=None, row=None, send_to_jinja=None):
+	if not row:
+		row = {}
+	if not send_to_jinja:
+		send_to_jinja = {}
+
 	if not docname or docname == "":
 		return render_user_text(string=string, doc={}, row=row, send_to_jinja=send_to_jinja)
 	doc = frappe.get_cached_doc(doctype, docname)
 	return render_user_text(string=string, doc=doc, row=row, send_to_jinja=send_to_jinja)
 
 @frappe.whitelist(allow_guest=False)
-def render_user_text(string, doc, row={}, send_to_jinja={}):
+def render_user_text(string, doc, row=None, send_to_jinja=None):
+	if not row:
+		row = {}
+	if not send_to_jinja:
+		send_to_jinja = {}
+
 	jinja_vars = {};
 	if isinstance(send_to_jinja, dict):
 		jinja_vars = send_to_jinja
 	elif send_to_jinja != "" and isinstance(send_to_jinja, str):
 			try:
 				jinja_vars = frappe.parse_json(send_to_jinja)
-			except:
+			except Exception:
 				pass
 		
 	if not (isinstance(row, dict) or issubclass(row.__class__, BaseDocument)):
 		if isinstance(row, str):
 			try:
 				row = frappe.parse_json(row)
-			except:
+			except Exception:
 				raise TypeError("row must be a dict")
 		else:
 			raise TypeError("row must be a dict")
@@ -35,7 +45,7 @@ def render_user_text(string, doc, row={}, send_to_jinja={}):
 		if isinstance(doc, str):
 			try:
 				doc = frappe.parse_json(doc)
-			except:
+			except Exception:
 				raise TypeError("doc must be a dict or subclass of BaseDocument")
 			
 
@@ -53,7 +63,10 @@ def render_user_text(string, doc, row={}, send_to_jinja={}):
 	return result
 
 @frappe.whitelist(allow_guest=False)
-def get_data_from_main_template(string, doctype, docname=None, settings={}):
+def get_data_from_main_template(string, doctype, docname=None, settings=None):
+	if not settings:
+		settings = {}
+
 	result = {}
 	if string.find("send_to_jinja") == -1:
 		result["success"] = 1
@@ -64,7 +77,7 @@ def get_data_from_main_template(string, doctype, docname=None, settings={}):
 		if isinstance(settings, str):
 			try:
 				settings = frappe.parse_json(settings)
-			except:
+			except Exception:
 				raise TypeError("settings must be a dict")
 		else:
 			raise TypeError("settings must be a dict")
@@ -171,7 +184,10 @@ def convert_uom(
 
 
 @frappe.whitelist()
-def get_barcode(barcode_format, barcode_value, options={}, width=None, height=None, png_base64=False):
+def get_barcode(barcode_format, barcode_value, options=None, width=None, height=None, png_base64=False):
+	if not options:
+		options = {}
+
 	options = frappe.parse_json(options)
 
 	if (isinstance(barcode_value, str) and barcode_value.startswith("<svg")):
@@ -224,7 +240,7 @@ def get_barcode(barcode_format, barcode_value, options={}, width=None, height=No
 
 	try:
 		barcode = barcode_class(barcode_value, writer)
-	except:
+	except Exception:
 		frappe.msgprint(f"Invalid barcode value <b>{barcode_value}</b> for format <b>{barcode_format}</b>", raise_exception=True, alert=True, indicator="red")
 
 	stream = BytesIO()
@@ -239,9 +255,13 @@ def get_barcode(barcode_format, barcode_value, options={}, width=None, height=No
 	return { "type": "png_base64" if png_base64 else "svg", "value": barcode_value }
 
 
-def get_qrcode(barcode_value, options={}, png_base64=False):
+def get_qrcode(barcode_value, options=None, png_base64=False):
 	import pyqrcode
 	from io import BytesIO
+
+	if not options:
+		options = {}
+
 	options = frappe.parse_json(options)
 	options = {
 		"scale": options.get("scale", 5),
