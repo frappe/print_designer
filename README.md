@@ -8,7 +8,7 @@
 
 ## Frappe app to design print formats using interactive UI.
 
-![](https://github.com/frappe/print_designer/assets/39730881/f5773202-e9c7-421a-8fce-f4ed5c078ae6)
+![](https://github.com/frappe/print_designer/assets/39730881/aa62d2e2-e25e-4803-afbc-d3eaf1e4840f)
 
 </div>
 
