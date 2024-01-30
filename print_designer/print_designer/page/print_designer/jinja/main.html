@@ -142,12 +142,12 @@ background-image: url('{{frappe.get_url()}}{%if element.isDynamic %}{{element.im
 {% set span_value = render_spanvalue(field, element, row, send_to_jinja) %}
 <span class="{% if not field.is_static and field.is_labelled %}baseSpanTag{% endif %}">
     {% if not field.is_static and field.is_labelled and span_value %}
-    <span class="{% if row %}printTable{% else %}dynamicText{% endif %} label-text labelSpanTag" style="user-select:auto;{%if element.labelStyle %}{{convert_css(element.labelStyle)}}{%endif%}{%if field.labelStyle %}{{convert_css(field.labelStyle)}}{%endif%}">
+    <span class="{% if row %}printTable{% else %}dynamicText{% endif %} label-text labelSpanTag" style="user-select:auto; {%if element.labelStyle %}{{convert_css(element.labelStyle)}}{%endif%}{%if field.labelStyle %}{{convert_css(field.labelStyle)}}{%endif%}">
         {{ _(field.label) }}
     </span>
     {% endif %}
     <span class="dynamic-span {% if not field.is_static and field.is_labelled %}valueSpanTag{%endif%} {{page_class(field)}} }}"
-        style="{{convert_css(field.style)}} user-select:auto;">
+        style="{%- if element.style.get('color') -%}{{ convert_css({'color': element.style.get('color')})}}{%- endif -%} {{convert_css(field.style)}} user-select:auto;">
         {{ span_value }}
     </span>
     {% if field.nextLine %}
