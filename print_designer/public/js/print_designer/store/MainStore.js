@@ -421,11 +421,24 @@ export const useMainStore = defineStore("MainStore", {
 				alt: "altStyle",
 			});
 			let styleEditMode = mapper[object.styleEditMode];
-			return (
-				object.selectedDynamicText?.[styleEditMode][propertyName] ||
-				object[styleEditMode][propertyName] ||
-				state.getGlobalStyleObject[propertyName]
-			);
+			if (propertyName != "backgroundColor") {
+				return (
+					object.selectedDynamicText?.[styleEditMode][propertyName] ||
+					object[styleEditMode][propertyName] ||
+					state.getGlobalStyleObject[propertyName]
+				);
+			} else {
+				// we need to check if empty string incase it is background color and set as transparent
+				if (typeof object.selectedDynamicText?.[styleEditMode][propertyName] == "string") {
+					return object.selectedDynamicText?.[styleEditMode][propertyName];
+				}
+				if (typeof object[styleEditMode][propertyName] == "string") {
+					return object[styleEditMode][propertyName];
+				}
+				if (typeof state.getGlobalStyleObject[propertyName] == "string") {
+					return state.getGlobalStyleObject[propertyName];
+				}
+			}
 		},
 	},
 	actions: {

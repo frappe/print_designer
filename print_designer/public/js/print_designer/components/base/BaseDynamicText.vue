@@ -23,6 +23,7 @@
 		<div
 			:style="[
 				style,
+				style.backgroundColor == '' && { backgroundColor: 'transparent' },
 				widthHeightStyle(width, height),
 				!isFixedSize && {
 					width: 'fit-content',

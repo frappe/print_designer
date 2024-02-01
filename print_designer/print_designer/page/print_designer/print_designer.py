@@ -132,7 +132,7 @@ def convert_css(css_obj):
 			string_css += (
 				"".join(["-" + i.lower() if i.isupper() else i for i in item[0]]).lstrip("-")
 				+ ":"
-				+ str(item[1])
+				+ str(item[1] if item[1] != "" or item[0] != "backgroundColor" else "transparent")
 				+ "!important;"
 			)
 	string_css += "user-select: all;"
