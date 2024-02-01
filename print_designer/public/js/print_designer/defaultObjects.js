@@ -164,6 +164,7 @@ export const createTable = (cordinates, parent = null) => {
 		style: {},
 		labelStyle: {},
 		headerStyle: {},
+		altStyle: {},
 		classes: [],
 	};
 

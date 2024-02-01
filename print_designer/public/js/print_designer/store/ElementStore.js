@@ -479,6 +479,7 @@ export const useElementStore = defineStore("ElementStore", {
 					style: {},
 					labelStyle: {},
 					headerStyle: {},
+					altStyle: {},
 					classes: [],
 				};
 				this.Elements.push(newTable);
