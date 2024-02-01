@@ -6,9 +6,14 @@
 		:style="[
 			postionalStyles(startX, startY, width, height),
 			!isFixedSize && {
-				width:'fit-content', 
-				height:'fit-content', 
-				maxWidth: MainStore.page.width - MainStore.page.marginLeft - MainStore.page.marginRight - startX + 'px',
+				width: 'fit-content',
+				height: 'fit-content',
+				maxWidth:
+					MainStore.page.width -
+					MainStore.page.marginLeft -
+					MainStore.page.marginRight -
+					startX +
+					'px',
 			},
 		]"
 		:class="MainStore.getCurrentElementsId.includes(id) ? 'active-elements' : 'text-hover'"
@@ -27,16 +32,20 @@
 				style.backgroundColor == '' && {backgroundColor : 'transparent' },
 				widthHeightStyle(width, height),
 				!isFixedSize && {
-					width:'fit-content', 
-					height:'fit-content', 
-					maxWidth: MainStore.page.width - MainStore.page.marginLeft - MainStore.page.marginRight - startX + 'px',
+					width: 'fit-content',
+					height: 'fit-content',
+					maxWidth:
+						MainStore.page.width -
+						MainStore.page.marginLeft -
+						MainStore.page.marginRight -
+						startX +
+						'px',
 				},
-
 			]"
 			:class="['staticText', classes]"
 			v-if="type == 'text'"
 			data-placeholder=""
-			v-html="content"
+			v-html="parsedValue"
 		></p>
 		<BaseResizeHandles
 			v-if="!contenteditable && MainStore.getCurrentElementsId.includes(id)"
@@ -46,7 +55,7 @@
 
 <script setup>
 import BaseResizeHandles from "./BaseResizeHandles.vue";
-import { toRefs, watch, onMounted, onUpdated } from "vue";
+import { toRefs, watch, onMounted, onUpdated, ref } from "vue";
 import { useMainStore } from "../../store/MainStore";
 import { useElement } from "../../composables/Element";
 import { useDraw } from "../../composables/Draw";
@@ -85,7 +94,10 @@ const {
 	height,
 	style,
 	classes,
+	parseJinja,
 } = toRefs(props.object);
+
+const parsedValue = ref("");
 
 const { setElements } = useElement({
 	draggable: true,
@@ -94,20 +106,55 @@ const { setElements } = useElement({
 
 const { drawEventHandler, parameters } = useDraw();
 
-const toggleDragResize = (toggle) => {
-	isDraggable.value = toggle;
-	isResizable.value = toggle;
-	props.object.contenteditable = !toggle;
-};
 watch(
-	() => MainStore.activeControl,
-	() => {
-		if (MainStore.activeControl == "text") {
-			toggleDragResize(false);
+	() => [
+		contenteditable.value,
+		content.value,
+		parseJinja.value,
+		MainStore.docData,
+		MainStore.mainParsedJinjaData,
+	],
+	async () => {
+		if (
+			!contenteditable.value &&
+			content.value != "" &&
+			parseJinja.value &&
+			Object.keys(MainStore.docData).length > 0
+		) {
+			try {
+				// call render_user_text_withdoc method using frappe.call and return the result
+				const MainStore = useMainStore();
+				let result = await frappe.call({
+					method: "print_designer.print_designer.page.print_designer.print_designer.render_user_text_withdoc",
+					args: {
+						string: content.value,
+						doctype: MainStore.doctype,
+						docname: MainStore.currentDoc,
+						send_to_jinja: MainStore.mainParsedJinjaData || {},
+					},
+				});
+				result = result.message;
+				if (result.success) {
+					parsedValue.value = result.message;
+				} else {
+					console.error("Error From User Provided Jinja String\n\n", result.error);
+				}
+			} catch (error) {
+				console.error("Error in Jinja Template\n", { value_string: content.value, error });
+				frappe.show_alert(
+					{
+						message: "Unable Render Jinja Template. Please Check Console",
+						indicator: "red",
+					},
+					5
+				);
+				parsedValue.value = content.value;
+			}
 		} else {
-			toggleDragResize(true);
+			parsedValue.value = content.value;
 		}
-	}
+	},
+	{ immediate: true, deep: true }
 );
 
 const handleMouseDown = (e, element) => {
@@ -171,6 +218,7 @@ const handleBlur = (e) => {
 	content.value = DOMRef.value.firstElementChild.innerHTML;
 	MainStore.getCurrentElementsId.includes(id.value) &&
 		DOMRef.value.classList.add("active-elements");
+	contenteditable.value = false;
 };
 
 const handleKeyDown = (e) => {

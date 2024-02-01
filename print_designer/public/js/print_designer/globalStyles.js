@@ -216,6 +216,7 @@ export const globalStyles = {
 		isDynamic: true,
 		mainRuleSelector: ".printTable td",
 		headerRuleSelector: ".printTable th",
+		altRuleSelector: ".printTable tr:nth-child(even) td",
 		labelRuleSelector: ".printTable .label-text",
 		style: {
 			fontFamily: "Inter",
@@ -310,5 +311,6 @@ export const globalStyles = {
 			opacity: 1,
 			zIndex: 1,
 		},
+		altStyle: {},
 	}),
 };

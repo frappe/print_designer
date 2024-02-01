@@ -54,19 +54,30 @@
 						/>
 						<div class="hidden-toggle">
 							<label class="switch">
-								<input type="checkbox" :class="{ checked: hiddenFields }" :checked="hiddenFields"
-									@change="() => {
-										hiddenFields = !hiddenFields;
-									}"
-									@click="MainStore.isHiddenFieldsVisible = !MainStore.isHiddenFieldsVisible;"
-									>
+								<input
+									type="checkbox"
+									:class="{ checked: hiddenFields }"
+									:checked="hiddenFields"
+									@change="
+										() => {
+											hiddenFields = !hiddenFields;
+										}
+									"
+									@click="
+										MainStore.isHiddenFieldsVisible =
+											!MainStore.isHiddenFieldsVisible
+									"
+								/>
 								<span class="slider round"></span>
 							</label>
 							<span>Hidden Fields</span>
 						</div>
 					</div>
 					<div class="form-message yellow" v-if="hiddenFields">
-						<div>Fields with <b>Print Hide</b> are now also visible and can be printed. please be careful while selecting fields </div>
+						<div>
+							Fields with <b>Print Hide</b> are now also visible and can be printed.
+							please be careful while selecting fields
+						</div>
 					</div>
 					<div class="container-main">
 						<div
@@ -146,10 +157,14 @@ const allowHiddenFieldDisable = watch(
 	() => hiddenFields.value,
 	(newValue, oldValue) => {
 		if (newValue == false && oldValue == true) {
-			let hidden_fields = fieldnames.value.filter((el) => el.print_hide).map((el) => el.label || el.fieldname);
+			let hidden_fields = fieldnames.value
+				.filter((el) => el.print_hide)
+				.map((el) => el.label || el.fieldname);
 			if (!hidden_fields.length) return;
 			hiddenFields.value = true;
-			message = __("Please First remove hidden fields [ " + [...hidden_fields].join(", ") + " ]");
+			message = __(
+				"Please First remove hidden fields [ " + [...hidden_fields].join(", ") + " ]"
+			);
 			frappe.show_alert(
 				{
 					message: message,
@@ -190,7 +205,7 @@ onMounted(() => {
 		selectedDoctypeLabel.value = MainStore.doctype;
 		fieldnames.value.findIndex((fd) => fd.print_hide) != -1 && (hiddenFields.value = true);
 		if (!hiddenFields.value) {
-			hiddenFields.value = MainStore.isHiddenFieldsVisible
+			hiddenFields.value = MainStore.isHiddenFieldsVisible;
 		}
 	}
 });
@@ -225,17 +240,21 @@ const handleSidebarClick = async (fieldname) => {
 
 const selectField = async (field, fieldtype) => {
 	let value = previewRef.value.parentField
-					? await getValue(doctype.value, MainStore.docData[previewRef.value.parentField], field.fieldname) || `${field.fieldname}`
-					: frappe.format(
-							MainStore.docData[field.fieldname],
-							{ fieldtype: field.fieldtype, options: field.options },
-							{ inline: true },
-							MainStore.docData
-					  ) || `${field.fieldname}`
-		if (typeof value == "string" && value.startsWith("<svg")) {
-			const result = value.match(new RegExp(`data-barcode-value="(.*?)">`));
-			value = result[1];
-		};
+		? (await getValue(
+				doctype.value,
+				MainStore.docData[previewRef.value.parentField],
+				field.fieldname
+		  )) || `${field.fieldname}`
+		: frappe.format(
+				MainStore.docData[field.fieldname],
+				{ fieldtype: field.fieldtype, options: field.options },
+				{ inline: true },
+				MainStore.docData
+		  ) || `${field.fieldname}`;
+	if (typeof value == "string" && value.startsWith("<svg")) {
+		const result = value.match(new RegExp(`data-barcode-value="(.*?)">`));
+		value = result[1];
+	}
 	let dynamicField = {
 		doctype: doctype.value,
 		parentField: previewRef.value.parentField,
@@ -250,7 +269,7 @@ const selectField = async (field, fieldtype) => {
 		labelStyle: {},
 	};
 	isDynamic.value = true;
-	let index = MainStore.dynamicData.indexOf(dynamicField)
+	let index = MainStore.dynamicData.indexOf(dynamicField);
 	MainStore.dynamicData.splice(index, 1, dynamicField);
 	fieldnames.value = [dynamicField];
 };

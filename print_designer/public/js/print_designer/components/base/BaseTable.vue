@@ -81,6 +81,7 @@
 								selectedDynamicText,
 								setSelectedDynamicText,
 								table,
+								altStyle,
 							}"
 						/>
 					</tr>
@@ -142,6 +143,7 @@ const {
 	style,
 	labelStyle,
 	headerStyle,
+	altStyle,
 	classes,
 	PreviewRowNo,
 	styleEditMode,

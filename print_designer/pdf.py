@@ -35,7 +35,7 @@ def pdf_header_footer_html(soup, head, content, styles, html_id, css):
 
 def pdf_body_html(print_format, jenv, args, template):
 	if print_format and print_format.print_designer and print_format.print_designer_body:
-		template = jenv.get_template("print_designer/page/print_designer/jinja/main.html")
+		template = jenv.loader.get_source(jenv, "print_designer/page/print_designer/jinja/main.html")[0]
 		args.update(
 			{
 				"headerElement": json.loads(print_format.print_designer_header),
@@ -45,4 +45,9 @@ def pdf_body_html(print_format, jenv, args, template):
 				"settings": json.loads(print_format.print_designer_settings),
 			}
 		)
+		# replace placeholder comment with user provided jinja code
+		template_source = template.replace(
+			"<!-- user_generated_jinja_code -->", args["settings"].get("userProvidedJinja", "")
+		)
+		template = jenv.from_string(template_source)
 	return template.render(args, filters={"len": len})

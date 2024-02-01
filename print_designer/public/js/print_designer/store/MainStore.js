@@ -17,8 +17,9 @@ export const useMainStore = defineStore("MainStore", {
 		/**
 		 * @type {'editing'|'pdfSetup'|'preview'} mode
 		 */
+		schema_version: "1.0.1",
 		mode: "editing",
-		cursor: "cursor: url('/assets/print_designer/images/mouse-pointer.svg'), default !important",
+		cursor: "url('/assets/print_designer/images/mouse-pointer.svg'), default !important",
 		isMarqueeActive: false,
 		isDrawing: false,
 		doctype: null,
@@ -47,6 +48,9 @@ export const useMainStore = defineStore("MainStore", {
 		openImageModal: null,
 		openBarcodeModal: null,
 		openTableColumnModal: null,
+		openJinjaModal: false,
+		mainParsedJinjaData: "",
+		userProvidedJinja: "",
 		frappeControls: {
 			documentControl: null,
 			tableControl: null,
@@ -91,7 +95,7 @@ export const useMainStore = defineStore("MainStore", {
 				control: "MousePointer",
 				aria_label: __("Mouse Pointer (M)"),
 				id: "mouse-pointer",
-				cursor:  "url('/assets/print_designer/images/mouse-pointer.svg'), default",
+				cursor: "url('/assets/print_designer/images/mouse-pointer.svg'), default",
 				isDisabled: false,
 			},
 			Text: {
@@ -99,7 +103,7 @@ export const useMainStore = defineStore("MainStore", {
 				control: "Text",
 				aria_label: __("Text (T)"),
 				id: "text",
-				cursor:  "url('/assets/print_designer/images/add-text.svg') 10 10, text",
+				cursor: "url('/assets/print_designer/images/add-text.svg') 10 10, text",
 				isDisabled: false,
 			},
 			Rectangle: {
@@ -107,7 +111,7 @@ export const useMainStore = defineStore("MainStore", {
 				control: "Rectangle",
 				aria_label: __("Rectangle (R)"),
 				id: "rectangle",
-				cursor:  "url('/assets/print_designer/images/add-rectangle.svg') 6 6, crosshair",
+				cursor: "url('/assets/print_designer/images/add-rectangle.svg') 6 6, crosshair",
 				isDisabled: false,
 			},
 			Image: {
@@ -115,7 +119,7 @@ export const useMainStore = defineStore("MainStore", {
 				control: "Image",
 				aria_label: __("Image (I)"),
 				id: "image",
-				cursor:  "url('/assets/print_designer/images/add-image.svg') 6 6, crosshair",
+				cursor: "url('/assets/print_designer/images/add-image.svg') 6 6, crosshair",
 				isDisabled: false,
 			},
 			Table: {
@@ -123,7 +127,7 @@ export const useMainStore = defineStore("MainStore", {
 				control: "Table",
 				aria_label: __("Table (A)"),
 				id: "table",
-				cursor:  "url('/assets/print_designer/images/add-table.svg') 6 6, crosshair",
+				cursor: "url('/assets/print_designer/images/add-table.svg') 6 6, crosshair",
 				isDisabled: false,
 			},
 			// Components: {
@@ -138,7 +142,7 @@ export const useMainStore = defineStore("MainStore", {
 				control: "Barcode",
 				aria_label: __("Barcode (B)"),
 				id: "barcode",
-				cursor:  "url('/assets/print_designer/images/add-barcode.svg') 6 6, crosshair",
+				cursor: "url('/assets/print_designer/images/add-barcode.svg') 6 6, crosshair",
 			},
 		},
 		propertiesPanel: [],
@@ -243,7 +247,7 @@ export const useMainStore = defineStore("MainStore", {
 				} else if (selectedTable) {
 					metaFields = selectedTable.childfields;
 				}
-				if (!show_hidden_fields){
+				if (!show_hidden_fields) {
 					metaFields = metaFields.filter((field) => !field["print_hide"]);
 				}
 				if (typeof search_string == "string" && search_string.length) {
@@ -366,6 +370,7 @@ export const useMainStore = defineStore("MainStore", {
 				main: "style",
 				label: "labelStyle",
 				header: "headerStyle",
+				alt: "altStyle",
 			});
 			let styleEditMode;
 			if (object) {
@@ -399,6 +404,7 @@ export const useMainStore = defineStore("MainStore", {
 				main: "style",
 				label: "labelStyle",
 				header: "headerStyle",
+				alt: "altStyle",
 			});
 			let styleEditMode = mapper[object.styleEditMode];
 			return !isFontStyle
@@ -412,6 +418,7 @@ export const useMainStore = defineStore("MainStore", {
 				main: "style",
 				label: "labelStyle",
 				header: "headerStyle",
+				alt: "altStyle",
 			});
 			let styleEditMode = mapper[object.styleEditMode];
 			if (typeof object.selectedDynamicText?.[styleEditMode][propertyName] == "string"){
@@ -466,7 +473,7 @@ export const useMainStore = defineStore("MainStore", {
 				for (let pl = rule.length; j < pl; j++) {
 					const prop = rule[j];
 					prop[0] = prop[0]
-						.replace(/([a-z])([A-Z])/g, "$1-$2")
+						?.replace(/([a-z])([A-Z])/g, "$1-$2")
 						.replace(/[\s_]+/g, "-")
 						.toLowerCase();
 					propStr += `${prop[0]}: ${prop[1]}${prop[2] ? " !important" : ""};\n`;
@@ -508,6 +515,15 @@ export const useMainStore = defineStore("MainStore", {
 							[headerSelector, [...Object.entries(element[1].headerStyle)]],
 						]);
 						element[1].headerCssRule = markRaw(this.screenStyleSheet.cssRules[id]);
+					}
+				}
+				if (!element[1].altCssRule) {
+					let altSelector = element[1].altRuleSelector;
+					if (altSelector) {
+						const id = this.addStylesheetRules([
+							[altSelector, [...Object.entries(element[1].altStyle)]],
+						]);
+						element[1].altCssRule = markRaw(this.screenStyleSheet.cssRules[id]);
 					}
 				}
 			});

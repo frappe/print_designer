@@ -1,4 +1,5 @@
 import { useMainStore } from "./store/MainStore";
+import { useElementStore } from "./store/ElementStore";
 import { makeFeild } from "./frappeControl";
 import { storeToRefs } from "pinia";
 import {
@@ -248,7 +249,13 @@ export const createPropertiesPanel = () => {
 			condtional,
 			...args,
 		});
-	const colorStyleFrappeControl = (label, name, propertyName, isFontStyle = false, isStyle=true) => {
+	const colorStyleFrappeControl = (
+		label,
+		name,
+		propertyName,
+		isFontStyle = false,
+		isStyle = true
+	) => {
 		return {
 			label,
 			name,
@@ -431,8 +438,9 @@ export const createPropertiesPanel = () => {
 	MainStore.propertiesPanel.push({
 		title: "Table Settings",
 		sectionCondtional: () =>
-			MainStore.getCurrentElementsId.length === 1 &&
-			MainStore.getCurrentElementsValues[0]?.type == "table",
+			(MainStore.getCurrentElementsId.length === 1 &&
+				MainStore.getCurrentElementsValues[0]?.type == "table") ||
+			MainStore.activeControl == "table",
 		fields: [
 			[
 				{
@@ -441,6 +449,7 @@ export const createPropertiesPanel = () => {
 					isLabelled: true,
 					labelDirection: "column",
 					flex: 3,
+					condtional: () => MainStore.getCurrentElementsValues[0]?.type == "table",
 					frappeControl: (ref, name) => {
 						const MainStore = useMainStore();
 						makeFeild({
@@ -508,6 +517,100 @@ export const createPropertiesPanel = () => {
 					flex: 1,
 				},
 			],
+			[
+				{
+					label: "Primary Table",
+					name: "isPrimaryTable",
+					isLabelled: true,
+					labelDirection: "column",
+					condtional: () => MainStore.getCurrentElementsValues[0]?.table,
+					frappeControl: (ref, name) => {
+						const MainStore = useMainStore();
+						const ElementStore = useElementStore();
+						makeFeild({
+							name,
+							ref,
+							fieldtype: "Select",
+							requiredData: [MainStore.getCurrentElementsValues[0]],
+							reactiveObject: () => MainStore.getCurrentElementsValues[0],
+							propertyName: "isPrimaryTable",
+							isStyle: false,
+							options: () => [
+								{ label: "Yes", value: "Yes" },
+								{ label: "No", value: "No" },
+							],
+							formatValue: (object, property, isStyle) => {
+								if (!object) return;
+								return object[property] ? "Yes" : "No";
+							},
+							onChangeCallback: (value = null) => {
+								if (value && MainStore.getCurrentElementsValues[0]) {
+									ElementStore.setPrimaryTable(
+										MainStore.getCurrentElementsValues[0],
+										value === "Yes"
+									);
+									MainStore.frappeControls[name].$input.blur();
+								}
+							},
+						});
+					},
+					flex: 1,
+				},
+				{
+					label: "Style Mode :",
+					isLabelled: true,
+					name: "tableStyleEditMode",
+					labelDirection: "column",
+					condtional: () =>
+						[
+							MainStore.getCurrentElementsValues[0]?.type,
+							MainStore.activeControl,
+						].indexOf("table") != -1,
+					frappeControl: (ref, name) => {
+						const MainStore = useMainStore();
+						makeFeild({
+							name: name,
+							ref: ref,
+							fieldtype: "Select",
+							requiredData: [MainStore],
+							options: () => {
+								return [
+									{ label: "Table Header", value: "header" },
+									{ label: "All Rows", value: "main" },
+									{ label: "Alternate Rows", value: "alt" },
+									{ label: "Field Labels", value: "label" },
+								];
+							},
+							reactiveObject: () => {
+								return (
+									MainStore.getCurrentElementsValues[0] ||
+									MainStore.globalStyles["table"]
+								);
+							},
+							onChangeCallback: (value) => {
+								if (MainStore.getCurrentElementsValues[0]?.selectedDynamicText) {
+									if (
+										MainStore.getCurrentElementsValues[0].styleEditMode ==
+										"label"
+									) {
+										MainStore.getCurrentElementsValues[0].selectedDynamicText.labelStyleEditing = true;
+									} else {
+										MainStore.getCurrentElementsValues[0].selectedDynamicText.labelStyleEditing = false;
+										if (
+											MainStore.getCurrentElementsValues[0].styleEditMode ==
+											"header"
+										) {
+											MainStore.getCurrentElementsValues[0].selectedDynamicText =
+												null;
+										}
+									}
+								}
+							},
+							propertyName: "styleEditMode",
+						});
+					},
+				},
+			],
 		],
 	});
 	MainStore.propertiesPanel.push({
@@ -520,6 +623,52 @@ export const createPropertiesPanel = () => {
 		],
 	});
 	MainStore.propertiesPanel.push({
+		title: "Enable Jinja Parsing",
+		sectionCondtional: () =>
+			MainStore.getCurrentElementsId.length === 1 &&
+			MainStore.getCurrentElementsValues[0].type === "text" &&
+			!MainStore.getCurrentElementsValues[0].isDynamic,
+		fields: [
+			[
+				{
+					label: "Render Jinja",
+					name: "parseJinja",
+					labelDirection: "column",
+					condtional: () =>
+						MainStore.getCurrentElementsId.length === 1 &&
+						MainStore.getCurrentElementsValues[0].type === "text" &&
+						!MainStore.getCurrentElementsValues[0].isDynamic,
+					frappeControl: (ref, name) => {
+						const MainStore = useMainStore();
+						makeFeild({
+							name: name,
+							ref: ref,
+							fieldtype: "Select",
+							requiredData: [MainStore.getCurrentElementsValues[0]],
+							options: () => [
+								{ label: "Yes", value: "Yes" },
+								{ label: "No", value: "No" },
+							],
+							formatValue: (object, property, isStyle) => {
+								if (!object) return;
+								return object[property] ? "Yes" : "No";
+							},
+							onChangeCallback: (value = null) => {
+								if (value && MainStore.getCurrentElementsValues[0]) {
+									MainStore.getCurrentElementsValues[0]["parseJinja"] =
+										value === "Yes";
+									MainStore.frappeControls[name].$input.blur();
+								}
+							},
+							reactiveObject: () => MainStore.getCurrentElementsValues[0],
+							propertyName: "parseJinja",
+						});
+					},
+				},
+			],
+		],
+	});
+	MainStore.propertiesPanel.push({
 		title: "Text Tool",
 		sectionCondtional: () => MainStore.activeControl === "text",
 		fields: [
@@ -528,8 +677,7 @@ export const createPropertiesPanel = () => {
 					label: "Text Control :",
 					name: "textControlType",
 					labelDirection: "column",
-					condtional: () =>
-						MainStore.activeControl === "text",
+					condtional: () => MainStore.activeControl === "text",
 					frappeControl: (ref, name) => {
 						const MainStore = useMainStore();
 						makeFeild({
@@ -560,9 +708,13 @@ export const createPropertiesPanel = () => {
 			[
 				{
 					label: "Choose Element :",
-					name: "styleEditMode",
+					name: "textStyleEditMode",
 					labelDirection: "column",
-					condtional: null,
+					condtional: () =>
+						[
+							MainStore.getCurrentElementsValues[0]?.type,
+							MainStore.activeControl,
+						].indexOf("table") == -1,
 					frappeControl: (ref, name) => {
 						const MainStore = useMainStore();
 						makeFeild({
@@ -572,19 +724,10 @@ export const createPropertiesPanel = () => {
 							requiredData: [MainStore],
 							options: () => {
 								if (
-									"table" == MainStore.getCurrentElementsValues[0]?.type ||
-									"table" == MainStore.activeControl
-								)
-									return [
-										{ label: "Label Element", value: "label" },
-										{ label: "Main Element", value: "main" },
-										{ label: "Header Element", value: "header" },
-									];
-								if (
 									("text" == MainStore.getCurrentElementsValues[0]?.type &&
 										MainStore.getCurrentElementsValues[0]?.isDynamic) ||
 									("text" == MainStore.activeControl &&
-										MainStore.textControlType == "static")
+										MainStore.textControlType == "dynamic")
 								)
 									return [
 										{ label: "Label Element", value: "label" },
@@ -593,13 +736,9 @@ export const createPropertiesPanel = () => {
 								return [{ label: "Main Element", value: "main" }];
 							},
 							reactiveObject: () => {
-								let styleClass = "table";
-								if (MainStore.activeControl == "text") {
-									if (MainStore.textControlType == "dynamic") {
-										styleClass = "dynamicText";
-									} else {
-										styleClass = "staticText";
-									}
+								let styleClass = "staticText";
+								if (MainStore.textControlType == "dynamic") {
+									styleClass = "dynamicText";
 								}
 								return (
 									MainStore.getCurrentElementsValues[0] ||
@@ -615,13 +754,6 @@ export const createPropertiesPanel = () => {
 										MainStore.getCurrentElementsValues[0].selectedDynamicText.labelStyleEditing = true;
 									} else {
 										MainStore.getCurrentElementsValues[0].selectedDynamicText.labelStyleEditing = false;
-										if (
-											MainStore.getCurrentElementsValues[0].styleEditMode ==
-											"header"
-										) {
-											MainStore.getCurrentElementsValues[0].selectedDynamicText =
-												null;
-										}
 									}
 								}
 							},
@@ -635,20 +767,25 @@ export const createPropertiesPanel = () => {
 					label: "Label Style :",
 					name: "labelDisplayOptions",
 					labelDirection: "column",
-					condtional: ()=> {
+					condtional: () => {
 						let styleClass = "table";
-								if (MainStore.activeControl == "text") {
-									if (MainStore.textControlType == "dynamic") {
-										styleClass = "dynamicText";
-									} else {
-										styleClass = "staticText";
-									}
-								}
-						let curObj = MainStore.getCurrentElementsValues[0] || MainStore.globalStyles[styleClass]
-						if (curObj.type == "table" || curObj.type == "text" && curObj.isDynamic) {
-							return true
+						if (MainStore.activeControl == "text") {
+							if (MainStore.textControlType == "dynamic") {
+								styleClass = "dynamicText";
+							} else {
+								styleClass = "staticText";
+							}
 						}
-						return false
+						let curObj =
+							MainStore.getCurrentElementsValues[0] ||
+							MainStore.globalStyles[styleClass];
+						if (
+							curObj.type == "table" ||
+							(curObj.type == "text" && curObj.isDynamic)
+						) {
+							return true;
+						}
+						return false;
 					},
 					frappeControl: (ref, name) => {
 						const MainStore = useMainStore();
@@ -957,8 +1094,9 @@ export const createPropertiesPanel = () => {
 	MainStore.propertiesPanel.push({
 		title: "Barcode Settings",
 		sectionCondtional: () =>
-			(!MainStore.getCurrentElementsId.length && MainStore.activeControl === "barcode") || 
-			(MainStore.getCurrentElementsId.length === 1 && MainStore.getCurrentElementsValues[0].type === "barcode"),
+			(!MainStore.getCurrentElementsId.length && MainStore.activeControl === "barcode") ||
+			(MainStore.getCurrentElementsId.length === 1 &&
+				MainStore.getCurrentElementsValues[0].type === "barcode"),
 		fields: [
 			{
 				label: "Barcode Format",
@@ -988,7 +1126,16 @@ export const createPropertiesPanel = () => {
 					});
 				},
 			},
-			[colorStyleFrappeControl("Color", "barcodeColor", "barcodeColor", false, false), colorStyleFrappeControl("Background", "barcodeBackgroundColor", "barcodeBackgroundColor", false, false)],
+			[
+				colorStyleFrappeControl("Color", "barcodeColor", "barcodeColor", false, false),
+				colorStyleFrappeControl(
+					"Background",
+					"barcodeBackgroundColor",
+					"barcodeBackgroundColor",
+					false,
+					false
+				),
+			],
 		],
 	});
 };

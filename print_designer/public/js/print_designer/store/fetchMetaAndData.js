@@ -19,7 +19,6 @@ export const fetchMeta = () => {
 				}
 			});
 			metaFields.map((field) => {
-				
 				let obj = {};
 				["fieldname", "fieldtype", "label", "options", "print_hide"].forEach((attr) => {
 					obj[attr] = field[attr];
@@ -104,7 +103,13 @@ export const fetchDoc = async (id = null) => {
 	watch(
 		() => MainStore.currentDoc,
 		async () => {
-			if (!(MainStore.currentDoc && await frappe.db.exists(MainStore.doctype, MainStore.currentDoc))) return;
+			if (
+				!(
+					MainStore.currentDoc &&
+					(await frappe.db.exists(MainStore.doctype, MainStore.currentDoc))
+				)
+			)
+				return;
 			doc = await frappe.db.get_doc(doctype, MainStore.currentDoc);
 			Object.keys(doc).forEach((element) => {
 				if (
@@ -115,13 +120,22 @@ export const fetchDoc = async (id = null) => {
 				}
 			});
 			MainStore.docData = doc;
+		},
+		{ immediate: true }
+	);
+
+	watch(
+		() => MainStore.docData,
+		async () => {
+			if (!Object.keys(MainStore.docData).length) return;
 			await frappe.dom.freeze();
 			MainStore.dynamicData.forEach(async (el) => {
 				if (el.is_static) return;
 				let value = el.parentField
 					? await getValue(el.doctype, MainStore.docData[el.parentField], el.fieldname)
 					: el.tableName
-					? frappe.format(
+					? MainStore.docData[el.tableName][0] &&
+					  frappe.format(
 							MainStore.docData[el.tableName][0][el.fieldname],
 							{ fieldtype: el.fieldtype, options: el.options },
 							{ inline: true },
@@ -136,7 +150,7 @@ export const fetchDoc = async (id = null) => {
 				if (typeof value == "string" && value.startsWith("<svg")) {
 					value.match(new RegExp(`data-barcode-value="(.*?)">`));
 					value = result[1];
-				};
+				}
 				if (!value) {
 					if (["Image, Attach Image"].indexOf(el.fieldtype) != -1) {
 						value = null;
@@ -164,7 +178,6 @@ export const fetchDoc = async (id = null) => {
 				el.value = value;
 			});
 			await frappe.dom.unfreeze();
-		},
-		{ immediate: true }
+		}
 	);
 };

@@ -1,7 +1,4 @@
 frappe.pages["print-designer"].on_page_load = function (wrapper) {
-	// frappe.require("assets/frappe/js/pdf.min.js", () => {
-	// 	pdfjsLib.GlobalWorkerOptions.workerSrc = frappe.boot.assets_json['pdfjs.bundle.js'];
-	//   });
 	// hot reload in development
 	if (frappe.boot.developer_mode) {
 		frappe.hot_update = frappe.hot_update || [];
@@ -84,7 +81,7 @@ const printDesignerDialog = () => {
 						// Incase Route is Same, set_route() is needed to refresh.
 						set_current_doc(doc.name).then(() => {
 							frappe.set_route("print-designer", doc.name);
-						})
+						});
 					})
 					.finally(() => {
 						d.get_primary_btn().prop("disabled", false);
@@ -101,22 +98,35 @@ const printDesignerDialog = () => {
 };
 
 const set_current_doc = async (format_name) => {
-	let currentDoc = null;		
+	let currentDoc = null;
 	let doctype = await frappe.db.get_value("Print Format", format_name, "doc_type");
 	doctype = doctype.message?.doc_type;
-	let route_history = [...frappe.route_history.filter((r) => ["print", "Form"].indexOf(r[0]) != -1 && r[1] == doctype)].reverse();
+	let route_history = [
+		...frappe.route_history.filter(
+			(r) => ["print", "Form"].indexOf(r[0]) != -1 && r[1] == doctype
+		),
+	].reverse();
 	if (route_history.length) {
-		currentDoc = route_history[0][2];			
-	};
+		currentDoc = route_history[0][2];
+	}
 	if (!currentDoc) return;
 	let isdocvalid = await frappe.db.exists(doctype, currentDoc);
 	if (!isdocvalid) return;
-	let settings = await frappe.db.get_value("Print Format", format_name, "print_designer_settings");
-	if (!settings.message) return;
-	settings = JSON.parse(settings.message.print_designer_settings || '{}');
-	settings["currentDoc"] = currentDoc;	
-	await frappe.db.set_value("Print Format", format_name, "print_designer_settings", JSON.stringify(settings));
-}
+	let settings = await frappe.db.get_value(
+		"Print Format",
+		format_name,
+		"print_designer_settings"
+	);
+	if (!settings.message?.print_designer_settings) return;
+	settings = JSON.parse(settings.message.print_designer_settings);
+	settings["currentDoc"] = currentDoc;
+	await frappe.db.set_value(
+		"Print Format",
+		format_name,
+		"print_designer_settings",
+		JSON.stringify(settings)
+	);
+};
 
 const load_print_designer = async (wrapper) => {
 	let route = frappe.get_route();
@@ -136,7 +146,7 @@ const load_print_designer = async (wrapper) => {
 	if (route.length > 1 && route[1].length) {
 		if (is_print_format) {
 			await set_current_doc(route[1]);
-			await frappe.require("print_designer.bundle.js")
+			await frappe.require("print_designer.bundle.js");
 			frappe.print_designer = new frappe.ui.PrintDesigner({
 				wrapper: $parent,
 				print_format: route[1],

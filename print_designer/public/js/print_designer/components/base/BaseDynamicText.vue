@@ -6,9 +6,14 @@
 		:style="[
 			postionalStyles(startX, startY, width, height),
 			!isFixedSize && {
-				width:'fit-content', 
-				height:'fit-content', 
-				maxWidth: MainStore.page.width - MainStore.page.marginLeft - MainStore.page.marginRight - startX + 'px',
+				width: 'fit-content',
+				height: 'fit-content',
+				maxWidth:
+					MainStore.page.width -
+					MainStore.page.marginLeft -
+					MainStore.page.marginRight -
+					startX +
+					'px',
 			},
 		]"
 		:class="MainStore.getCurrentElementsId.includes(id) ? 'active-elements' : 'text-hover'"
@@ -22,9 +27,14 @@
 				style.backgroundColor == '' && {backgroundColor : 'transparent' },
 				widthHeightStyle(width, height),
 				!isFixedSize && {
-					width:'fit-content', 
-					height:'fit-content', 
-					maxWidth: MainStore.page.width - MainStore.page.marginLeft - MainStore.page.marginRight - startX + 'px',
+					width: 'fit-content',
+					height: 'fit-content',
+					maxWidth:
+						MainStore.page.width -
+						MainStore.page.marginLeft -
+						MainStore.page.marginRight -
+						startX +
+						'px',
 				},
 			]"
 			:class="['dynamicText', classes]"

@@ -164,6 +164,7 @@ export const createTable = (cordinates, parent = null) => {
 		style: {},
 		labelStyle: {},
 		headerStyle: {},
+		altStyle: {},
 		classes: [],
 	};
 
@@ -200,6 +201,7 @@ export const createText = (cordinates, parent = null) => {
 		isDraggable: false,
 		isResizable: false,
 		isDropZone: false,
+		parseJinja: false,
 		startX: cordinates.startX - 5,
 		startY: cordinates.startY - 16,
 		pageX: cordinates.pageX,
@@ -419,23 +421,23 @@ export const GoogleFonts = {
 };
 
 export const barcodeFormats = [
-	{ label: "QR Code", value:"qrcode" },
-    { label: "Code39", value: "code39" },
-    { label: "Code128", value: "code128" },
-    { label: "EAN", value: "ean" },
+	{ label: "QR Code", value: "qrcode" },
+	{ label: "Code39", value: "code39" },
+	{ label: "Code128", value: "code128" },
+	{ label: "EAN", value: "ean" },
 	{ label: "EAN8", value: "ean8" },
-    { label: "EAN13", value: "ean13" },
-    { label: "EAN14", value: "ean14" },
-    { label: "GTIN", value: "gtin" },
-    { label: "JAN", value: "jan" },
-    { label: "UPCA", value: "upc" },
-    { label: "UPCA", value: "upca" },
-    { label: "ISSN", value: "issn" },
-    { label: "ISBN", value: "isbn" },
-    { label: "ISBN10", value: "isbn10" },
-    { label: "ISBN13", value: "isbn13" },
-    { label: "PZN", value: "pzn" },
-    { label: "ITF", value: "itf" },
-    { label: "GS1", value: "gs1" },
-    { label: "Gs1_128", value: "gs1_128" }
-]
+	{ label: "EAN13", value: "ean13" },
+	{ label: "EAN14", value: "ean14" },
+	{ label: "GTIN", value: "gtin" },
+	{ label: "JAN", value: "jan" },
+	{ label: "UPCA", value: "upc" },
+	{ label: "UPCA", value: "upca" },
+	{ label: "ISSN", value: "issn" },
+	{ label: "ISBN", value: "isbn" },
+	{ label: "ISBN10", value: "isbn10" },
+	{ label: "ISBN13", value: "isbn13" },
+	{ label: "PZN", value: "pzn" },
+	{ label: "ITF", value: "itf" },
+	{ label: "GS1", value: "gs1" },
+	{ label: "Gs1_128", value: "gs1_128" },
+];

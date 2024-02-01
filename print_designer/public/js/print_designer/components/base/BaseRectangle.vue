@@ -28,7 +28,8 @@
 						? isComponent[object.type][object.isDynamic ? 'dynamic' : 'static']
 						: isComponent[object.type]
 				"
-				v-bind="{ object, index }">
+				v-bind="{ object, index }"
+			>
 			</component>
 		</template>
 	</div>
@@ -72,7 +73,7 @@ const isComponent = Object.freeze({
 	},
 	image: BaseImage,
 	table: BaseTable,
-	barcode: BaseBarcode
+	barcode: BaseBarcode,
 });
 const { id, startX, startY, width, height, style, classes } = toRefs(props.object);
 const ElementStore = useElementStore();
@@ -204,8 +205,8 @@ const handleMouseUp = (e, element = null, index) => {
 
 <script>
 export default {
-	name: "BaseRectangle"
-}
+	name: "BaseRectangle",
+};
 </script>
 
 <style lang="scss" scoped></style>

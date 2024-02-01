@@ -9,4 +9,7 @@
 # $ git config blame.ignoreRevsFile .git-blame-ignore-revs
 
 # Inital Codebase formatted using pre-commit
-6bf1c3f3d9f61219fffa4507cb77bc34ad9ad279
+a4ad42f0a6d0ba6f6ac60826910ac7e442165250
+
+# Codebase reformatted using pre-commit as it was not working correctly due to config error.
+f91d9f2138485837d9b94919b28a6cdf41898919

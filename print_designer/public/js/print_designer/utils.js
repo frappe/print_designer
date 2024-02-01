@@ -159,6 +159,7 @@ const childrensCleanUp = (parentElement, element, isClone, isMainElement) => {
 	element.style = { ...element.style };
 	element.labelStyle && (element.labelStyle = { ...element.labelStyle });
 	element.headerStyle && (element.headerStyle = { ...element.headerStyle });
+	element.altStyle && (element.altStyle = { ...element.altStyle });
 	element.classes = [...element.classes];
 	element.snapPoints = [];
 	element.snapEdges = [];
@@ -615,7 +616,7 @@ export const handleBorderIconClick = (element, icon) => {
 	}
 };
 
-const getGlobalStyleObject = (object = null) => {
+const getGlobalStyleObject = (object = null, checkProperty = null) => {
 	const MainStore = useMainStore();
 	let globalStyleName = MainStore.activeControl;
 	if (globalStyleName == "text") {
@@ -642,6 +643,12 @@ const getGlobalStyleObject = (object = null) => {
 			return MainStore.globalStyles[globalStyleName].labelStyle;
 		case "header":
 			return MainStore.globalStyles[globalStyleName].headerStyle;
+		case "alt":
+			if (checkProperty && MainStore.globalStyles[globalStyleName].altStyle[checkProperty]) {
+				return MainStore.globalStyles[globalStyleName].altStyle;
+			} else {
+				return MainStore.globalStyles[globalStyleName].style;
+			}
 	}
 };
 export const getConditonalObject = (field) => {
@@ -676,10 +683,22 @@ export const getConditonalObject = (field) => {
 						object = object.headerStyle;
 					}
 					break;
+				case "alt":
+					if (field.isFontStyle) {
+						// This is not implemented yet but will be implemented in future if user requests it.
+						object = object.selectedDynamicText?.altStyle || object.altStyle;
+					} else {
+						object = object.altStyle;
+					}
+					// Incase There is no Alternate Style Fallback to All Row/Main Style
+					if (property && !object[property]) {
+						object = orignalObject.style;
+					}
+					break;
 			}
 			if (property) {
 				if (object[property]) return object[property];
-				return getGlobalStyleObject(orignalObject)[property];
+				return getGlobalStyleObject(orignalObject, property)[property];
 			}
 		} else {
 			return getGlobalStyleObject();
@@ -705,6 +724,27 @@ export const handlePrintFonts = (element, printFonts) => {
 			el?.[styleEditMode]?.["fontStyle"] ||
 			element[styleEditMode]["fontStyle"] ||
 			MainStore.globalStyles[globalStyleName][styleEditMode]["fontStyle"];
+		// fallback to main style if not available in altstyle
+		if (styleEditMode == "altStyle") {
+			if (!fontFamily) {
+				fontFamily =
+					el?.["style"]?.["fontFamily"] ||
+					element["style"]["fontFamily"] ||
+					MainStore.globalStyles[globalStyleName]["style"]["fontFamily"];
+			}
+			if (!fontWeight) {
+				fontWeight =
+					el?.["style"]?.["fontWeight"] ||
+					element["style"]["fontWeight"] ||
+					MainStore.globalStyles[globalStyleName]["style"]["fontWeight"];
+			}
+			if (!fontStyle) {
+				fontStyle =
+					el?.["style"]?.["fontStyle"] ||
+					element["style"]["fontStyle"] ||
+					MainStore.globalStyles[globalStyleName]["style"]["fontStyle"];
+			}
+		}
 		if (!fontFamily || !fontWeight || !fontStyle) return;
 		if (!printFonts[fontFamily]) {
 			printFonts[fontFamily] = {
@@ -724,6 +764,7 @@ export const handlePrintFonts = (element, printFonts) => {
 	}
 	if (element.type == "table") {
 		styleModes.push("headerStyle");
+		styleModes.push("altStyle");
 	}
 	styleModes.forEach((styleEditMode) => {
 		let globalStyleName = element.type;
@@ -737,18 +778,28 @@ export const handlePrintFonts = (element, printFonts) => {
 		pushFonts({ styleEditMode, globalStyleName });
 		if (element.dynamicContent) {
 			element.dynamicContent.forEach((el) => {
-				if (styleEditMode != "headerStyle") {
+				if (["headerStyle", "altStyle"].indexOf(styleEditMode) == -1) {
 					pushFonts({ el, styleEditMode, globalStyleName });
 				}
 			});
 		} else if (element.columns) {
-			element.columns.forEach((col) => {
-				col.dynamicContent?.forEach((el) => {
-					if (styleEditMode != "headerStyle") {
+			if (["headerStyle", "altStyle"].indexOf(styleEditMode) != -1) {
+				pushFonts({ el: element, styleEditMode, globalStyleName });
+			} else {
+				element.columns.forEach((col) => {
+					col.dynamicContent?.forEach((el) => {
 						pushFonts({ el, styleEditMode, globalStyleName });
-					}
+					});
 				});
-			});
+			}
 		}
 	});
+};
+
+export const selectElementContents = (el) => {
+	const range = document.createRange();
+	range.selectNodeContents(el);
+	const sel = window.getSelection();
+	sel.removeAllRanges();
+	sel.addRange(range);
 };

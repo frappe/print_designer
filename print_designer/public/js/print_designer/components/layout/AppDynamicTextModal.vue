@@ -58,19 +58,30 @@
 						/>
 						<div class="hidden-toggle">
 							<label class="switch">
-								<input type="checkbox" :class="{ checked: hiddenFields }" :checked="hiddenFields"
-									@change="() => {
-										hiddenFields = !hiddenFields;
-									}"
-									@click="MainStore.isHiddenFieldsVisible = !MainStore.isHiddenFieldsVisible;"
-									>
+								<input
+									type="checkbox"
+									:class="{ checked: hiddenFields }"
+									:checked="hiddenFields"
+									@change="
+										() => {
+											hiddenFields = !hiddenFields;
+										}
+									"
+									@click="
+										MainStore.isHiddenFieldsVisible =
+											!MainStore.isHiddenFieldsVisible
+									"
+								/>
 								<span class="slider round"></span>
 							</label>
 							<span>Hidden Fields</span>
 						</div>
 					</div>
 					<div class="form-message yellow" v-if="hiddenFields">
-						<div>Fields with <b>Print Hide</b> are now also visible and can be printed. please be careful while selecting fields </div>
+						<div>
+							Fields with <b>Print Hide</b> are now also visible and can be printed.
+							please be careful while selecting fields
+						</div>
 					</div>
 					<div class="container-main">
 						<div
@@ -160,10 +171,14 @@ const allowHiddenFieldDisable = watch(
 	() => hiddenFields.value,
 	(newValue, oldValue) => {
 		if (newValue == false && oldValue == true) {
-			let hidden_fields = fieldnames.value.filter((el) => el.print_hide).map((el) => el.label || el.fieldname);
+			let hidden_fields = fieldnames.value
+				.filter((el) => el.print_hide)
+				.map((el) => el.label || el.fieldname);
 			if (!hidden_fields.length) return;
 			hiddenFields.value = true;
-			message = __("Please First remove hidden fields [ " + [...hidden_fields].join(", ") + " ]");
+			message = __(
+				"Please First remove hidden fields [ " + [...hidden_fields].join(", ") + " ]"
+			);
 			frappe.show_alert(
 				{
 					message: message,
@@ -207,7 +222,7 @@ onMounted(() => {
 		}
 		fieldnames.value.findIndex((fd) => fd.print_hide) != -1 && (hiddenFields.value = true);
 		if (!hiddenFields.value) {
-			hiddenFields.value = MainStore.isHiddenFieldsVisible
+			hiddenFields.value = MainStore.isHiddenFieldsVisible;
 		}
 	}
 });
@@ -256,44 +271,51 @@ const selectField = async (field, fieldtype) => {
 	if (isRemoved) return;
 	let index = fieldnames.value.length;
 	let value = previewRef.value.parentField
-					? await getValue(doctype.value, MainStore.docData[previewRef.value.parentField], field.fieldname)
-					: props.table
-					? MainStore.docData[props.table.fieldname]?.length && typeof MainStore.docData[props.table.fieldname][0][field.fieldname] != "undefined" ? frappe.format(
-							MainStore.docData[props.table.fieldname][0][field.fieldname],
-							{ fieldtype: field.fieldtype, options: field.options },
-							{ inline: true },
-							MainStore.docData
-					  ) : `{{ ${field.fieldname} }}`
-					: frappe.format(
-							MainStore.docData[field.fieldname],
-							{ fieldtype: field.fieldtype, options: field.options },
-							{ inline: true },
-							MainStore.docData
-					  );
-				if (!value) {
-					if (["Image, Attach Image"].indexOf(field.fieldtype) != -1) {
-						value = null;
-					} else {
-						switch (field.fieldname) {
-							case "page":
-								value = "0";
-								break;
-							case "topage":
-								value = "999";
-								break;
-							case "date":
-								value = frappe.datetime.now_date();
-								break;
-							case "time":
-								value = frappe.datetime.now_time();
-								break;
-							default:
-								value = `{{ ${previewRef.value.parentField ? previewRef.value.parentField + "." : ""}${
-									field.fieldname
-								} }}`;
-						}
-					}
-				}
+		? await getValue(
+				doctype.value,
+				MainStore.docData[previewRef.value.parentField],
+				field.fieldname
+		  )
+		: props.table
+		? MainStore.docData[props.table.fieldname]?.length &&
+		  typeof MainStore.docData[props.table.fieldname][0][field.fieldname] != "undefined"
+			? frappe.format(
+					MainStore.docData[props.table.fieldname][0][field.fieldname],
+					{ fieldtype: field.fieldtype, options: field.options },
+					{ inline: true },
+					MainStore.docData
+			  )
+			: `{{ ${field.fieldname} }}`
+		: frappe.format(
+				MainStore.docData[field.fieldname],
+				{ fieldtype: field.fieldtype, options: field.options },
+				{ inline: true },
+				MainStore.docData
+		  );
+	if (!value) {
+		if (["Image, Attach Image"].indexOf(field.fieldtype) != -1) {
+			value = null;
+		} else {
+			switch (field.fieldname) {
+				case "page":
+					value = "0";
+					break;
+				case "topage":
+					value = "999";
+					break;
+				case "date":
+					value = frappe.datetime.now_date();
+					break;
+				case "time":
+					value = frappe.datetime.now_time();
+					break;
+				default:
+					value = `{{ ${
+						previewRef.value.parentField ? previewRef.value.parentField + "." : ""
+					}${field.fieldname} }}`;
+			}
+		}
+	}
 	let dynamicField = {
 		doctype: doctype.value,
 		parentField: previewRef.value.parentField,
@@ -565,7 +587,8 @@ small {
 						display: none;
 					}
 					.field-selected {
-						&, &:hover {
+						&,
+						&:hover {
 							border: 1px solid var(--primary);
 						}
 						padding: 7px 0px;

@@ -87,16 +87,42 @@
 					class="fa fa-tag"
 					:style="[selectedEl.field.is_labelled && 'color:var(--primary)']"
 				></span>
-				<span :style="['font-size: 12px; padding: 0px 5px', selectedEl.field.is_labelled && 'color:var(--primary)']">{{
-					selectedEl.field.is_labelled ? "Remove Label" : "Add Label"
-				}}</span>
+				<span
+					:style="[
+						'font-size: 12px; padding: 0px 5px',
+						selectedEl.field.is_labelled && 'color:var(--primary)',
+					]"
+					>{{ selectedEl.field.is_labelled ? "Remove Label" : "Add Label" }}</span
+				>
 			</div>
 			<div v-if="selectedEl" @click="selectedEl.field.nextLine = !selectedEl.field.nextLine">
 				<span
 					class="next-line fa fa-level-down"
 					:style="[selectedEl.field.nextLine && 'color:var(--primary)']"
 				></span>
-				<span :style="['font-size: 12px; padding: 0px 5px', selectedEl.field.nextLine && 'color:var(--primary)']">{{selectedEl.field.nextLine ? "Remove Line" : "New Line"}}</span>
+				<span
+					:style="[
+						'font-size: 12px; padding: 0px 5px',
+						selectedEl.field.nextLine && 'color:var(--primary)',
+					]"
+					>{{ selectedEl.field.nextLine ? "Remove Line" : "New Line" }}</span
+				>
+			</div>
+			<div
+				v-if="selectedEl && selectedEl.field.is_static"
+				@click="selectedEl.field.parseJinja = !selectedEl.field.parseJinja"
+			>
+				<span
+					class="jinja-toggle fa fa-code"
+					:style="[selectedEl.field.parseJinja && 'color:var(--primary)']"
+				></span>
+				<span
+					:style="[
+						'font-size: 12px; padding: 0px 5px',
+						selectedEl.field.parseJinja && 'color:var(--primary)',
+					]"
+					>{{ selectedEl.field.parseJinja ? "Disable Jinja" : "Render Jinja" }}</span
+				>
 			</div>
 		</div>
 		<div
@@ -116,6 +142,7 @@
 <script setup>
 import { ref, nextTick, onMounted, onUnmounted, watchPostEffect } from "vue";
 import { useMainStore } from "../../store/MainStore";
+import { selectElementContents } from "../../utils";
 const MainStore = useMainStore();
 const props = defineProps({
 	fieldnames: {
@@ -151,7 +178,10 @@ onUnmounted(() => {
 });
 
 const handleInputKeyUp = (e) => {
-	if (document.activeElement.tagName == "INPUT" || document.activeElement.contentEditable == "true") {
+	if (
+		document.activeElement.tagName == "INPUT" ||
+		document.activeElement.contentEditable == "true"
+	) {
 		return;
 	}
 	if (selectedEl.value) {
@@ -159,7 +189,7 @@ const handleInputKeyUp = (e) => {
 			handleDeleteClick();
 		}
 	}
-}
+};
 
 const parentField = ref("");
 const setParentField = (value) => {
@@ -179,14 +209,6 @@ defineExpose({ parentField, setParentField, selectedEl, setSelectedEl, label, se
 const handleClick = (event, field, index) => {
 	selectedEl.value = { index, field };
 	parentField.value = field.parentField;
-};
-
-const selectElementContents = (el) => {
-	const range = document.createRange();
-	range.selectNodeContents(el);
-	const sel = window.getSelection();
-	sel.removeAllRanges();
-	sel.addRange(range);
 };
 
 const handleDblClick = (event, field) => {
@@ -218,6 +240,7 @@ const addStaticText = (event) => {
 		is_static: true,
 		is_labelled: false,
 		nextLine: false,
+		parseJinja: false,
 		style: {},
 	};
 	if (selectedEl.value) {
@@ -350,7 +373,8 @@ const deleteField = (ev) => {
 			}
 		}
 
-		.next-line {
+		.next-line,
+		.jinja-toggle {
 			margin: 0px 7px;
 			color: var(--text-muted);
 		}

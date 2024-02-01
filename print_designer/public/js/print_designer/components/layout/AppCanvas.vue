@@ -50,6 +50,7 @@
 				v-if="!!MainStore.openImageModal"
 				:openImageModal="MainStore.openImageModal"
 			/>
+			<AppUserProvidedJinjaModal v-if="!!MainStore.openJinjaModal" />
 		</div>
 		<AppPreviewPdf v-if="MainStore.mode == 'preview'" />
 	</div>
@@ -64,6 +65,7 @@ import AppPdfSetup from "./AppPdfSetup.vue";
 import AppPreviewPdf from "./AppPreviewPdf.vue";
 import AppWidthHeightModal from "./AppWidthHeightModal.vue";
 import AppDynamicTextModal from "./AppDynamicTextModal.vue";
+import AppUserProvidedJinjaModal from "./AppUserProvidedJinjaModal.vue";
 import AppBarcodeModal from "./AppBarcodeModal.vue";
 import AppImageModal from "./AppImageModal.vue";
 import { watch, watchEffect, onMounted, nextTick } from "vue";
@@ -82,7 +84,7 @@ const isComponent = Object.freeze({
 	},
 	image: BaseImage,
 	table: BaseTable,
-	barcode: BaseBarcode
+	barcode: BaseBarcode,
 });
 const MainStore = useMainStore();
 const ElementStore = useElementStore();
@@ -234,12 +236,20 @@ const handleMouseUp = (e) => {
 		MainStore.isMoveStart = false;
 		MainStore.isMoved = false;
 	}
-	if (MainStore.isDrawing && MainStore.isMoved && MainStore.lastCreatedElement?.type == "image") {
+	if (
+		MainStore.isDrawing &&
+		MainStore.isMoved &&
+		MainStore.lastCreatedElement?.type == "image"
+	) {
 		!MainStore.openImageModal &&
 			nextTick(() => (MainStore.openImageModal = MainStore.lastCreatedElement));
 		MainStore.setActiveControl("MousePointer");
 	}
-	if (MainStore.isDrawing && MainStore.isMoved && MainStore.lastCreatedElement?.type == "barcode") {
+	if (
+		MainStore.isDrawing &&
+		MainStore.isMoved &&
+		MainStore.lastCreatedElement?.type == "barcode"
+	) {
 		!MainStore.openBarcodeModal &&
 			nextTick(() => (MainStore.openBarcodeModal = MainStore.lastCreatedElement));
 		MainStore.setActiveControl("MousePointer");
@@ -420,6 +430,23 @@ onMounted(() => {
 							{ deep: true, immediate: true }
 						);
 					}
+					if (element[1].altStyle) {
+						watch(
+							() => MainStore.globalStyles[element[0]].altStyle,
+							() => {
+								if (MainStore.screenStyleSheet && element[1].altCssRule) {
+									Object.entries(
+										MainStore.globalStyles[element[0]].altStyle
+									).forEach((style) => {
+										if (element[1].altCssRule.style[style[0]] != style[1]) {
+											element[1].altCssRule.style[style[0]] = style[1];
+										}
+									});
+								}
+							},
+							{ deep: true, immediate: true }
+						);
+					}
 				});
 			}
 		}
@@ -519,6 +546,31 @@ watchEffect(() => {
 		]);
 	}
 });
+
+watch(
+	() => [MainStore.userProvidedJinja, MainStore.doctype, MainStore.currentDoc],
+	async () => {
+		let result = await frappe.call({
+			method: "print_designer.print_designer.page.print_designer.print_designer.get_data_from_main_template",
+			args: {
+				string: MainStore.userProvidedJinja,
+				doctype: MainStore.doctype,
+				docname: MainStore.currentDoc,
+				settings: {},
+			},
+		});
+		result = result.message;
+		if (result.success) {
+			MainStore.mainParsedJinjaData = result.message;
+			console.log(
+				"%cUser Provided Custom Data Template was successfully rendered. You can ignore any User Provided Custom Data Template errors that are shown before this",
+				"background: #185A37; color: #ffffff; font-size: 14px;"
+			);
+		} else {
+			console.error("Error From User Provided Custom Data Template\n\n", result.error);
+		}
+	}
+);
 </script>
 <style deep lang="scss">
 .active-elements {

@@ -52,7 +52,8 @@ export function useAttachKeyBindings() {
 	const handleKeyDown = async (e) => {
 		MainStore.isAltKey = e.altKey;
 		MainStore.isShiftKey = e.shiftKey;
-		if (e.target !== document.body || MainStore.mode != "editing" || MainStore.openModal) return;
+		if (e.target !== document.body || MainStore.mode != "editing" || MainStore.openModal)
+			return;
 		if (e.ctrlKey || e.metaKey) {
 			if (["a", "A"].indexOf(e.key) != -1) {
 				ElementStore.Elements.forEach((element) => {
