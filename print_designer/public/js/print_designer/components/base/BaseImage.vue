@@ -12,8 +12,7 @@
 			:style="[
 				widthHeightStyle(width, height),
 				style,
-				style.color == '' && {color : 'transparent' },
-				style.backgroundColor == '' && {backgroundColor : 'transparent' },
+				style.backgroundColor == '' && { backgroundColor: 'transparent' },
 				`background-image: url('${isDynamic ? image.value : image.file_url}');`,
 			]"
 			:class="['image', classes]"

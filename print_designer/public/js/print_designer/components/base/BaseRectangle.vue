@@ -2,9 +2,8 @@
 	<div
 		:style="[
 			style,
-			style.color == '' && {color : 'transparent' },
-			style.backgroundColor == '' && {backgroundColor : 'transparent' },
-			postionalStyles(startX, startY, width, height)
+			style.backgroundColor == '' && { backgroundColor: 'transparent' },
+			postionalStyles(startX, startY, width, height),
 		]"
 		:class="[
 			'rectangle',
