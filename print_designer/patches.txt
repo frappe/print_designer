@@ -3,3 +3,4 @@ print_designer.patches.introduce_barcode
 print_designer.patches.introduce_jinja
 print_designer.patches.introduce_schema_versioning
 print_designer.patches.rerun_introduce_jinja
+print_designer.patches.introduce_table_alt_row_styles

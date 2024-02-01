@@ -187,9 +187,10 @@ export const makeFeild = ({
 							];
 						} else {
 							MainStore.frappeControls[name].df.options = [
-								{ label: "Label Element", value: "label" },
-								{ label: "Main Element", value: "main" },
-								{ label: "Header Element", value: "header" },
+								{ label: "Table Header", value: "header" },
+								{ label: "All Rows", value: "main" },
+								{ label: "Alternate Rows", value: "alt" },
+								{ label: "Field Labels", value: "label" },
 							];
 						}
 						MainStore.frappeControls[name].refresh();

@@ -117,8 +117,8 @@ const set_current_doc = async (format_name) => {
 		format_name,
 		"print_designer_settings"
 	);
-	if (!settings.message) return;
-	settings = JSON.parse(settings.message.print_designer_settings || "{}");
+	if (!settings.message?.print_designer_settings) return;
+	settings = JSON.parse(settings.message.print_designer_settings);
 	settings["currentDoc"] = currentDoc;
 	await frappe.db.set_value(
 		"Print Format",

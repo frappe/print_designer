@@ -370,6 +370,7 @@ export const useMainStore = defineStore("MainStore", {
 				main: "style",
 				label: "labelStyle",
 				header: "headerStyle",
+				alt: "altStyle",
 			});
 			let styleEditMode;
 			if (object) {
@@ -403,6 +404,7 @@ export const useMainStore = defineStore("MainStore", {
 				main: "style",
 				label: "labelStyle",
 				header: "headerStyle",
+				alt: "altStyle",
 			});
 			let styleEditMode = mapper[object.styleEditMode];
 			return !isFontStyle
@@ -416,6 +418,7 @@ export const useMainStore = defineStore("MainStore", {
 				main: "style",
 				label: "labelStyle",
 				header: "headerStyle",
+				alt: "altStyle",
 			});
 			let styleEditMode = mapper[object.styleEditMode];
 			return (
@@ -466,7 +469,7 @@ export const useMainStore = defineStore("MainStore", {
 				for (let pl = rule.length; j < pl; j++) {
 					const prop = rule[j];
 					prop[0] = prop[0]
-						.replace(/([a-z])([A-Z])/g, "$1-$2")
+						?.replace(/([a-z])([A-Z])/g, "$1-$2")
 						.replace(/[\s_]+/g, "-")
 						.toLowerCase();
 					propStr += `${prop[0]}: ${prop[1]}${prop[2] ? " !important" : ""};\n`;
@@ -508,6 +511,15 @@ export const useMainStore = defineStore("MainStore", {
 							[headerSelector, [...Object.entries(element[1].headerStyle)]],
 						]);
 						element[1].headerCssRule = markRaw(this.screenStyleSheet.cssRules[id]);
+					}
+				}
+				if (!element[1].altCssRule) {
+					let altSelector = element[1].altRuleSelector;
+					if (altSelector) {
+						const id = this.addStylesheetRules([
+							[altSelector, [...Object.entries(element[1].altStyle)]],
+						]);
+						element[1].altCssRule = markRaw(this.screenStyleSheet.cssRules[id]);
 					}
 				}
 			});

@@ -430,6 +430,23 @@ onMounted(() => {
 							{ deep: true, immediate: true }
 						);
 					}
+					if (element[1].altStyle) {
+						watch(
+							() => MainStore.globalStyles[element[0]].altStyle,
+							() => {
+								if (MainStore.screenStyleSheet && element[1].altCssRule) {
+									Object.entries(
+										MainStore.globalStyles[element[0]].altStyle
+									).forEach((style) => {
+										if (element[1].altCssRule.style[style[0]] != style[1]) {
+											element[1].altCssRule.style[style[0]] = style[1];
+										}
+									});
+								}
+							},
+							{ deep: true, immediate: true }
+						);
+					}
 				});
 			}
 		}
