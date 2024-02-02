@@ -2,6 +2,11 @@ frappe.ui.form.on("Print Format", {
 	refresh: function (frm) {
 		frm.trigger("render_buttons");
 	},
+	standard: function (frm) {
+		if (frm.doc.standard == "Yes" && frm.doc.print_designer == 1) {
+			frm.set_value("print_from_file", 0);
+		}
+	},
 	render_buttons: function (frm) {
 		frm.page.clear_inner_toolbar();
 		if (!frm.is_new()) {

@@ -77,6 +77,11 @@ before_uninstall = "print_designer.uninstall.before_uninstall"
 # after_uninstall = "print_designer.uninstall.after_uninstall"
 
 # ------------
+# After Migrate
+after_migrate = ["print_designer.migrate.after_migrate"]
+
+
+# ------------
 # PDF
 # ------------
 
