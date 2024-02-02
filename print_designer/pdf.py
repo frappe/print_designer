@@ -37,7 +37,7 @@ def pdf_header_footer_html(soup, head, content, styles, html_id, css):
 
 def pdf_body_html(print_format, jenv, args, template):
 	if print_format and print_format.print_designer and print_format.print_designer_body:
-		print_format_name = hashlib.md5(print_format.name, usedforsecurity=False).hexdigest()
+		print_format_name = hashlib.md5(print_format.name.encode(), usedforsecurity=False).hexdigest()
 		add_data_to_monitor(print_designer=print_format_name, print_designer_action="download_pdf")
 		template = jenv.loader.get_source(jenv, "print_designer/page/print_designer/jinja/main.html")[0]
 		args.update(
