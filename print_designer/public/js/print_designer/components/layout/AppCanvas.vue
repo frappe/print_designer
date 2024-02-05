@@ -229,6 +229,9 @@ const handleMouseUp = (e) => {
 			}
 			if (MainStore.activeControl == "table") {
 				MainStore.setActiveControl("MousePointer");
+				if (MainStore.frappeControls.table?.get_value() == "") {
+					MainStore.frappeControls.table.set_focus();
+				}
 			}
 		} else {
 			MainStore.currentDrawListener?.drawEventHandler.mouseup(e);

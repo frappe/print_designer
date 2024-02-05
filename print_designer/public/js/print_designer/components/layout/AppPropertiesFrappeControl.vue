@@ -10,6 +10,7 @@
 				field.frappeControl(el, field.name);
 			}
 		"
+		:key="MainStore.getCurrentElementsValues[0]?.id || '' + field.name"
 		class="frappeControl"
 	></div>
 </template>
