@@ -472,6 +472,12 @@ export const createPropertiesPanel = () => {
 							isStyle: false,
 							onChangeCallback: (value = null) => {
 								const currentEL = MainStore.getCurrentElementsValues[0];
+								const idx = {
+									fieldname: "idx",
+									fieldtype: "Int",
+									label: "No",
+									options: undefined,
+								};
 								if (value && currentEL) {
 									currentEL["table"] = MainStore.metaFields.find(
 										(field) => field.fieldname == value
@@ -481,7 +487,7 @@ export const createPropertiesPanel = () => {
 											currentEL["table"].options
 										] || {};
 									if (Object.keys(currentEL["table"].default_layout).length) {
-										df = {};
+										df = { idx };
 										Object.values(currentEL["table"].default_layout).forEach(
 											(value) => {
 												key = value.fieldname;
@@ -493,6 +499,7 @@ export const createPropertiesPanel = () => {
 										currentEL["table"].default_layout = df;
 									} else {
 										currentEL["table"].childfields.map((df) => {
+											currentEL["table"].default_layout["idx"] = idx;
 											if (
 												df.fieldname &&
 												df.in_list_view &&
@@ -506,6 +513,7 @@ export const createPropertiesPanel = () => {
 											}
 										});
 									}
+									debugger;
 									// fill columns with default fields if table is empty
 									if (
 										currentEL.columns &&
