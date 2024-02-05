@@ -312,6 +312,9 @@ const handleMouseUp = (e, tablewidth) => {
 	MainStore.setActiveControl("MousePointer");
 	MainStore.isMoved = MainStore.isMoveStart = false;
 	MainStore.lastCloned = null;
+	if (MainStore.frappeControls.table?.get_value() == "") {
+		MainStore.frappeControls.table.set_focus();
+	}
 };
 </script>
 

@@ -66,7 +66,15 @@ export const getMeta = async (doctype, parentField) => {
 	let fields = [];
 	childfields.map((field) => {
 		let obj = {};
-		["fieldname", "fieldtype", "label", "options", "print_hide"].forEach((attr) => {
+		[
+			"fieldname",
+			"fieldtype",
+			"label",
+			"options",
+			"print_hide",
+			"is_virtual",
+			"in_list_view",
+		].forEach((attr) => {
 			obj[attr] = field[attr];
 		});
 		fields.push({ ...obj });

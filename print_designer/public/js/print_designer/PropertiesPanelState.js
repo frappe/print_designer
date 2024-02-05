@@ -471,11 +471,70 @@ export const createPropertiesPanel = () => {
 							propertyName: "table",
 							isStyle: false,
 							onChangeCallback: (value = null) => {
-								if (value && MainStore.getCurrentElementsValues[0]) {
-									MainStore.getCurrentElementsValues[0]["table"] =
-										MainStore.metaFields.find(
-											(field) => field.fieldname == value
+								const currentEL = MainStore.getCurrentElementsValues[0];
+								const idx = {
+									fieldname: "idx",
+									fieldtype: "Int",
+									label: "No",
+									options: undefined,
+								};
+								if (value && currentEL) {
+									currentEL["table"] = MainStore.metaFields.find(
+										(field) => field.fieldname == value
+									);
+									currentEL["table"].default_layout =
+										frappe.get_user_settings(MainStore.doctype, "GridView")[
+											currentEL["table"].options
+										] || {};
+									if (Object.keys(currentEL["table"].default_layout).length) {
+										df = { idx };
+										Object.values(currentEL["table"].default_layout).forEach(
+											(value) => {
+												key = value.fieldname;
+												df[key] = currentEL["table"].childfields.find(
+													(df) => df.fieldname == key
+												);
+											}
 										);
+										currentEL["table"].default_layout = df;
+									} else {
+										currentEL["table"].childfields.map((df) => {
+											currentEL["table"].default_layout["idx"] = idx;
+											if (
+												df.fieldname &&
+												df.in_list_view &&
+												!df.is_virtual &&
+												frappe.model.is_value_type(df) &&
+												df.fieldtype !== "Read Only" &&
+												!frappe.model.layout_fields.includes(df.fieldtype)
+											) {
+												currentEL["table"].default_layout[df.fieldname] =
+													df;
+											}
+										});
+									}
+									debugger;
+									// fill columns with default fields if table is empty
+									if (
+										currentEL.columns &&
+										!currentEL.columns.some((c) => c.dynamicContent) &&
+										currentEL["table"].default_layout
+									) {
+										dlKeys = Object.keys(currentEL["table"].default_layout);
+										currentEL.columns
+											.slice(0, dlKeys.length)
+											.forEach((col, index) => {
+												col.dynamicContent = [
+													currentEL["table"].default_layout[
+														dlKeys[index]
+													],
+												];
+												col.label =
+													col.dynamicContent[0].label ||
+													col.dynamicContent[0].fieldname;
+											});
+									}
+
 									MainStore.frappeControls[name].$input.blur();
 								}
 							},
