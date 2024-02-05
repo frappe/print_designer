@@ -104,10 +104,13 @@ frappe.ui.form.PrintView = class PrintView extends frappe.ui.form.PrintView {
 	}
 	async designer_pdf(print_format) {
 		if (typeof pdfjsLib == "undefined") {
-			await frappe.require("assets/print_designer/js/pdf.min.js", () => {
-				pdfjsLib.GlobalWorkerOptions.workerSrc =
-					frappe.boot.assets_json["pdf.worker.bundle.js"];
-			});
+			await frappe.require(
+				["assets/print_designer/js/pdf.min.js", "pdf.worker.bundle.js"],
+				() => {
+					pdfjsLib.GlobalWorkerOptions.workerSrc =
+						frappe.boot.assets_json["pdf.worker.bundle.js"];
+				}
+			);
 		}
 		let me = this;
 		let print_designer_settings = JSON.parse(print_format.print_designer_settings);
