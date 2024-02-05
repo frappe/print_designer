@@ -513,7 +513,6 @@ export const createPropertiesPanel = () => {
 											}
 										});
 									}
-									debugger;
 									// fill columns with default fields if table is empty
 									if (
 										currentEL.columns &&
