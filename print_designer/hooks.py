@@ -11,7 +11,7 @@ app_license = "AGPLv3"
 # ------------------
 
 # include js, css files in header of desk.html
-app_include_js = "pdf.worker.bundle.js"
+# app_include_js = ""
 
 
 # include js, css files in header of web template
