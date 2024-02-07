@@ -2,7 +2,7 @@
 	<td
 		v-for="column in columns"
 		:key="column.fieldname"
-		:style="[style, altStyle && row.idx % 2 == 0 && altStyle]"
+		:style="[style, altStyle && row.idx % 2 == 0 && altStyle, column.style]"
 		@click.self="setSelectedDynamicText(null)"
 	>
 		<template

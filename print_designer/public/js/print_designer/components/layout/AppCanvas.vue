@@ -175,7 +175,8 @@ const handleMouseMove = (e) => {
 			let width = MainStore.currentDrawListener.parameters.width;
 			let columns = Math.floor(width / 100);
 			let elementColumns = MainStore.lastCreatedElement.columns;
-			!elementColumns.length && elementColumns.push({ id: 0, label: "" });
+			!elementColumns.length &&
+				elementColumns.push({ id: 0, label: "", style: {}, applyStyleToHeader: false });
 			if (width > 100) {
 				let columnDif = columns - elementColumns.length;
 				if (columnDif == 0) {
@@ -187,6 +188,8 @@ const handleMouseMove = (e) => {
 						elementColumns.push({
 							id: elementColumns.length,
 							label: "",
+							style: {},
+							applyStyleToHeader: false,
 						});
 					}
 				}

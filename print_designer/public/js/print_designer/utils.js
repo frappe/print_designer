@@ -664,9 +664,12 @@ export const getConditonalObject = (field) => {
 			switch (object.styleEditMode) {
 				case "main":
 					if (field.isFontStyle) {
-						object = object.selectedDynamicText?.style || object.style;
+						object =
+							object.selectedDynamicText?.style ||
+							object.selectedColumn?.style ||
+							object.style;
 					} else {
-						object = object.style;
+						object = object.selectedColumn?.style || object.style;
 					}
 					break;
 				case "label":
