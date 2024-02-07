@@ -90,7 +90,7 @@ background-image: url('{{frappe.get_url()}}{%if element.isDynamic %}{{element.im
         {% if element.columns %}
             <tr>
         {% for column in element.columns%}
-                <th style="{% if column.width %}width: {{column.width}}%; max-width: {{column.width}}%;{%endif%} {{convert_css(element.headerStyle)}}border-top-style: solid !important;border-bottom-style: solid !important;{%if loop.first%}border-left-style: solid !important;{%elif loop.last%}border-right-style: solid !important;{%endif%}">
+                <th style="{% if column.width %}width: {{column.width}}%; max-width: {{column.width}}%;{%endif%} {{convert_css(element.headerStyle)}}border-top-style: solid !important;border-bottom-style: solid !important;{%if loop.first%}border-left-style: solid !important;{%elif loop.last%}border-right-style: solid !important;{%endif%}{%- if column.applyStyleToHeader and column.style -%}{{convert_css(column.style)}}{%- endif -%}">
                 {{ _(column.label) }}
                 </th>
         {% endfor %}
@@ -103,7 +103,7 @@ background-image: url('{{frappe.get_url()}}{%if element.isDynamic %}{{element.im
             <tr>
                 {% set isLastRow = loop.last %}
             {% for column in element.columns%}
-                <td style="{{convert_css(element.style)}}{%if row.idx % 2 == 0 %}{{convert_css(element.altStyle)}}{%endif%}{%if isLastRow%}border-bottom-style: solid !important;{%endif%}{%if loop.first%}border-left-style: solid !important;{%elif loop.last%}border-right-style: solid !important;{%endif%}">
+                <td style="{{convert_css(element.style)}}{%if row.idx % 2 == 0 %}{{convert_css(element.altStyle)}}{%endif%}{%if isLastRow%}border-bottom-style: solid !important;{%endif%}{%if loop.first%}border-left-style: solid !important;{%elif loop.last%}border-right-style: solid !important;{%endif%}{%- if column.style -%}{{convert_css(column.style)}}{%- endif -%}">
             {% if column is mapping %}
                 {% for field in column.dynamicContent%}
                     {{ render_spantag(field, element, row, send_to_jinja) }}

@@ -12,7 +12,15 @@
 			MainStore.getCurrentElementsId.includes(id) && 'active-elements',
 		]"
 	>
-		<div :style="['overflow: hidden;', widthHeightStyle(width - 2, height)]">
+		<div
+			:style="['overflow: hidden;', widthHeightStyle(width - 2, height)]"
+			@click.stop.self="
+				() => {
+					selectedColumn = null;
+					selectedDynamicText = null;
+				}
+			"
+		>
 			<table class="printTable">
 				<thead>
 					<tr v-if="columns.length">
@@ -24,9 +32,13 @@
 									maxWidth: `${column.width}%`,
 								},
 								headerStyle,
+								column.applyStyleToHeader && column.style,
 							]"
 							v-for="(column, index) in columns"
-							:class="menu?.index == index && 'current-column'"
+							:class="
+								(menu?.index == index || column == selectedColumn) &&
+								'current-column'
+							"
 							:key="column.fieldname"
 							:draggable="columnDragging"
 							@dragstart="dragstart($event, index)"
@@ -34,6 +46,7 @@
 							@dragleave="dragleave"
 							@dragover="allowDrop"
 							@contextmenu.prevent="handleMenu($event, index)"
+							@mousedown.self="handleColumnClick(column)"
 							@dblclick.stop="handleDblClick(table, column)"
 							:ref="
 								(el) => {
@@ -109,7 +122,7 @@ import {
 	deleteCurrentElements,
 	widthHeightStyle,
 } from "../../utils";
-import { toRefs, ref } from "vue";
+import { toRefs, ref, watch } from "vue";
 import { useDraw } from "../../composables/Draw";
 import BaseResizeHandles from "./BaseResizeHandles.vue";
 import AppTableContextMenu from "../layout/AppTableContextMenu.vue";
@@ -147,9 +160,19 @@ const {
 	classes,
 	PreviewRowNo,
 	styleEditMode,
+	selectedColumn,
 	selectedDynamicText,
 	DOMRef,
 } = toRefs(props.object);
+
+watch(
+	() => selectedColumn.value,
+	(value) => {
+		if (value) {
+			MainStore.frappeControls.applyStyleToHeader?.set_value(value.applyStyleToHeader);
+		}
+	}
+);
 
 const setSelectedDynamicText = (value, isLabel) => {
 	if (
@@ -159,6 +182,7 @@ const setSelectedDynamicText = (value, isLabel) => {
 		selectedDynamicText.value = null;
 	} else {
 		selectedDynamicText.value = value;
+		selectedColumn.value = null;
 		let removeSelectedText = onClickOutside(DOMRef.value, (event) => {
 			for (let index = 0; index < event.composedPath().length; index++) {
 				if (event.composedPath()[index].id === "canvas") {
@@ -169,6 +193,24 @@ const setSelectedDynamicText = (value, isLabel) => {
 		});
 	}
 	styleEditMode.value = isLabel ? "label" : "main";
+};
+
+const handleColumnClick = (column) => {
+	if (!props.object.table) {
+		MainStore.frappeControls.table.set_focus();
+	} else if (MainStore.activeControl == "mouse-pointer") {
+		selectedColumn.value = column;
+		MainStore.frappeControls.tableStyleEditMode?.set_value("main");
+		selectedDynamicText.value = null;
+		let removeSelectedColumn = onClickOutside(DOMRef.value, (event) => {
+			for (let index = 0; index < event.composedPath().length; index++) {
+				if (event.composedPath()[index].id === "canvas") {
+					selectedColumn.value = null;
+					removeSelectedColumn();
+				}
+			}
+		});
+	}
 };
 
 const handleDblClick = (table, column) => {

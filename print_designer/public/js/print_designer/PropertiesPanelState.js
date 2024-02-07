@@ -663,10 +663,57 @@ export const createPropertiesPanel = () => {
 										}
 									}
 								}
+								if (MainStore.getCurrentElementsValues[0]?.selectedColumn && value != "main"){
+									MainStore.getCurrentElementsValues[0].selectedColumn = null;
+								}
 							},
 							propertyName: "styleEditMode",
 						});
 					},
+				},
+			],
+			[
+				{
+					label: "Apply Style to Header",
+					name: "applyStyleToHeader",
+					isLabelled: true,
+					labelDirection: "column",
+					condtional: () =>
+						MainStore.getCurrentElementsValues[0]?.type == "table" &&
+						MainStore.getCurrentElementsValues[0].selectedColumn,
+					frappeControl: (ref, name) => {
+						const MainStore = useMainStore();
+						const ElementStore = useElementStore();
+						makeFeild({
+							name,
+							ref,
+							fieldtype: "Select",
+							requiredData: [MainStore.getCurrentElementsValues[0]],
+							reactiveObject: () =>
+								MainStore.getCurrentElementsValues[0].selectedColumn,
+							propertyName: "applyStyleToHeader",
+							isStyle: false,
+							options: () => [
+								{ label: "Yes", value: "Yes" },
+								{ label: "No", value: "No" },
+							],
+							formatValue: (object, property, isStyle) => {
+								if (!object) return;
+								return object[property] ? "Yes" : "No";
+							},
+							onChangeCallback: (value = null) => {
+								if (
+									value &&
+									MainStore.getCurrentElementsValues[0].selectedColumn
+								) {
+									MainStore.getCurrentElementsValues[0].selectedColumn.applyStyleToHeader =
+										value === "Yes";
+									MainStore.frappeControls[name].$input.blur();
+								}
+							},
+						});
+					},
+					flex: 1,
 				},
 			],
 		],

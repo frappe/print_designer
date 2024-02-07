@@ -408,8 +408,10 @@ export const useMainStore = defineStore("MainStore", {
 			});
 			let styleEditMode = mapper[object.styleEditMode];
 			return !isFontStyle
-				? object[styleEditMode]
-				: object.selectedDynamicText?.[styleEditMode] || object[styleEditMode];
+				? object.selectedColumn?.["style"] || object[styleEditMode]
+				: object.selectedDynamicText?.[styleEditMode] ||
+						object.selectedColumn?.["style"] ||
+						object[styleEditMode];
 		},
 		getCurrentStyle: (state) => (propertyName) => {
 			let object = state.getCurrentElementsValues[0];
@@ -424,6 +426,7 @@ export const useMainStore = defineStore("MainStore", {
 			if (propertyName != "backgroundColor") {
 				return (
 					object.selectedDynamicText?.[styleEditMode][propertyName] ||
+					object.selectedColumn?.["style"][propertyName] ||
 					object[styleEditMode][propertyName] ||
 					state.getGlobalStyleObject[propertyName]
 				);
@@ -431,6 +434,9 @@ export const useMainStore = defineStore("MainStore", {
 				// we need to check if empty string incase it is background color and set as transparent
 				if (typeof object.selectedDynamicText?.[styleEditMode][propertyName] == "string") {
 					return object.selectedDynamicText?.[styleEditMode][propertyName];
+				}
+				if (typeof object.selectedColumn?.["style"][propertyName] == "string") {
+					return object.selectedColumn?.["style"][propertyName];
 				}
 				if (typeof object[styleEditMode][propertyName] == "string") {
 					return object[styleEditMode][propertyName];
