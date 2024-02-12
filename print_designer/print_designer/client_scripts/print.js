@@ -147,14 +147,21 @@ frappe.ui.form.PrintView = class PrintView extends frappe.ui.form.PrintView {
 			this.pdf_download_btn.prop("disabled", false);
 			this.print_btn.prop("disabled", false);
 		} catch (err) {
-			console.log(err);
-			frappe.show_alert(
-				{
-					message: "Unable to generate PDF",
-					indicator: "red",
+			console.error(err);
+			frappe.msgprint({
+				title: __("Unable to generate PDF"),
+				message: `There was error while generating PDF. Please check the error log for more details.`,
+				indicator: "red",
+				primary_action: {
+					label: "Open Error Log",
+					action(values) {
+						frappe.set_route("List", "Error Log", {
+							doctype: "Error Log",
+							reference_doctype: "Print Format",
+						});
+					},
 				},
-				5
-			);
+			});
 		}
 		/**
 		 * Get page info from document, resize canvas accordingly, and render page.
