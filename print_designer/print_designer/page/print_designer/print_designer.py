@@ -15,6 +15,7 @@ def render_user_text_withdoc(string, doctype, docname=None, row=None, send_to_ji
 	if not docname or docname == "":
 		return render_user_text(string=string, doc={}, row=row, send_to_jinja=send_to_jinja)
 	doc = frappe.get_cached_doc(doctype, docname)
+	doc.check_permission()
 	return render_user_text(string=string, doc=doc, row=row, send_to_jinja=send_to_jinja)
 
 
