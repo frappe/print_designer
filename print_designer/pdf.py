@@ -39,6 +39,9 @@ def pdf_body_html(print_format, jenv, args, template):
 	if print_format and print_format.print_designer and print_format.print_designer_body:
 		print_format_name = hashlib.md5(print_format.name.encode(), usedforsecurity=False).hexdigest()
 		add_data_to_monitor(print_designer=print_format_name, print_designer_action="download_pdf")
+		# DEPRECATED: remove this in few months added for backward compatibility incase user didn't update frappe framework.
+		if not frappe.get_hooks("get_print_format_template"):
+			template = jenv.loader.get_source(jenv, "print_designer/page/print_designer/jinja/main.html")[0]
 		args.update(
 			{
 				"headerElement": json.loads(print_format.print_designer_header),
