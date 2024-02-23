@@ -39,7 +39,6 @@ def pdf_body_html(print_format, jenv, args, template):
 	if print_format and print_format.print_designer and print_format.print_designer_body:
 		print_format_name = hashlib.md5(print_format.name.encode(), usedforsecurity=False).hexdigest()
 		add_data_to_monitor(print_designer=print_format_name, print_designer_action="download_pdf")
-		template = jenv.loader.get_source(jenv, "print_designer/page/print_designer/jinja/main.html")[0]
 		args.update(
 			{
 				"headerElement": json.loads(print_format.print_designer_header),
@@ -55,3 +54,9 @@ def pdf_body_html(print_format, jenv, args, template):
 		)
 		template = jenv.from_string(template_source)
 	return template.render(args, filters={"len": len})
+
+
+def get_print_format_template(jenv, print_format):
+	# if print format is created using print designer, then use print designer template
+	if print_format and print_format.print_designer and print_format.print_designer_body:
+		return jenv.loader.get_source(jenv, "print_designer/page/print_designer/jinja/main.html")[0]

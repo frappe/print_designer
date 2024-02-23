@@ -84,6 +84,7 @@ pdf_header_html = "print_designer.pdf.pdf_header_footer_html"
 pdf_body_html = "print_designer.pdf.pdf_body_html"
 pdf_footer_html = "print_designer.pdf.pdf_header_footer_html"
 
+get_print_format_template = "print_designer.pdf.get_print_format_template"
 # Desk Notifications
 # ------------------
 # See frappe.core.notifications.get_notification_config
