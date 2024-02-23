@@ -124,6 +124,10 @@ There are many ways you can contribute even if you don't code:
     - [HomeBrew](https://brew.sh/) and `brew install pkg-config cairo pango libpng jpeg giflib librsvg pixman`
     - If you have **xcode 10.0 or higher** installed, in order to build from source you need **NPM 6.4.1 or higher** `npm install -g npm@latest`.
 
+3. Linux ARM CPU Installation Error
+    - If error has `node-pre-gyp WARN Pre-built binaries not installable for canvas@x.x.x and node@x.x.x` it means that there aren't any pre-built binaries for your system so it will try to compile them
+    - In order to do that you need `sudo apt-get update && sudo apt-get install build-essential libcairo2-dev libpango1.0-dev libjpeg-dev libgif-dev librsvg2-dev`
+
 ## License
 
 [GNU Affero General Public License v3.0](license.txt)
