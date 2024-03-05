@@ -26,7 +26,10 @@ app_license = "AGPLv3"
 # webform_include_css = {"doctype": "public/css/doctype.css"}
 
 # include js in page
-page_js = {"print": "print_designer/client_scripts/print.js"}
+page_js = {
+	"print": "print_designer/client_scripts/print.js",
+	"point-of-sale": "print_designer/client_scripts/point_of_sale.js",
+}
 
 # include js in doctype views
 doctype_js = {"Print Format": "print_designer/client_scripts/print_format.js"}

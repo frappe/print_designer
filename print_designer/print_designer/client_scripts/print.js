@@ -145,6 +145,9 @@ frappe.ui.form.PrintView = class PrintView extends frappe.ui.form.PrintView {
 				await renderPage(this.pdfDoc, pageno);
 			}
 			this.pdf_download_btn.prop("disabled", false);
+			if (frappe.route_options.trigger_print) {
+				this.printit();
+			}
 			this.print_btn.prop("disabled", false);
 		} catch (err) {
 			console.error(err);
@@ -245,6 +248,11 @@ frappe.ui.form.PrintView = class PrintView extends frappe.ui.form.PrintView {
 						setTimeout(() => {
 							iframe.focus();
 							iframe.contentWindow.print();
+							if (frappe.route_options.trigger_print) {
+								setTimeout(function () {
+									window.close();
+								}, 5000);
+							}
 						}, 1);
 					};
 				} else {
