@@ -44,12 +44,7 @@
 
 <script setup>
 import { useMainStore } from "../../store/MainStore";
-import { ref, watch, onMounted } from "vue";
-
-const selectDynamicText = (isLabel = false) => {
-	props.field.labelStyleEditing = isLabel;
-	props.setSelectedDynamicText(props.field, isLabel);
-};
+import { ref, reactive, watch, onMounted } from "vue";
 
 const MainStore = useMainStore();
 const props = defineProps({
@@ -83,6 +78,21 @@ const props = defineProps({
 	},
 });
 
+const {
+	field,
+	labelStyle,
+	selectedDynamicText,
+	setSelectedDynamicText,
+	index,
+	parentClass,
+	table,
+} = reactive({ ...props });
+
+const selectDynamicText = (isLabel = false) => {
+	field.labelStyleEditing = isLabel;
+	setSelectedDynamicText(field, isLabel);
+};
+
 const parsedValue = ref("");
 const row = ref({});
 
@@ -91,8 +101,8 @@ onMounted(() => {
 		() => [MainStore.docData],
 		async () => {
 			if (Object.keys(MainStore.docData).length == 0) return;
-			if (props.table) {
-				row.value = MainStore.docData[props.table.fieldname]?.[props.index - 1];
+			if (table) {
+				row.value = MainStore.docData[table.fieldname]?.[index - 1];
 			}
 		},
 		{ immediate: true, deep: true }
@@ -100,14 +110,14 @@ onMounted(() => {
 });
 
 const parseJinja = async () => {
-	if (props.field.value != "" && props.field.parseJinja) {
+	if (field.value != "" && field.parseJinja) {
 		try {
 			// call render_user_text_withdoc method using frappe.call and return the result
 			const MainStore = useMainStore();
 			let result = await frappe.call({
 				method: "print_designer.print_designer.page.print_designer.print_designer.render_user_text_withdoc",
 				args: {
-					string: props.field.value,
+					string: field.value,
 					doctype: MainStore.doctype,
 					docname: MainStore.currentDoc,
 					row: row.value,
@@ -121,7 +131,7 @@ const parseJinja = async () => {
 				console.error("Error From User Provided Jinja String\n\n", result.error);
 			}
 		} catch (error) {
-			console.error("Error in Jinja Template\n", { value_string: props.field.value, error });
+			console.error("Error in Jinja Template\n", { value_string: field.value, error });
 			frappe.show_alert(
 				{
 					message: "Unable Render Jinja Template. Please Check Console",
@@ -129,53 +139,49 @@ const parseJinja = async () => {
 				},
 				5
 			);
-			parsedValue.value = props.field.value;
+			parsedValue.value = field.value;
 		}
 	} else {
-		parsedValue.value = props.field.value;
+		parsedValue.value = field.value;
 	}
 };
 
 watch(
 	() => [
-		props.field.value,
-		props.field.parseJinja,
+		field.value,
+		field.parseJinja,
 		MainStore.docData,
 		MainStore.mainParsedJinjaData,
 		row.value,
 	],
 	async () => {
-		const isDataAvailable = props.table
-			? row.value
-			: Object.keys(MainStore.docData).length > 0;
-		if (props.field.is_static) {
-			if (props.field.parseJinja) {
+		const isDataAvailable = table ? row.value : Object.keys(MainStore.docData).length > 0;
+		if (field.is_static) {
+			if (field.parseJinja) {
 				parseJinja();
 				return;
 			}
-			parsedValue.value = props.field.value;
+			parsedValue.value = field.value;
 			return;
-		} else if (props.table) {
-			if (isDataAvailable && typeof row.value[props.field.fieldname] != "undefined") {
+		} else if (table) {
+			if (isDataAvailable && typeof row.value[field.fieldname] != "undefined") {
 				parsedValue.value = frappe.format(
-					row.value[props.field.fieldname],
-					{ fieldtype: props.field.fieldtype, options: props.field.options },
+					row.value[field.fieldname],
+					{ fieldtype: field.fieldtype, options: field.options },
 					{ inline: true },
 					row.value
 				);
 			} else {
 				parsedValue.value =
-					["Image, Attach Image"].indexOf(props.field.fieldtype) != -1
+					["Image, Attach Image"].indexOf(field.fieldtype) != -1
 						? null
-						: `{{ ${props.field.fieldname} }}`;
+						: `{{ ${field.fieldname} }}`;
 			}
 			return;
 		} else {
 			parsedValue.value =
-				props.field.value ||
-				`{{ ${props.field.parentField ? props.field.parentField + "." : ""}${
-					props.field.fieldname
-				} }}`;
+				field.value ||
+				`{{ ${field.parentField ? field.parentField + "." : ""}${field.fieldname} }}`;
 			return;
 		}
 	},
