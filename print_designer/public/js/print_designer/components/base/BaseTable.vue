@@ -13,7 +13,7 @@
 		]"
 	>
 		<div
-			:style="['overflow: hidden;', widthHeightStyle(width - 2, height)]"
+			:style="['overflow: hidden;', widthHeightStyle(width, height)]"
 			@click.stop.self="
 				() => {
 					selectedColumn = null;
@@ -368,7 +368,6 @@ const handleMouseUp = (e, tablewidth) => {
 	background-color: var(--gray-300);
 }
 .table-container {
-	border: 1px solid var(--gray-400);
 	background-color: var(--gray-50);
 	.printTable {
 		border-collapse: collapse;
