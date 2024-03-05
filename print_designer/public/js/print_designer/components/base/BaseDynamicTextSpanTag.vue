@@ -20,7 +20,7 @@
 				`{{ ${field.parentField ? field.parentField + '.' : ''}${field.fieldname} }}`
 			"
 		></span>
-		<span
+		<div
 			:class="[
 				parentClass,
 				'dynamic-span',
@@ -34,10 +34,9 @@
 				getPageClass(field),
 			]"
 			@click="selectDynamicText()"
-			:style="[field?.style]"
+			:style="[field?.style, 'display: inline-block']"
 			v-html="parsedValue"
-		>
-		</span>
+		></div>
 		<br v-if="field.nextLine" />
 	</span>
 </template>
