@@ -5,3 +5,4 @@ print_designer.patches.introduce_schema_versioning
 print_designer.patches.rerun_introduce_jinja
 print_designer.patches.introduce_table_alt_row_styles
 print_designer.patches.introduce_column_style
+execute:from print_designer.patches.create_custom_fields import custom_field_patch; custom_field_patch()

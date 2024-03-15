@@ -37,5 +37,13 @@ CUSTOM_FIELDS = {
 			"fieldtype": "JSON",
 			"label": "Print Designer Settings",
 		},
+		{
+			"depends_on": "eval:doc.print_designer && doc.standard == 'Yes'",
+			"fieldname": "print_designer_template_app",
+			"fieldtype": "Select",
+			"label": "Print Designer Template Location",
+			"default": "print_designer",
+			"insert_after": "standard",
+		},
 	]
 }
