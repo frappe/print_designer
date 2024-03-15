@@ -3,6 +3,7 @@ import frappe
 from frappe.custom.doctype.custom_field.custom_field import create_custom_fields
 
 from print_designer.custom_fields import CUSTOM_FIELDS
+from print_designer.default_formats import install_default_formats, on_print_designer_install
 
 
 def check_frappe_version():
@@ -27,3 +28,9 @@ def before_install():
 
 def after_install():
 	create_custom_fields(CUSTOM_FIELDS, ignore_validate=True)
+	on_print_designer_install()
+
+
+def after_app_install(app):
+	if app != "print_designer":
+		install_default_formats(app)
