@@ -170,6 +170,10 @@ export const useElementStore = defineStore("ElementStore", {
 				delete saveEl.snapEdges;
 				delete saveEl.parent;
 				cleanUpDynamicContent(saveEl);
+				if (saveEl.type == "table") {
+					delete saveEl.table.childfields;
+					delete saveEl.table.default_layout;
+				}
 				["text", "table"].indexOf(saveEl.type) != -1 &&
 					handlePrintFonts(saveEl, printFonts);
 				if (saveEl.type == "rectangle") {
@@ -506,6 +510,13 @@ export const useElementStore = defineStore("ElementStore", {
 						element.selectedDynamicText = null;
 						MainStore.dynamicData.push(...element.dynamicContent);
 					} else if (element.type === "table") {
+						const mf = MainStore.metaFields.find(
+							(field) => field.fieldname == element.table.fieldname
+						);
+						if (mf) {
+							element.table = mf;
+						}
+
 						element.columns = [
 							...element.columns.map((el) => {
 								return { ...el };
