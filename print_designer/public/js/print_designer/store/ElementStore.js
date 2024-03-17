@@ -116,14 +116,20 @@ export const useElementStore = defineStore("ElementStore", {
 		},
 		async saveElements() {
 			const MainStore = useMainStore();
+			let is_standard = await frappe.db.get_value(
+				"Print Format",
+				MainStore.printDesignName,
+				"standard"
+			);
+			is_standard = is_standard.message.standard;
 			if (MainStore.mode == "preview") return;
 			let mainPrintFonts = {};
 			let headerPrintFonts = {};
 			let footerprintFonts = {};
 			const cleanUpDynamicContent = (element) => {
 				if (
-					element.type == "table" ||
-					(["text", "image", "barcode"].indexOf(element.type) != -1 && element.isDynamic)
+					["table", "image"].includes(element.type) ||
+					(["text", "barcode"].includes(element.type) && element.isDynamic)
 				) {
 					if (["text", "barcode"].indexOf(element.type) != -1) {
 						element.dynamicContent = [
@@ -159,6 +165,14 @@ export const useElementStore = defineStore("ElementStore", {
 						});
 					} else {
 						element.image = { ...element.image };
+						if (is_standard) {
+							// remove file_url and file_name if format is standard
+							["value", "name", "file_name", "file_url", "modified"].forEach(
+								(key) => {
+									element.image[key] = "";
+								}
+							);
+						}
 					}
 				}
 			};
@@ -538,6 +552,7 @@ export const useElementStore = defineStore("ElementStore", {
 						});
 					} else {
 						element.image = { ...element.image };
+
 						MainStore.dynamicData.push(element.image);
 					}
 				}
