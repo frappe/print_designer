@@ -117,6 +117,7 @@ export const useElementStore = defineStore("ElementStore", {
 		async saveElements() {
 			const MainStore = useMainStore();
 			if (this.checkIfAnyTableIsEmpty()) return;
+			if (MainStore.mode == "preview") return;
 
 			// Update the header and footer height with margin
 			MainStore.page.headerHeightWithMargin =
@@ -458,6 +459,7 @@ export const useElementStore = defineStore("ElementStore", {
 			delete saveEl.snapPoints;
 			delete saveEl.snapEdges;
 			delete saveEl.parent;
+			this.cleanUpDynamicContent(saveEl);
 			if (printFonts && ["text", "table"].indexOf(saveEl.type) != -1) {
 				handlePrintFonts(saveEl, printFonts);
 			}
@@ -471,6 +473,48 @@ export const useElementStore = defineStore("ElementStore", {
 			}
 
 			return saveEl;
+		},
+		cleanUpDynamicContent(element) {
+			if (
+				element.type == "table" ||
+				(["text", "image", "barcode"].indexOf(element.type) != -1 && element.isDynamic)
+			) {
+				if (["text", "barcode"].indexOf(element.type) != -1) {
+					element.dynamicContent = [
+						...element.dynamicContent.map((el) => {
+							const newEl = { ...el };
+							if (!el.is_static) {
+								newEl.value = "";
+							}
+							return newEl;
+						}),
+					];
+					element.selectedDynamicText = null;
+				} else if (element.type === "table") {
+					element.columns = [
+						...element.columns.map((el) => {
+							const newEl = { ...el };
+							delete newEl.DOMRef;
+							return newEl;
+						}),
+					];
+					element.columns.forEach((col) => {
+						if (!col.dynamicContent) return;
+						col.dynamicContent = [
+							...col.dynamicContent.map((el) => {
+								const newEl = { ...el };
+								if (!el.is_static) {
+									newEl.value = "";
+								}
+								return newEl;
+							}),
+						];
+						col.selectedDynamicText = null;
+					});
+				} else {
+					element.image = { ...element.image };
+				}
+			}
 		},
 		getPrintFormatData({ header, body, footer }) {
 			const headerElements = this.createWrapperElement(
@@ -583,7 +627,11 @@ export const useElementStore = defineStore("ElementStore", {
 				if (["text", "barcode"].indexOf(element.type) != -1) {
 					element.dynamicContent = [
 						...element.dynamicContent.map((el) => {
-							return { ...el };
+							const newEl = { ...el };
+							if (!el.is_static) {
+								newEl.value = "";
+							}
+							return newEl;
 						}),
 					];
 					element.selectedDynamicText = null;
@@ -598,7 +646,11 @@ export const useElementStore = defineStore("ElementStore", {
 						if (!col.dynamicContent) return;
 						col.dynamicContent = [
 							...col.dynamicContent.map((el) => {
-								return { ...el };
+								const newEl = { ...el };
+								if (!el.is_static) {
+									newEl.value = "";
+								}
+								return newEl;
 							}),
 						];
 						col.selectedDynamicText = null;
