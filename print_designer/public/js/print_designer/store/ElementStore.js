@@ -538,11 +538,13 @@ export const useElementStore = defineStore("ElementStore", {
 						element.selectedDynamicText = null;
 						MainStore.dynamicData.push(...element.dynamicContent);
 					} else if (element.type === "table") {
-						const mf = MainStore.metaFields.find(
-							(field) => field.fieldname == element.table.fieldname
-						);
-						if (mf) {
-							element.table = mf;
+						if (element.table) {
+							const mf = MainStore.metaFields.find(
+								(field) => field.fieldname == element.table.fieldname
+							);
+							if (mf) {
+								element.table = mf;
+							}
 						}
 
 						element.columns = [
