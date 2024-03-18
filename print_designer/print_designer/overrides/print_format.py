@@ -1,4 +1,5 @@
 import os
+import shutil
 
 import frappe
 from frappe.modules.utils import scrub
@@ -38,6 +39,7 @@ class PDPrintFormat(PrintFormat):
 		with open(path, "w+") as jsonfile:
 			jsonfile.write(frappe.as_json(doc_export))
 		print(f"Wrote document file for {doc.doctype} {doc.name} at {path}")
+		self.export_preview(folder=folder, fname=fname)
 
 	def create_folder(self, dt, dn):
 		app = scrub(frappe.get_doctype_app(dt))
@@ -52,3 +54,11 @@ class PDPrintFormat(PrintFormat):
 		)
 		frappe.create_folder(folder)
 		return folder
+
+	def export_preview(self, folder, fname):
+		if self.print_designer_preview_img:
+			file = frappe.get_doc("File", {"file_url": self.print_designer_preview_img})
+			org_path = file.get_full_path()
+			target_path = os.path.join(folder, f"{fname}-preview.jpg")
+			shutil.copy2(org_path, target_path)
+			print(f"Wrote preview file for {self.doctype} {self.name} at {target_path}")
