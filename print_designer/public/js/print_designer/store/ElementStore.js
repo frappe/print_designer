@@ -56,6 +56,20 @@ export const useElementStore = defineStore("ElementStore", {
 						if (xhr.status === 200) {
 							// delete old preview image when new image is successfully uploaded
 							old_filename && frappe.db.delete_doc("File", old_filename);
+							try {
+								r = JSON.parse(xhr.responseText);
+								if (r.message.doctype === "File") {
+									file_doc = r.message;
+									frappe.db.set_value(
+										"Print Format",
+										MainStore.printDesignName,
+										"print_designer_preview_img",
+										file_doc.file_url
+									);
+								}
+							} catch (e) {
+								r = xhr.responseText;
+							}
 						}
 					}
 				};
@@ -121,7 +135,7 @@ export const useElementStore = defineStore("ElementStore", {
 				MainStore.printDesignName,
 				"standard"
 			);
-			is_standard = is_standard.message.standard;
+			is_standard = is_standard.message.standard == "Yes";
 			if (MainStore.mode == "preview") return;
 			let mainPrintFonts = {};
 			let headerPrintFonts = {};
