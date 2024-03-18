@@ -169,7 +169,12 @@ const load_print_designer = async (wrapper) => {
 			);
 		}
 	} else {
-		let d = printDesignerDialog();
-		d.set_value("action", "Create");
+		await frappe.require("print_designer.bundle.js");
+		frappe.print_designer = new frappe.ui.PrintDesigner({
+			wrapper: $parent,
+			print_format: null,
+		});
+		// let d = printDesignerDialog();
+		// d.set_value("action", "Create");
 	}
 };

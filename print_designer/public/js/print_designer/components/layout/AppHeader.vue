@@ -17,7 +17,10 @@
 			{{ print_format_name }}
 		</h3>
 		<span class="indicator-pill no-indicator-dot ellipsis gray">Beta</span>
-		<button class="btn btn-sm btn-default exit-btn" @click="goToLastPage">
+		<button
+			class="btn btn-sm btn-default exit-btn"
+			@click="frappe.set_route('print-designer')"
+		>
 			<svg
 				width="14"
 				height="14"
