@@ -218,7 +218,6 @@ def get_barcode(
 		return get_qrcode(barcode_value, options, png_base64)
 
 	from io import BytesIO
-
 	import barcode
 	from barcode.writer import ImageWriter, SVGWriter
 
@@ -263,7 +262,8 @@ def get_barcode(
 		)
 
 	stream = BytesIO()
-	barcode.write(stream, options)
+	show_text = options.pop("show_text")
+	barcode.write(stream, options, text="" if not show_text else None)
 	barcode_value = stream.getvalue().decode("utf-8")
 	stream.close()
 

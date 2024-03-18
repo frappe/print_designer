@@ -121,7 +121,7 @@ const setLabel = (value) => {
 		label.value = value;
 	}
 };
-const { barcodeColor, barcodeBackgroundColor, isDynamic, barcodeFormat, style } = toRefs(
+const { barcodeColor, barcodeBackgroundColor, isDynamic, barcodeFormat, barcodeShowText, style } = toRefs(
 	MainStore.getCurrentElementsValues[0]
 );
 onMounted(() => {
@@ -195,6 +195,7 @@ const setBarcode = async () => {
 			options["module_color"] = barcodeColor.value || "#000000";
 		} else {
 			options["foreground"] = barcodeColor.value || "#000000";
+			options["show_text"] = barcodeShowText.value;
 		}
 		let value = props.fieldnames[0].value;
 		if (props.fieldnames[0].parseJinja && value != "") {
@@ -227,7 +228,7 @@ const setBarcode = async () => {
 };
 
 watch(
-	() => [props.fieldnames, barcodeFormat.value, MainStore.mainParsedJinjaData],
+	() => [props.fieldnames, barcodeFormat.value, barcodeShowText.value, MainStore.mainParsedJinjaData],
 	() => setBarcode(),
 	{ deep: true, immediate: true }
 );

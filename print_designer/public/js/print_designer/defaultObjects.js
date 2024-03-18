@@ -100,6 +100,7 @@ export const createBarcode = (cordinates, parent = null) => {
 		id: id,
 		type: "barcode",
 		barcodeFormat: MainStore.globalStyles["barcode"].barcodeFormat || "qrcode",
+		barcodeShowText: MainStore.globalStyles["barcode"].barcodeShowText === undefined || MainStore.globalStyles["barcode"].barcodeShowText === "Yes",
 		barcodeColor: "#000000",
 		barcodeBackgroundColor: "#ffffff",
 		DOMRef: null,
@@ -441,4 +442,5 @@ export const barcodeFormats = [
 	{ label: "ITF", value: "itf" },
 	{ label: "GS1", value: "gs1" },
 	{ label: "Gs1_128", value: "gs1_128" },
-];
+]
+;
