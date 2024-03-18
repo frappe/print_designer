@@ -9,6 +9,9 @@ import {
 	createBarcode,
 } from "../defaultObjects";
 import { handlePrintFonts } from "../utils";
+
+import html2canvas from "html2canvas";
+
 export const useElementStore = defineStore("ElementStore", {
 	state: () => ({
 		Elements: new Array(),
@@ -34,12 +37,159 @@ export const useElementStore = defineStore("ElementStore", {
 			}
 			return newElement;
 		},
+		// This is mofiied version of upload function used in frappe/FileUploader.vue
+		async upload_file(file) {
+			const MainStore = useMainStore();
+			const filter = {
+				attached_to_doctype: "Print Format",
+				attached_to_name: MainStore.printDesignName,
+				attached_to_field: "print_designer_preview_img",
+			};
+			// get filename before uploading new file
+			let old_filename = await frappe.db.get_value("File", filter, "name");
+			old_filename = old_filename.message.name;
+
+			return new Promise((resolve, reject) => {
+				let xhr = new XMLHttpRequest();
+				xhr.onreadystatechange = () => {
+					if (xhr.readyState == XMLHttpRequest.DONE) {
+						if (xhr.status === 200) {
+							// delete old preview image when new image is successfully uploaded
+							old_filename && frappe.db.delete_doc("File", old_filename);
+							try {
+								r = JSON.parse(xhr.responseText);
+								if (r.message.doctype === "File") {
+									file_doc = r.message;
+									frappe.db.set_value(
+										"Print Format",
+										MainStore.printDesignName,
+										"print_designer_preview_img",
+										file_doc.file_url
+									);
+								}
+							} catch (e) {
+								r = xhr.responseText;
+							}
+						}
+					}
+				};
+				xhr.open("POST", "/api/method/upload_file", true);
+				xhr.setRequestHeader("Accept", "application/json");
+				xhr.setRequestHeader("X-Frappe-CSRF-Token", frappe.csrf_token);
+
+				let form_data = new FormData();
+				if (file.file_obj) {
+					form_data.append("file", file.file_obj, file.name);
+				}
+				form_data.append("is_private", 1);
+
+				form_data.append("doctype", "Print Format");
+				form_data.append("docname", MainStore.printDesignName);
+
+				form_data.append("fieldname", "print_designer_preview_img");
+
+				if (file.optimize) {
+					form_data.append("optimize", true);
+				}
+				xhr.send(form_data);
+			});
+		},
+		async generatePreview() {
+			const MainStore = useMainStore();
+			const options = {
+				backgroundColor: "#ffffff",
+				height: MainStore.page.height / 2,
+				width: MainStore.page.width,
+			};
+			const print_stylesheet = document.createElement("style");
+			print_stylesheet.rel = "stylesheet";
+			let st = `.main-container::after {
+				display: none;
+			}`;
+			document.getElementsByClassName("main-container")[0].appendChild(print_stylesheet);
+			print_stylesheet.sheet.insertRule(st, 0);
+			const preview_canvas = await html2canvas(
+				document.getElementsByClassName("main-container")[0],
+				options
+			);
+			document.getElementsByClassName("main-container")[0].removeChild(print_stylesheet);
+			preview_canvas.toBlob((blob) => {
+				const file = new File(
+					[blob],
+					`${MainStore.printDesignName}_${MainStore.currentDoc}.jpg`,
+					{ type: "image/jpeg" }
+				);
+				const file_data = {
+					file_obj: file,
+					optimize: 1,
+					name: file.name,
+					private: true,
+				};
+				this.upload_file(file_data);
+			});
+		},
 		async saveElements() {
 			const MainStore = useMainStore();
+			let is_standard = await frappe.db.get_value(
+				"Print Format",
+				MainStore.printDesignName,
+				"standard"
+			);
+			is_standard = is_standard.message.standard == "Yes";
 			if (MainStore.mode == "preview") return;
 			let mainPrintFonts = {};
 			let headerPrintFonts = {};
 			let footerprintFonts = {};
+			const cleanUpDynamicContent = (element) => {
+				if (
+					["table", "image"].includes(element.type) ||
+					(["text", "barcode"].includes(element.type) && element.isDynamic)
+				) {
+					if (["text", "barcode"].indexOf(element.type) != -1) {
+						element.dynamicContent = [
+							...element.dynamicContent.map((el) => {
+								const newEl = { ...el };
+								if (!el.is_static) {
+									newEl.value = "";
+								}
+								return newEl;
+							}),
+						];
+						element.selectedDynamicText = null;
+					} else if (element.type === "table") {
+						element.columns = [
+							...element.columns.map((el) => {
+								const newEl = { ...el };
+								delete newEl.DOMRef;
+								return newEl;
+							}),
+						];
+						element.columns.forEach((col) => {
+							if (!col.dynamicContent) return;
+							col.dynamicContent = [
+								...col.dynamicContent.map((el) => {
+									const newEl = { ...el };
+									if (!el.is_static) {
+										newEl.value = "";
+									}
+									return newEl;
+								}),
+							];
+							col.selectedDynamicText = null;
+						});
+					} else {
+						element.image = { ...element.image };
+						if (is_standard) {
+							// remove file_url and file_name if format is standard
+							["value", "name", "file_name", "file_url", "modified"].forEach(
+								(key) => {
+									element.image[key] = "";
+								}
+							);
+						}
+					}
+				}
+			};
 			const childrensSave = (element, printFonts) => {
 				let saveEl = { ...element };
 				delete saveEl.DOMRef;
@@ -47,6 +197,11 @@ export const useElementStore = defineStore("ElementStore", {
 				delete saveEl.snapPoints;
 				delete saveEl.snapEdges;
 				delete saveEl.parent;
+				cleanUpDynamicContent(saveEl);
+				if (saveEl.type == "table") {
+					delete saveEl.table.childfields;
+					delete saveEl.table.default_layout;
+				}
 				["text", "table"].indexOf(saveEl.type) != -1 &&
 					handlePrintFonts(saveEl, printFonts);
 				if (saveEl.type == "rectangle") {
@@ -335,6 +490,7 @@ export const useElementStore = defineStore("ElementStore", {
 				},
 				5
 			);
+			this.generatePreview();
 		},
 		async loadElements(printDesignName) {
 			const MainStore = useMainStore();
@@ -372,12 +528,25 @@ export const useElementStore = defineStore("ElementStore", {
 					if (["text", "barcode"].indexOf(element.type) != -1) {
 						element.dynamicContent = [
 							...element.dynamicContent.map((el) => {
-								return { ...el };
+								const newEl = { ...el };
+								if (!el.is_static) {
+									newEl.value = "";
+								}
+								return newEl;
 							}),
 						];
 						element.selectedDynamicText = null;
 						MainStore.dynamicData.push(...element.dynamicContent);
 					} else if (element.type === "table") {
+						if (element.table) {
+							const mf = MainStore.metaFields.find(
+								(field) => field.fieldname == element.table.fieldname
+							);
+							if (mf) {
+								element.table = mf;
+							}
+						}
+
 						element.columns = [
 							...element.columns.map((el) => {
 								return { ...el };
@@ -387,7 +556,11 @@ export const useElementStore = defineStore("ElementStore", {
 							if (!col.dynamicContent) return;
 							col.dynamicContent = [
 								...col.dynamicContent.map((el) => {
-									return { ...el };
+									const newEl = { ...el };
+									if (!el.is_static) {
+										newEl.value = "";
+									}
+									return newEl;
 								}),
 							];
 							col.selectedDynamicText = null;
@@ -395,6 +568,7 @@ export const useElementStore = defineStore("ElementStore", {
 						});
 					} else {
 						element.image = { ...element.image };
+
 						MainStore.dynamicData.push(element.image);
 					}
 				}

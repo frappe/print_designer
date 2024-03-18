@@ -1,6 +1,16 @@
+const set_template_app_options = (frm) => {
+	frappe.xcall("frappe.core.doctype.module_def.module_def.get_installed_apps").then((r) => {
+		frm.set_df_property("print_designer_template_app", "options", JSON.parse(r));
+		if (!frm.doc.print_designer_template_app) {
+			frm.set_value("print_designer_template_app", "print_designer");
+		}
+	});
+};
+
 frappe.ui.form.on("Print Format", {
 	refresh: function (frm) {
 		frm.trigger("render_buttons");
+		set_template_app_options(frm);
 	},
 	render_buttons: function (frm) {
 		frm.page.clear_inner_toolbar();
