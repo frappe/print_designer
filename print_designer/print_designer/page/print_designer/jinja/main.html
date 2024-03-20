@@ -150,6 +150,12 @@ background-image: url('{{frappe.get_url()}}{%if element.isDynamic %}{{element.im
         style="{%- if element.style.get('color') -%}{{ convert_css({'color': element.style.get('color')})}}{%- endif -%} {{convert_css(field.style)}} user-select:auto;">
         {{ span_value }}
     </span>
+    {% if field.suffix and span_value %}
+    <span class="dynamic-span"
+        style="{%- if element.style.get('color') -%}{{ convert_css({'color': element.style.get('color')})}}{%- endif -%} {{convert_css(field.style)}} user-select:auto;">
+        {{ _(field.suffix) }}
+    </span>
+    {% endif %}
     {% if field.nextLine %}
     <br/>
     {% endif %}
