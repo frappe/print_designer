@@ -6,11 +6,11 @@
 		@cancelClick="cancelClick"
 		@primaryClick="primaryClick"
 	>
-		<template #title><span style="margin-left: -8px">Rectangle</span></template>
+		<template #title><span style="margin-left: -8px">{{ __("Rectangle") }}</span></template>
 		<template #body>
 			<div class="d-flex">
 				<div class="mx-1">
-					<label class="mx-1" for="modalWidthInput">Width:</label>
+					<label class="mx-1" for="modalWidthInput">{{ __("Width") }}:</label>
 					<div class="input-group">
 						<input
 							autocomplete="off"
@@ -28,7 +28,7 @@
 					</div>
 				</div>
 				<div class="mx-1">
-					<label class="mx-1" for="modalHeightInput">Height:</label>
+					<label class="mx-1" for="modalHeightInput">{{ __("Height") }}:</label>
 					<div class="input-group">
 						<input
 							autocomplete="off"
