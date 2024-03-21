@@ -433,6 +433,43 @@ export const createPropertiesPanel = () => {
 				transformInput("H", "transformHeight", "height"),
 				transformInput("W", "transformWidth", "width"),
 			],
+			[
+				{
+					label: "Height",
+					name: "isDynamicHeight",
+					isLabelled: true,
+					labelDirection: "column",
+					condtional: () => MainStore.getCurrentElementsValues[0],
+					frappeControl: (ref, name) => {
+						const MainStore = useMainStore();
+						makeFeild({
+							name,
+							ref,
+							fieldtype: "Select",
+							requiredData: [MainStore.getCurrentElementsValues[0]],
+							reactiveObject: () => MainStore.getCurrentElementsValues[0],
+							propertyName: "isDynamicHeight",
+							isStyle: false,
+							options: () => [
+								{ label: "Auto", value: "auto" },
+								{ label: "Fixed", value: "fixed" },
+							],
+							formatValue: (object, property, isStyle) => {
+								if (!object) return;
+								return object[property] ? "auto" : "fixed";
+							},
+							onChangeCallback: (value = null) => {
+								if (value && MainStore.getCurrentElementsValues[0]) {
+									MainStore.getCurrentElementsValues[0]["isDynamicHeight"] =
+										value === "auto";
+									MainStore.frappeControls[name].$input.blur();
+								}
+							},
+						});
+					},
+					flex: 1,
+				},
+			],
 		],
 	});
 	MainStore.propertiesPanel.push({
@@ -663,7 +700,10 @@ export const createPropertiesPanel = () => {
 										}
 									}
 								}
-								if (MainStore.getCurrentElementsValues[0]?.selectedColumn && value != "main"){
+								if (
+									MainStore.getCurrentElementsValues[0]?.selectedColumn &&
+									value != "main"
+								) {
 									MainStore.getCurrentElementsValues[0].selectedColumn = null;
 								}
 							},
