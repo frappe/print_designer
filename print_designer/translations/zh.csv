@@ -1,0 +1,76 @@
+No Value was Provided to Barcode,未给条码赋值
+Edit Existing,编辑
+Create or Edit Print Format,创建或编辑打印格式
+Print Format Name,打印格式名称
+Insert Right,右侧插入
+Insert Left,左侧插入
+Insert Column,插入列
+Barcode (B),条码
+Table (A),明细表(A)
+Image (I),图片(I)
+Rectangle (R),方框(R)
+Text (T),文本框(T)
+Mouse Pointer (M),鼠标指针(M)
+Please Double click to select Barcode,请双击选择条码
+Please Double click to select Image,请双击选择图片
+Dynamic Images,动态图片
+Static Images,静态图片
+Thin,细
+Extra Light,超浅
+Extra Bold,超粗
+Semi Bold,半粗
+Apply Style to Header,应用样式到表头
+Barcode Format,条码格式
+Color,颜色
+Barcode Settings,条码设置
+Padding,内边距
+Border Color,边框颜色
+Border,边框
+Weight,粗细
+Font,字体
+Dynamic Text,动态文本
+Static Text,静态文本
+Text Tool,文本工具
+Enable Jinja Parsing,启用Jinja语法检查
+Background,背景
+Rectangle Settings,方框设置
+Style Mode :,样式表模式
+Primary Table,主表
+Rows,行数
+Current Table,当前表
+Table Settings,子表设置
+Transform,位置
+Height,高度
+Page UOM,纸张单位
+Right,右边
+Left,左边
+Bottom,底边
+Top,顶端
+Page Margins,页边距设置
+Pixels (px)),像素
+Milimeter (mm),毫米
+Centimeter (cm),厘米
+Inch (in),英寸
+Manage Custom Data,自定义
+Exit,退出
+Header / Footer,表头/表尾设置
+Fields with <b>Print Hide</b> are now also visible and can be printed.please be careful while selecting fields,打印隐藏字段现在已经可以显示并且可以被选择打印，但是选择字段时要谨慎
+Hidden Fields,隐藏字段
+Delete,删除
+Disable Jinja,不使用Jinja模板
+Add Text,添加文本
+Remove Label,移除标签
+Add Label,增加标签
+Render Jinja,使用Jinja模板
+New Line,换行
+"Search Field by label, fieldname or fieldtype",通过标签、字段名、字段类型搜索
+Font Settings,字体设置
+Remove Line,移除换行
+Print Date,打印日期
+Hidden Fields,显示隐藏字段
+Search Doctypes,搜索单据
+Print Time,打印时间
+Current Page,当前页
+Image Height,图片高度
+Image Width,图片宽度
+User Provided Jinja,用户jinja代码
