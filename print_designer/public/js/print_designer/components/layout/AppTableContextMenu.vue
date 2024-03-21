@@ -3,7 +3,7 @@
 		<ul class="menu-list">
 			<span class="menu-title">
 				<i class="fa fa-columns" aria-hidden="true"></i>
-				Insert Column
+				{{ __("Insert Column") }}
 			</span>
 			<hr />
 			<li class="menu-item">
@@ -29,7 +29,7 @@
 						/>
 					</svg>
 
-					<span>Insert Left</span>
+					<span>{{ __("Insert Left") }}</span>
 				</button>
 			</li>
 			<li class="menu-item">
@@ -55,7 +55,7 @@
 						/>
 					</svg>
 
-					<span>Insert Right</span>
+					<span>{{ __("Insert Right") }}</span>
 				</button>
 			</li>
 		</ul>
@@ -65,7 +65,7 @@
 					class="menu-button menu-button delete-btn"
 					@click="$emit('handleMenuClick', index, 'delete')"
 				>
-					Delete
+					{{ __("Delete") }}
 				</button>
 			</li>
 		</ul>
