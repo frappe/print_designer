@@ -7,7 +7,7 @@
 		@primaryClick="primaryClick"
 	>
 		<template #title>
-			<span>User Provided Jinja</span>
+			<span>{{ __("User Provided Jinja") }}</span>
 		</template>
 		<template #body>
 			<AppCodeEditor
