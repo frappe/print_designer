@@ -42,14 +42,14 @@
 							class="btn btn-primary btn-sm show btn-modal-primary"
 							@click="handleEmits('primaryClick')"
 						>
-							Confirm
+							{{ __("Confirm") }}
 						</button>
 						<button
 							type="button"
 							class="btn btn-default btn-sm show btn-modal-default"
 							@click="handleEmits('cancelClick')"
 						>
-							Cancel
+							{{ __("Cancel") }}
 						</button>
 					</div>
 				</div>
