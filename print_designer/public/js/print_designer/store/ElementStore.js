@@ -34,32 +34,33 @@ export const useElementStore = defineStore("ElementStore", {
 			}
 			return newElement;
 		},
+		childrensSave(element, printFonts) {
+			let saveEl = { ...element };
+			delete saveEl.DOMRef;
+			delete saveEl.index;
+			delete saveEl.snapPoints;
+			delete saveEl.snapEdges;
+			delete saveEl.parent;
+			if (printFonts && ["text", "table"].indexOf(saveEl.type) != -1) {
+				handlePrintFonts(saveEl, printFonts);
+			}
+			if (saveEl.type == "rectangle") {
+				const childrensArray = saveEl.childrens;
+				saveEl.childrens = [];
+				childrensArray.forEach((el) => {
+					const child = this.childrensSave(el, printFonts);
+					child && saveEl.childrens.push(child);
+				});
+			}
+
+			return saveEl;
+		},
 		async saveElements() {
 			const MainStore = useMainStore();
 			if (MainStore.mode == "preview") return;
 			let mainPrintFonts = {};
 			let headerPrintFonts = {};
 			let footerprintFonts = {};
-			const childrensSave = (element, printFonts) => {
-				let saveEl = { ...element };
-				delete saveEl.DOMRef;
-				delete saveEl.index;
-				delete saveEl.snapPoints;
-				delete saveEl.snapEdges;
-				delete saveEl.parent;
-				["text", "table"].indexOf(saveEl.type) != -1 &&
-					handlePrintFonts(saveEl, printFonts);
-				if (saveEl.type == "rectangle") {
-					const childrensArray = saveEl.childrens;
-					saveEl.childrens = [];
-					childrensArray.forEach((el) => {
-						const child = childrensSave(el, printFonts);
-						child && saveEl.childrens.push(child);
-					});
-				}
-
-				return saveEl;
-			};
 			const headerElements = [];
 			const mainElements = [];
 			const afterTableElements = [];
@@ -209,7 +210,7 @@ export const useElementStore = defineStore("ElementStore", {
 					: is_footer
 					? footerprintFonts
 					: mainPrintFonts;
-				let newElement = childrensSave(element, printFonts);
+				let newElement = this.childrensSave(element, printFonts);
 				newElement.classes = newElement.classes.filter(
 					(name) => ["inHeaderFooter", "overlappingHeaderFooter"].indexOf(name) == -1
 				);
@@ -217,7 +218,7 @@ export const useElementStore = defineStore("ElementStore", {
 					let childrensArray = element.childrens;
 					newElement.childrens = [];
 					childrensArray.forEach((el) => {
-						newElement.childrens.push(childrensSave(el, printFonts));
+						newElement.childrens.push(this.childrensSave(el, printFonts));
 					});
 				}
 				if (is_header) {
@@ -336,6 +337,63 @@ export const useElementStore = defineStore("ElementStore", {
 				5
 			);
 		},
+		handleDynamicContent(element) {
+			const MainStore = useMainStore();
+			if (
+				element.type == "table" ||
+				(["text", "image", "barcode"].indexOf(element.type) != -1 && element.isDynamic)
+			) {
+				if (["text", "barcode"].indexOf(element.type) != -1) {
+					element.dynamicContent = [
+						...element.dynamicContent.map((el) => {
+							return { ...el };
+						}),
+					];
+					element.selectedDynamicText = null;
+					MainStore.dynamicData.push(...element.dynamicContent);
+				} else if (element.type === "table") {
+					element.columns = [
+						...element.columns.map((el) => {
+							return { ...el };
+						}),
+					];
+					element.columns.forEach((col) => {
+						if (!col.dynamicContent) return;
+						col.dynamicContent = [
+							...col.dynamicContent.map((el) => {
+								return { ...el };
+							}),
+						];
+						col.selectedDynamicText = null;
+						MainStore.dynamicData.push(...col.dynamicContent);
+					});
+				} else {
+					element.image = { ...element.image };
+					MainStore.dynamicData.push(element.image);
+				}
+			}
+		},
+		childrensLoad(element, parent) {
+			element.parent = parent;
+			element.DOMRef = null;
+			delete element.printY;
+			element.isDraggable = true;
+			element.isResizable = true;
+			this.handleDynamicContent(element);
+			if (element.type == "rectangle") {
+				element.isDropZone = true;
+				const childrensArray = element.childrens;
+				element.childrens = [];
+				childrensArray.forEach((el) => {
+					const child = this.childrensLoad(el, element);
+					child && element.childrens.push(child);
+				});
+			} else if (element.type == "text" && !element.isDynamic) {
+				element.contenteditable = false;
+			}
+
+			return element;
+		},
 		async loadElements(printDesignName) {
 			const MainStore = useMainStore();
 			frappe.dom.freeze(__("Loading Print Format"));
@@ -363,63 +421,6 @@ export const useElementStore = defineStore("ElementStore", {
 						MainStore.old_schema_version = settings[key];
 					}
 				});
-			const handleDynamicContent = (element) => {
-				const MainStore = useMainStore();
-				if (
-					element.type == "table" ||
-					(["text", "image", "barcode"].indexOf(element.type) != -1 && element.isDynamic)
-				) {
-					if (["text", "barcode"].indexOf(element.type) != -1) {
-						element.dynamicContent = [
-							...element.dynamicContent.map((el) => {
-								return { ...el };
-							}),
-						];
-						element.selectedDynamicText = null;
-						MainStore.dynamicData.push(...element.dynamicContent);
-					} else if (element.type === "table") {
-						element.columns = [
-							...element.columns.map((el) => {
-								return { ...el };
-							}),
-						];
-						element.columns.forEach((col) => {
-							if (!col.dynamicContent) return;
-							col.dynamicContent = [
-								...col.dynamicContent.map((el) => {
-									return { ...el };
-								}),
-							];
-							col.selectedDynamicText = null;
-							MainStore.dynamicData.push(...col.dynamicContent);
-						});
-					} else {
-						element.image = { ...element.image };
-						MainStore.dynamicData.push(element.image);
-					}
-				}
-			};
-			const childrensLoad = (element, parent) => {
-				element.parent = parent;
-				element.DOMRef = null;
-				delete element.printY;
-				element.isDraggable = true;
-				element.isResizable = true;
-				handleDynamicContent(element);
-				if (element.type == "rectangle") {
-					element.isDropZone = true;
-					const childrensArray = element.childrens;
-					element.childrens = [];
-					childrensArray.forEach((el) => {
-						const child = childrensLoad(el, element);
-						child && element.childrens.push(child);
-					});
-				} else if (element.type == "text" && !element.isDynamic) {
-					element.contenteditable = false;
-				}
-
-				return element;
-			};
 			this.Elements = [
 				...(ElementsHeader || []),
 				...(ElementsBody || []),
@@ -505,14 +506,14 @@ export const useElementStore = defineStore("ElementStore", {
 				delete element.printY;
 				element.isDraggable = true;
 				element.isResizable = true;
-				handleDynamicContent(element);
+				this.handleDynamicContent(element);
 				if (element.type == "rectangle") {
 					element.isDropZone = true;
 					if (element.childrens.length) {
 						let childrensArray = element.childrens;
 						element.childrens = [];
 						childrensArray.forEach((el) => {
-							element.childrens.push(childrensLoad(el, element));
+							element.childrens.push(this.childrensLoad(el, element));
 						});
 					}
 				} else if (element.type == "text" && !element.isDynamic) {
