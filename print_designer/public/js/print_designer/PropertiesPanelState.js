@@ -305,12 +305,12 @@ export const createPropertiesPanel = () => {
 		],
 	});
 	MainStore.propertiesPanel.push({
-		title: "Page Settings",
+		title: __("Page Settings"),
 		sectionCondtional: () =>
 			!MainStore.getCurrentElementsId.length && MainStore.activeControl === "mouse-pointer",
 		fields: [
 			{
-				label: () => `Select ${MainStore.rawMeta?.name || "Document"}`,
+				label: () => __(`Select ${MainStore.rawMeta?.name || "Document"}`),
 				isLabelled: true,
 				name: "documentName",
 				condtional: () => !!MainStore.currentDoc,
@@ -328,7 +328,7 @@ export const createPropertiesPanel = () => {
 				},
 			},
 			{
-				label: "Page Size",
+				label: __("Page Size"),
 				name: "pageSize",
 				isLabelled: true,
 				condtional: null,
@@ -364,7 +364,7 @@ export const createPropertiesPanel = () => {
 				},
 			},
 			{
-				label: "Page UOM",
+				label: __("Page UOM"),
 				name: "pageUom",
 				isLabelled: true,
 				condtional: null,
@@ -377,10 +377,10 @@ export const createPropertiesPanel = () => {
 						fieldtype: "Autocomplete",
 						requiredData: () => page.value.UOM,
 						options: () => [
-							{ label: "Pixels (px)", value: "px" },
-							{ label: "Milimeter (mm)", value: "mm" },
-							{ label: "Centimeter (cm)", value: "cm" },
-							{ label: "Inch (in)", value: "in" },
+							{ label: __("Pixels (px))"), value: "px" },
+							{ label:__("Milimeter (mm)"), value: "mm" },
+							{ label: __("Centimeter (cm)"), value: "cm" },
+							{ label: __("Inch (in)"), value: "in" },
 						],
 						reactiveObject: page,
 						propertyName: "UOM",
@@ -388,28 +388,28 @@ export const createPropertiesPanel = () => {
 				},
 			},
 			[
-				pageInput("Height", "page_height", "height", { parentBorderTop: true }),
-				pageInput("Width", "page_width", "width"),
+				pageInput(__("Height"), "page_height", "height", { parentBorderTop: true }),
+				pageInput(__("Width"), "page_width", "width"),
 			],
 		],
 	});
 	MainStore.propertiesPanel.push({
-		title: "Page Margins",
+		title: __("Page Margins"),
 		sectionCondtional: () =>
 			!MainStore.getCurrentElementsId.length && MainStore.activeControl === "mouse-pointer",
 		fields: [
 			[
-				pageInput("Top", "page_top", "marginTop"),
-				pageInput("Bottom", "page_bottom", "marginBottom"),
+				pageInput(__("Top"), "page_top", "marginTop"),
+				pageInput(__("Bottom"), "page_bottom", "marginBottom"),
 			],
 			[
-				pageInput("Left", "page_left", "marginLeft"),
-				pageInput("Right", "page_right", "marginRight"),
+				pageInput(__("Left"), "page_left", "marginLeft"),
+				pageInput(__("Right"), "page_right", "marginRight"),
 			],
 		],
 	});
 	MainStore.propertiesPanel.push({
-		title: "PDF Settings",
+		title: __("PDF Settings"),
 		sectionCondtional: () =>
 			MainStore.mode == "pdfSetup" &&
 			!MainStore.getCurrentElementsId.length &&
@@ -422,7 +422,7 @@ export const createPropertiesPanel = () => {
 		],
 	});
 	MainStore.propertiesPanel.push({
-		title: "Transform",
+		title: __("Transform"),
 		sectionCondtional: () => MainStore.getCurrentElementsId.length === 1,
 		fields: [
 			[
@@ -436,14 +436,14 @@ export const createPropertiesPanel = () => {
 		],
 	});
 	MainStore.propertiesPanel.push({
-		title: "Table Settings",
+		title: __("Table Settings"),
 		sectionCondtional: () =>
 			MainStore.getCurrentElementsId.length === 1 &&
 			MainStore.getCurrentElementsValues[0]?.type == "table",
 		fields: [
 			[
 				{
-					label: "Current Table",
+					label: __("Current Table"),
 					name: "table",
 					isLabelled: true,
 					labelDirection: "column",
@@ -485,7 +485,7 @@ export const createPropertiesPanel = () => {
 					},
 				},
 				{
-					label: "Rows",
+					label: __("Rows"),
 					name: "no_of_rows",
 					isLabelled: true,
 					labelDirection: "column",
@@ -517,7 +517,7 @@ export const createPropertiesPanel = () => {
 			],
 			[
 				{
-					label: "Set as Primary Table",
+					label: __("Set as Primary Table"),
 					name: "isPrimaryTable",
 					isLabelled: true,
 					labelDirection: "column",
@@ -534,8 +534,8 @@ export const createPropertiesPanel = () => {
 							propertyName: "isPrimaryTable",
 							isStyle: false,
 							options: () => [
-								{ label: "Yes", value: "Yes" },
-								{ label: "No", value: "No" },
+								{ label: __("Yes"), value: "Yes" },
+								{ label: __("No"), value: "No" },
 							],
 							formatValue: (object, property, isStyle) => {
 								if (!object) return;
@@ -558,7 +558,7 @@ export const createPropertiesPanel = () => {
 		],
 	});
 	MainStore.propertiesPanel.push({
-		title: "Rectangle Settings",
+		title: __("Rectangle Settings"),
 		sectionCondtional: () =>
 			MainStore.getCurrentElementsId.length === 1 &&
 			MainStore.getCurrentElementsValues[0]?.type == "rectangle",
@@ -567,7 +567,7 @@ export const createPropertiesPanel = () => {
 		],
 	});
 	MainStore.propertiesPanel.push({
-		title: "Enable Jinja Parsing",
+		title: __("Enable Jinja Parsing"),
 		sectionCondtional: () =>
 			MainStore.getCurrentElementsId.length === 1 &&
 			MainStore.getCurrentElementsValues[0].type === "text" &&
@@ -575,7 +575,7 @@ export const createPropertiesPanel = () => {
 		fields: [
 			[
 				{
-					label: "Render Jinja",
+					label: __("Render Jinja"),
 					name: "parseJinja",
 					labelDirection: "column",
 					condtional: () =>
@@ -590,8 +590,8 @@ export const createPropertiesPanel = () => {
 							fieldtype: "Select",
 							requiredData: [MainStore.getCurrentElementsValues[0]],
 							options: () => [
-								{ label: "Yes", value: "Yes" },
-								{ label: "No", value: "No" },
+								{ label: __("Yes"), value: "Yes" },
+								{ label: __("No"), value: "No" },
 							],
 							formatValue: (object, property, isStyle) => {
 								if (!object) return;
@@ -613,12 +613,12 @@ export const createPropertiesPanel = () => {
 		],
 	});
 	MainStore.propertiesPanel.push({
-		title: "Text Tool",
+		title: __("Text Tool"),
 		sectionCondtional: () => MainStore.activeControl === "text",
 		fields: [
 			[
 				{
-					label: "Text Control :",
+					label: __("Text Control :"),
 					name: "textControlType",
 					labelDirection: "column",
 					condtional: () => MainStore.activeControl === "text",
@@ -630,8 +630,8 @@ export const createPropertiesPanel = () => {
 							fieldtype: "Select",
 							requiredData: [MainStore],
 							options: () => [
-								{ label: "Dynamic Text", value: "dynamic" },
-								{ label: "Static Text", value: "static" },
+								{ label: __("Dynamic Text"), value: "dynamic" },
+								{ label: __("Static Text"), value: "static" },
 							],
 							reactiveObject: MainStore,
 							propertyName: "textControlType",
@@ -642,7 +642,7 @@ export const createPropertiesPanel = () => {
 		],
 	});
 	MainStore.propertiesPanel.push({
-		title: "Font Settings",
+		title: __("Font Settings"),
 		sectionCondtional: () =>
 			(MainStore.getCurrentElementsId.length === 1 &&
 				["text", "table"].indexOf(MainStore.getCurrentElementsValues[0]?.type) != -1) ||
@@ -651,7 +651,7 @@ export const createPropertiesPanel = () => {
 		fields: [
 			[
 				{
-					label: "Choose Element :",
+					label: __("Choose Element :"),
 					name: "styleEditMode",
 					labelDirection: "column",
 					condtional: null,
@@ -668,9 +668,9 @@ export const createPropertiesPanel = () => {
 									"table" == MainStore.activeControl
 								)
 									return [
-										{ label: "Label Element", value: "label" },
-										{ label: "Main Element", value: "main" },
-										{ label: "Header Element", value: "header" },
+										{ label: __("Label Element"), value: "label" },
+										{ label: __("Main Element"), value: "main" },
+										{ label: __("Header Element"), value: "header" },
 									];
 								if (
 									("text" == MainStore.getCurrentElementsValues[0]?.type &&
@@ -679,10 +679,10 @@ export const createPropertiesPanel = () => {
 										MainStore.textControlType == "static")
 								)
 									return [
-										{ label: "Label Element", value: "label" },
-										{ label: "Main Element", value: "main" },
+										{ label: __("Label Element"), value: "label" },
+										{ label: __("Main Element"), value: "main" },
 									];
-								return [{ label: "Main Element", value: "main" }];
+								return [{ label: __("Main Element"), value: "main" }];
 							},
 							reactiveObject: () => {
 								let styleClass = "table";
@@ -724,7 +724,7 @@ export const createPropertiesPanel = () => {
 			],
 			[
 				{
-					label: "Label Style :",
+					label: __("Label Style :"),
 					name: "labelDisplayOptions",
 					labelDirection: "column",
 					condtional: () => {
@@ -756,9 +756,9 @@ export const createPropertiesPanel = () => {
 							requiredData: [MainStore],
 							options: () => {
 								return [
-									{ label: "Inline", value: "standard" },
-									{ label: "Row", value: "flexDynamicText" },
-									{ label: "Column", value: "flexDirectionColumn" },
+									{ label: __("Inline"), value: "standard" },
+									{ label: __("Row"), value: "flexDynamicText" },
+									{ label: __("Column"), value: "flexDirectionColumn" },
 								];
 							},
 							reactiveObject: () => {
@@ -808,7 +808,7 @@ export const createPropertiesPanel = () => {
 			],
 			[
 				{
-					label: "Font",
+					label: __("Font"),
 					name: "googleFonts",
 					isLabelled: true,
 					labelDirection: "column",
@@ -847,7 +847,7 @@ export const createPropertiesPanel = () => {
 					},
 				},
 				{
-					label: "Weight",
+					label: __("Weight"),
 					name: "fontWeight",
 					isLabelled: true,
 					labelDirection: "column",
@@ -985,7 +985,7 @@ export const createPropertiesPanel = () => {
 		],
 	});
 	MainStore.propertiesPanel.push({
-		title: "Border",
+		title: __("Border"),
 		sectionCondtional: () => MainStore.getCurrentElementsId.length === 1,
 		fields: [
 			[
@@ -1008,7 +1008,7 @@ export const createPropertiesPanel = () => {
 				borderWidthIcons("borderBottomStyle"),
 			],
 			{
-				label: "Border Color",
+				label: __("Border Color"),
 				name: "borderColor",
 				labelDirection: "column",
 				isLabelled: true,
@@ -1036,7 +1036,7 @@ export const createPropertiesPanel = () => {
 		],
 	});
 	MainStore.propertiesPanel.push({
-		title: "Padding",
+		title: __("Padding"),
 		sectionCondtional: () =>
 			MainStore.getCurrentElementsId.length === 1 &&
 			["text", "image", "table"].indexOf(MainStore.getCurrentElementsValues[0].type) !== -1,
@@ -1052,14 +1052,14 @@ export const createPropertiesPanel = () => {
 		],
 	});
 	MainStore.propertiesPanel.push({
-		title: "Barcode Settings",
+		title: __("Barcode Settings"),
 		sectionCondtional: () =>
 			(!MainStore.getCurrentElementsId.length && MainStore.activeControl === "barcode") ||
 			(MainStore.getCurrentElementsId.length === 1 &&
 				MainStore.getCurrentElementsValues[0].type === "barcode"),
 		fields: [
 			{
-				label: "Barcode Format",
+				label: __("Barcode Format"),
 				name: "barcodeFormat",
 				isLabelled: true,
 				condtional: null,
