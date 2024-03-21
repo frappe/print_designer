@@ -24,7 +24,7 @@
 					}
 				"
 			>
-				{{ MainStore.mode == "pdfSetup" ? "Exit" : "Header / Footer" }}
+				{{ MainStore.mode == "pdfSetup" ? __("Exit") : __("Header / Footer") }}
 			</button>
 			<button
 				class="btn btn-sm btn-primary"
@@ -38,7 +38,7 @@
 					}
 				"
 			>
-				Save
+				{{ __("Save") }}
 			</button>
 		</div>
 		<div class="secondary-actions">
@@ -46,7 +46,7 @@
 				class="btn btn-sm add-data-button"
 				@click="(event) => (MainStore.openJinjaModal = true)"
 			>
-				Manage Custom Data
+				{{ __("Manage Custom Data") }}
 			</button>
 		</div>
 		<AppPropertiesPanelSection
