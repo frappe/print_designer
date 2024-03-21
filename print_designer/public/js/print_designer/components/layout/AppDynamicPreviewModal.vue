@@ -61,7 +61,7 @@
 					v-html="
 						field.value ||
 						(field.is_static
-							? 'Add Text'
+							? __('Add Text')
 							: `{{ ${field.parentField ? field.parentField + '.' : ''}${
 									field.fieldname
 							  } }}`)
@@ -77,7 +77,7 @@
 			<div @click="addStaticText">
 				<em style="font-weight: 900">T</em>
 				<sub style="font-weight: 600; font-size: 1em bottom:-0.15em">+</sub>
-				<span style="font-size: 12px; padding: 0px 5px">Add Text</span>
+				<span style="font-size: 12px; padding: 0px 5px">{{ __("Add Text") }}</span>
 			</div>
 			<div
 				v-if="selectedEl && !selectedEl.field.is_static"
@@ -92,7 +92,7 @@
 						'font-size: 12px; padding: 0px 5px',
 						selectedEl.field.is_labelled && 'color:var(--primary)',
 					]"
-					>{{ selectedEl.field.is_labelled ? "Remove Label" : "Add Label" }}</span
+					>{{ selectedEl.field.is_labelled ? __("Remove Label") : __("Add Label") }}</span
 				>
 			</div>
 			<div v-if="selectedEl" @click="selectedEl.field.nextLine = !selectedEl.field.nextLine">
@@ -105,7 +105,7 @@
 						'font-size: 12px; padding: 0px 5px',
 						selectedEl.field.nextLine && 'color:var(--primary)',
 					]"
-					>{{ selectedEl.field.nextLine ? "Remove Line" : "New Line" }}</span
+					>{{ selectedEl.field.nextLine ? __("Remove Line") : __("New Line") }}</span
 				>
 			</div>
 			<div
@@ -121,7 +121,7 @@
 						'font-size: 12px; padding: 0px 5px',
 						selectedEl.field.parseJinja && 'color:var(--primary)',
 					]"
-					>{{ selectedEl.field.parseJinja ? "Disable Jinja" : "Render Jinja" }}</span
+					>{{ __( selectedEl.field.parseJinja ? "Disable Jinja" :"Render Jinja" ) }}</span
 				>
 			</div>
 		</div>

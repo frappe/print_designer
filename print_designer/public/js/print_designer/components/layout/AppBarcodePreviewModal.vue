@@ -44,7 +44,7 @@
 						v-html="
 							field.value ||
 							(field.is_static
-								? 'Add Text'
+								? __('Add Text')
 								: `{{ ${field.parentField ? field.parentField + '.' : ''}${
 										field.fieldname
 								  } }}`)
@@ -86,7 +86,7 @@
 						'font-size: 12px; padding: 0px 5px',
 						fieldnames[0].parseJinja && 'color:var(--primary)',
 					]"
-					>{{ fieldnames[0].parseJinja ? "Disable Jinja" : "Render Jinja" }}</span
+					>{{ __(fieldnames[0].parseJinja ? ("Disable Jinja") :("Render Jinja") ) }}</span
 				>
 			</div>
 		</div>
@@ -170,13 +170,13 @@ const parseJinja = async () => {
 		if (result.success) {
 			return result.message;
 		} else {
-			console.error("Error From User Provided Jinja String\n\n", result.error);
+			console.error(__("Error From User Provided Jinja String\n\n"), result.error);
 		}
 	} catch (error) {
-		console.error("Error in Jinja Template\n", { value_string: content.value, error });
+		console.error(__("Error in Jinja Template\n"), { value_string: content.value, error });
 		frappe.show_alert(
 			{
-				message: "Unable Render Jinja Template. Please Check Console",
+				message: __("Unable Render Jinja Template. Please Check Console"),
 				indicator: "red",
 			},
 			5
@@ -201,10 +201,10 @@ const setBarcode = async () => {
 			try {
 				value = await parseJinja();
 			} catch (error) {
-				console.error("Error in Jinja Template\n", { value_string: value, error });
+				console.error(__("Error in Jinja Template\n"), { value_string: value, error });
 				frappe.show_alert(
 					{
-						message: "Unable Render Jinja Template. Please Check Console",
+						message: __("Unable Render Jinja Template. Please Check Console"),
 						indicator: "red",
 					},
 					5

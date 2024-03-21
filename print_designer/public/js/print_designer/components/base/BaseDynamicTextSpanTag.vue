@@ -118,13 +118,13 @@ const parseJinja = async () => {
 			if (result.success) {
 				parsedValue.value = result.message;
 			} else {
-				console.error("Error From User Provided Jinja String\n\n", result.error);
+				console.error(__("Error From User Provided Jinja String\n\n"), result.error);
 			}
 		} catch (error) {
-			console.error("Error in Jinja Template\n", { value_string: props.field.value, error });
+			console.error(__("Error in Jinja Template\n"), { value_string: props.field.value, error });
 			frappe.show_alert(
 				{
-					message: "Unable Render Jinja Template. Please Check Console",
+					message: __("Unable Render Jinja Template. Please Check Console"),
 					indicator: "red",
 				},
 				5

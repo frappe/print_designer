@@ -35,7 +35,7 @@
 					>{{ isDynamic ? "Image not Linked" : "Unable to load Image :(" }}</span
 				>
 				<span v-else-if="width >= 120 || height >= 120"
-					>Please Double click to select Image</span
+					>{{ __("Please Double click to select Image") }}</span
 				>
 			</div>
 		</div>

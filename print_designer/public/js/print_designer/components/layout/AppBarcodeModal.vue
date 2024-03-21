@@ -70,7 +70,7 @@
 								/>
 								<span class="slider round"></span>
 							</label>
-							<span>Hidden Fields</span>
+							<span>{{ __("Hidden Fields") }}</span>
 						</div>
 					</div>
 					<div class="form-message yellow" v-if="hiddenFields">

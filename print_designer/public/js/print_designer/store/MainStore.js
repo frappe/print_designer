@@ -225,6 +225,10 @@ export const useMainStore = defineStore("MainStore", {
 						metaFields.unshift(currentField);
 					}
 				}
+				// translate column label
+				metaFields.forEach((item)=>{
+					item.label=__(item.label)
+				})
 				return metaFields;
 			};
 		},
@@ -330,6 +334,12 @@ export const useMainStore = defineStore("MainStore", {
 						}
 					}
 				});
+				// translate column label
+				for(key in fields ){
+					fields[key].forEach(item=>{
+						item.label=__(item.label)
+					})
+				}
 				return fields;
 			};
 		},

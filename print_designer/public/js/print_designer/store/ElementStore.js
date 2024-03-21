@@ -261,7 +261,7 @@ export const useElementStore = defineStore("ElementStore", {
 					MainStore.mode = "pdfSetup";
 					frappe.show_alert(
 						{
-							message: "Atleast 1 element is required inside body",
+							message: __("Atleast 1 element is required inside body"),
 							indicator: "red",
 						},
 						5
@@ -330,7 +330,7 @@ export const useElementStore = defineStore("ElementStore", {
 			await frappe.dom.unfreeze();
 			frappe.show_alert(
 				{
-					message: `Print Format Saved Successfully`,
+					message: __(`Print Format Saved Successfully`),
 					indicator: "green",
 				},
 				5

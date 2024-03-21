@@ -17,7 +17,7 @@
 		<div class="fallback-image" v-else>
 			<div class="content">
 				<span v-if="width >= 100 || height >= 100"
-					>Please Double click to select Barcode</span
+					>{{ __("Please Double click to select Barcode") }}</span
 				>
 			</div>
 		</div>
@@ -98,13 +98,13 @@ const parseJinja = async () => {
 		if (result.success) {
 			return result.message;
 		} else {
-			console.error("Error From User Provided Jinja String\n\n", result.error);
+			console.error(__("Error From User Provided Jinja String\n\n"), result.error);
 		}
 	} catch (error) {
-		console.error("Error in Jinja Template\n", { value_string: content.value, error });
+		console.error(__("Error in Jinja Template\n"), { value_string: content.value, error });
 		frappe.show_alert(
 			{
-				message: "Unable Render Jinja Template. Please Check Console",
+				message: __("Unable Render Jinja Template. Please Check Console"),
 				indicator: "red",
 			},
 			5
@@ -145,7 +145,7 @@ watch(
 					});
 					frappe.show_alert(
 						{
-							message: "Unable Render Jinja Template. Please Check Console",
+							message: __("Unable Render Jinja Template. Please Check Console"),
 							indicator: "red",
 						},
 						5

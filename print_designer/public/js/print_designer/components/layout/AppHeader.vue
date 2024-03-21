@@ -27,7 +27,7 @@
 			>
 				<use href="#es-line-log-out" style="--icon-stroke: var(--invert-neutral)" />
 			</svg>
-			<span>Exit</span>
+			<span>{{ __("Exit") }}</span>
 		</button>
 	</div>
 </template>
