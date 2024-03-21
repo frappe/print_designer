@@ -159,7 +159,7 @@ const refFrappeControl = (ref) => {
 						(field) => field.fieldname == "image_type"
 					);
 					image_type.label = __(
-						props.openImageModal.isDynamic ? "Static Images" : "Dynamic Images"
+						props.openImageModal.isDynamic ? __("Static Images") : __("Dynamic Images")
 					);
 					imageControl.fields_dict["upload_image"].wrapper.style.display = props
 						.openImageModal.isDynamic
