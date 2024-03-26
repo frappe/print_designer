@@ -38,6 +38,23 @@
 			v-html="parsedValue"
 		>
 		</span>
+		<span
+			v-if="field.suffix"
+			:class="[
+				parentClass,
+				'dynamic-span',
+				{
+					'dynamic-span-hover':
+						parentClass == 'printTable' ? true : MainStore.activeControl == 'text',
+					'dynamic-span-selected':
+						selectedDynamicText === field && !field.labelStyleEditing,
+				},
+			]"
+			@click="selectDynamicText()"
+			:style="[field?.style]"
+			v-html="field.suffix"
+		>
+		</span>
 		<br v-if="field.nextLine" />
 	</span>
 </template>
