@@ -42,6 +42,10 @@ export const useElementStore = defineStore("ElementStore", {
 			if (!this.handleHeaderFooterOverlapping(bodyElements.flat())) return;
 			if (!this.handleHeaderFooterOverlapping(footerElements.flat())) return;
 
+			const headerDimensions = this.computeElementDimensions(headerElements, "header");
+			const bodyDimensions = this.computeElementDimensions(bodyElements, "body");
+			const footerDimensions = this.computeElementDimensions(footerElements, "footer");
+
 			const header = this.cleanUpElementsForSave(headerElements, "header");
 			const body = this.cleanUpElementsForSave(bodyElements, "body");
 			const footer = this.cleanUpElementsForSave(footerElements, "footer");
@@ -99,6 +103,22 @@ export const useElementStore = defineStore("ElementStore", {
 				print_designer_settings: JSON.stringify(settingsForSave),
 				css: css,
 			};
+			const PrintFormatData = this.getPrintFormatData({
+				header: {
+					elements: cleanedHeaderElements,
+					dimensions: headerDimensions,
+				},
+				body: {
+					elements: cleanedBodyElements,
+					dimensions: bodyDimensions,
+				},
+				footer: {
+					elements: cleanedFooterElements,
+					dimensions: footerDimensions,
+				},
+			});
+
+			objectToSave.print_designer_print_format = PrintFormatData;
 
 			await frappe.db.set_value("Print Format", MainStore.printDesignName, objectToSave);
 			await frappe.dom.unfreeze();
@@ -226,6 +246,61 @@ export const useElementStore = defineStore("ElementStore", {
 
 			return true;
 		},
+		computeElementDimensions(elements, containerType = "body") {
+			const dimensions = [];
+			elements.reduce(
+				(prevDimensions, container, index) => {
+					const calculatedDimensions = this.calculateWrapperElementDimensions(
+						prevDimensions,
+						container,
+						containerType,
+						index
+					);
+					dimensions.push(calculatedDimensions);
+					return calculatedDimensions;
+				},
+				{ top: 0, bottom: 0 }
+			);
+			return dimensions;
+		},
+		calculateWrapperElementDimensions(prevDimensions, children, containerType, index) {
+			// basically returns lowest left - top  highest right - bottom from all of the children elements
+			const MainStore = useMainStore();
+			const parentRect = MainStore.mainContainer.getBoundingClientRect();
+			let offsetRect = children.reduce(
+				(offset, currentElement) => {
+					currentElement = currentElement.element;
+					let currentElementRect = currentElement.DOMRef.getBoundingClientRect();
+					currentElementRect.left < offset.left &&
+						(offset.left = currentElementRect.left);
+					currentElementRect.top < offset.top && (offset.top = currentElementRect.top);
+					currentElementRect.right > offset.right &&
+						(offset.right = currentElementRect.right);
+					currentElementRect.bottom > offset.bottom &&
+						(offset.bottom = currentElementRect.bottom);
+					return offset;
+				},
+				{ left: 9999, top: 9999, right: 0, bottom: 0 }
+			);
+			(offsetRect.top -= parentRect.top), (offsetRect.left -= parentRect.left);
+			(offsetRect.right -= parentRect.left), (offsetRect.bottom -= parentRect.top);
+
+			if (containerType == "header") {
+				offsetRect.top = 0;
+				offsetRect.bottom = MainStore.page.headerHeight;
+			}
+			// if its the first element then update top to header height
+			// also checking if element is below header ( just safe gaurd )
+			if (containerType == "body") {
+				if (index == 0 && offsetRect.top >= MainStore.page.headerHeight) {
+					offsetRect.top = MainStore.page.headerHeight;
+				}
+				if (index != 0) {
+					offsetRect.top = prevDimensions.bottom;
+				}
+			}
+			return offsetRect;
+		},
 		cleanUpElementsForSave(elements, type) {
 			if (this.checkIfPrintFormatIsEmpty(elements, type)) return;
 			const fontsArray = [];
@@ -296,6 +371,54 @@ export const useElementStore = defineStore("ElementStore", {
 			}
 
 			return saveEl;
+		},
+		getPrintFormatData({ header, body, footer }) {
+			const headerElements = this.createWrapperElement(
+				header.elements,
+				header.dimensions,
+				"header"
+			);
+			const bodyElements = this.createWrapperElement(body.elements, body.dimensions, "body");
+			const footerElements = this.createWrapperElement(
+				footer.elements,
+				footer.dimensions,
+				"footer"
+			);
+			return JSON.stringify({
+				header: headerElements,
+				body: bodyElements,
+				footer: footerElements,
+			});
+		},
+		createWrapperElement(containers, dimensions, containerType = "body") {
+			const MainStore = useMainStore();
+			const wrapperContainers = { childrens: [] };
+			containers.forEach((container, index) => {
+				const calculatedDimensions = dimensions[index];
+				const cordinates = {
+					startY: calculatedDimensions.top,
+					pageY: calculatedDimensions.top,
+					startX: 0,
+					pageX: 0,
+				};
+				const wrapperRectangleEl = createRectangle(cordinates, wrapperContainers);
+				wrapperRectangleEl.height = calculatedDimensions.bottom - calculatedDimensions.top;
+				wrapperRectangleEl.width =
+					MainStore.page.width - MainStore.page.marginLeft - MainStore.page.marginRight;
+				wrapperRectangleEl.childrens = container;
+				if (
+					containerType == "body" &&
+					wrapperRectangleEl.childrens.length == 1 &&
+					wrapperRectangleEl.childrens[0].isDynamicHeight == true
+				) {
+					wrapperRectangleEl.isDynamicHeight = true;
+				}
+				wrapperRectangleEl.childrens.forEach((el) => {
+					el.startY -= cordinates.startY;
+				});
+				wrapperRectangleEl.style.backgroundColor = "";
+			});
+			return wrapperContainers.childrens.map((el) => this.childrensSave(el));
 		},
 
 		handleDynamicContent(element) {
