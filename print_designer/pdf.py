@@ -50,16 +50,24 @@ def pdf_body_html(print_format, jenv, args, template):
 		add_data_to_monitor(print_designer=print_format_name, print_designer_action="download_pdf")
 		# DEPRECATED: remove this in few months added for backward compatibility incase user didn't update frappe framework.
 		if not frappe.get_hooks("get_print_format_template"):
-			template = jenv.loader.get_source(jenv, "print_designer/page/print_designer/jinja/main.html")[0]
+			template = get_print_format_template(jenv, print_format)
+
+		settings = json.loads(print_format.print_designer_settings)
+
 		args.update(
 			{
 				"headerElement": json.loads(print_format.print_designer_header),
 				"bodyElement": json.loads(print_format.print_designer_body),
-				"afterTableElement": json.loads(print_format.print_designer_after_table),
 				"footerElement": json.loads(print_format.print_designer_footer),
-				"settings": json.loads(print_format.print_designer_settings),
+				"settings": settings,
 			}
 		)
+
+		if not is_older_schema(settings=settings, current_version="1.1.0"):
+			args.update({"pd_format": json.loads(print_format.print_designer_print_format)})
+		else:
+			args.update({"afterTableElement": json.loads(print_format.print_designer_after_table or "[]")})
+
 		# replace placeholder comment with user provided jinja code
 		template_source = template.replace(
 			"<!-- user_generated_jinja_code -->", args["settings"].get("userProvidedJinja", "")
@@ -101,4 +109,12 @@ def is_older_schema(settings, current_version):
 def get_print_format_template(jenv, print_format):
 	# if print format is created using print designer, then use print designer template
 	if print_format and print_format.print_designer and print_format.print_designer_body:
-		return jenv.loader.get_source(jenv, "print_designer/page/print_designer/jinja/main.html")[0]
+		settings = json.loads(print_format.print_designer_settings)
+		if is_older_schema(settings, "1.1.0"):
+			return jenv.loader.get_source(
+				jenv, "print_designer/page/print_designer/jinja/old_print_format.html"
+			)[0]
+		else:
+			return jenv.loader.get_source(
+				jenv, "print_designer/page/print_designer/jinja/print_format.html"
+			)[0]

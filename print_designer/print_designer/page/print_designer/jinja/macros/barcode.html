@@ -1,0 +1,32 @@
+{% macro barcode(element, send_to_jinja) -%}
+    {%- set field = element.dynamicContent[0] -%}
+    {%- if field.is_static -%}
+        {% if field.parseJinja %}
+            {%- set value = render_user_text(field.value, doc, {}, send_to_jinja).get("message", "") -%}
+        {% else %}
+            {%- set value =  _(field.value) -%}
+        {% endif %}
+    {%- elif field.doctype -%}
+        {%- set value = frappe.db.get_value(field.doctype, doc[field.parentField], field.fieldname) -%}
+    {%- else -%}
+        {%- set value = doc.get_formatted(field.fieldname) -%}
+    {%- endif -%}
+
+    <div
+        style="position: absolute; top:{{ element.startY }}px; left:{{ element.startX }}px;width:{{ element.width }}px;height:{{ element.height }}px;
+    {{convert_css(element.style)}}"
+        class="{{ element.classes | join(' ') }}"
+    >
+        <div
+            style="width:100%;height:100%; {{convert_css(element.style)}}"
+            class="barcode {{ element.classes | join(' ') }}"
+        >
+            {% if value %}{{get_barcode(element.barcodeFormat, value|string, {
+                "module_color": element.barcodeColor or "#000000",
+                "foreground": element.barcodeColor or "#ffffff",
+                "background": element.barcodeBackgroundColor or "#ffffff",
+                "quiet_zone": 1,
+            }).value}}{% endif %}
+        </div>
+    </div>
+{%- endmacro %}
