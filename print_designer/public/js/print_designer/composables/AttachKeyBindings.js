@@ -1,7 +1,7 @@
 import { onMounted, onUnmounted } from "vue";
 import { useMainStore } from "../store/MainStore";
 import { useElementStore } from "../store/ElementStore";
-import { deleteCurrentElements } from "../utils";
+import { checkUpdateElementOverlapping, deleteCurrentElements } from "../utils";
 
 export function useAttachKeyBindings() {
 	const MainStore = useMainStore();
@@ -28,6 +28,7 @@ export function useAttachKeyBindings() {
 				element[`start${axis}`] += value;
 			}
 		});
+		checkUpdateElementOverlapping();
 	}
 	function updateWidthHeight(key, value) {
 		MainStore.getCurrentElementsValues.forEach((element) => {
@@ -48,6 +49,7 @@ export function useAttachKeyBindings() {
 				element[key] += value;
 			}
 		});
+		checkUpdateElementOverlapping();
 	}
 	const handleKeyDown = async (e) => {
 		MainStore.isAltKey = e.altKey;

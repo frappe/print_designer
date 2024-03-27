@@ -73,7 +73,12 @@ import { useMainStore } from "../../store/MainStore";
 import { useElementStore } from "../../store/ElementStore";
 import { useMarqueeSelection } from "../../composables/MarqueeSelectionTool";
 import { useDraw } from "../../composables/Draw";
-import { updateElementParameters, setCurrentElement, recursiveChildrens } from "../../utils";
+import {
+	updateElementParameters,
+	setCurrentElement,
+	recursiveChildrens,
+	checkUpdateElementOverlapping,
+} from "../../utils";
 import { useChangeValueUnit } from "../../composables/ChangeValueUnit";
 import BaseBarcode from "../base/BaseBarcode.vue";
 const isComponent = Object.freeze({
@@ -457,6 +462,7 @@ onMounted(() => {
 			}
 		}
 	);
+
 	watchEffect(() => {
 		if (MainStore.screenStyleSheet) {
 			if (MainStore.screenStyleSheet.CssRuleIndex != null) {
@@ -506,6 +512,15 @@ onMounted(() => {
 					],
 				],
 			]);
+		}
+	});
+
+	ElementStore.$subscribe((mutation, state) => {
+		if (
+			(mutation.events.type === "set" && mutation.events.key == "Elements") ||
+			(mutation.events.type === "add" && mutation.events.newValue.parent == state.Elements)
+		) {
+			checkUpdateElementOverlapping();
 		}
 	});
 });

@@ -1,0 +1,10 @@
+{% macro rectangle(element, render_element, send_to_jinja) -%}
+    <div id="{{ element.id }}" style="position:absolute; top:{{ element.startY }}px; left:{{ element.startX }}px; width:{{ element.width }}px; height:{{ element.height }}px; {{convert_css(element.style)}}"
+    class="rectangle {{ element.classes | join(' ') }}">
+        {% if element.childrens %}
+            {% for object in element.childrens %}
+               {{ render_element(object, send_to_jinja) }}
+            {% endfor %}
+        {% endif %}
+    </div>
+{%- endmacro %}

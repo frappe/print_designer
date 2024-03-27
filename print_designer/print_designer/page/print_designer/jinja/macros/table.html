@@ -1,0 +1,33 @@
+{% macro table(element, send_to_jinja, is_parent_dynamic_height) -%}
+    <table style="position:{%- if is_parent_dynamic_height -%}relative{% else %}absolute{%- endif -%}; {%- if not is_parent_dynamic_height -%}top: {%- else -%}margin-top: {%- endif -%}{{ element.startY }}px; left:{{ element.startX }}px; width:{{ element.width }}px;{%- if is_parent_dynamic_height and not element.isDynamicHeight -%} height:{{ element.height }}px; {%- endif -%} max-width:{{ element.width }}px;" class="table-container printTable {{ element.classes | join(' ') }}">
+            <thead>
+            {% if element.columns %}
+                <tr>
+            {% for column in element.columns%}
+                    <th style="{% if column.width %}width: {{column.width}}%; max-width: {{column.width}}%;{%endif%} {{convert_css(element.headerStyle)}}border-top-style: solid !important;border-bottom-style: solid !important;{%if loop.first%}border-left-style: solid !important;{%elif loop.last%}border-right-style: solid !important;{%endif%}{%- if column.applyStyleToHeader and column.style -%}{{convert_css(column.style)}}{%- endif -%}">
+                    {{ _(column.label) }}
+                    </th>
+            {% endfor %}
+                </tr>
+            {% endif %}
+            </thead>
+            <tbody>
+            {% if element.columns %}
+            {% for row in doc.get(element.table.fieldname)%}
+                <tr>
+                    {% set isLastRow = loop.last %}
+                {% for column in element.columns%}
+                    <td style="{{convert_css(element.style)}}{%if row.idx % 2 == 0 %}{{convert_css(element.altStyle)}}{%endif%}{%if isLastRow%}border-bottom-style: solid !important;{%endif%}{%if loop.first%}border-left-style: solid !important;{%elif loop.last%}border-right-style: solid !important;{%endif%}{%- if column.style -%}{{convert_css(column.style)}}{%- endif -%}">
+                {% if column is mapping %}
+                    {% for field in column.dynamicContent%}
+                        {{ span_tag(field, element, row, send_to_jinja) }}
+                    {% endfor %}
+            {% endif %}
+                    </td>
+                {% endfor %}
+                </tr>
+                {% endfor %}
+            {% endif %}
+            </tbody>
+    </table>
+{%- endmacro %}

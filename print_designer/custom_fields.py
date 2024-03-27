@@ -8,6 +8,13 @@ CUSTOM_FIELDS = {
 			"label": "Print Designer",
 		},
 		{
+			"fieldname": "print_designer_print_format",
+			"fieldtype": "JSON",
+			"hidden": 1,
+			"label": "Print Designer Print Format",
+			"description": "This has json object that is used by main.html jinja template to render the print format.",
+		},
+		{
 			"fieldname": "print_designer_header",
 			"fieldtype": "JSON",
 			"hidden": 1,

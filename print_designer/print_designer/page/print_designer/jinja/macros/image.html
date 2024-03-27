@@ -1,0 +1,14 @@
+{% macro image(element) -%}
+<div
+    style="position: absolute; top:{{ element.startY }}px; left:{{ element.startX }}px;width:{{ element.width }}px;height:{{ element.height }}px;
+{{convert_css(element.style)}}"
+    class="image {{ element.classes | join(' ') }}"
+>
+    <div
+        style="width:100%;height:100%;
+    background-image: url('{{frappe.get_url()}}{%if element.isDynamic %}{{element.image.value}}{% elif not element.isDynamic%}{{element.image.file_url}}{% endif %}');
+    "
+        class="image {{ element.classes | join(' ') }}"
+    ></div>
+</div>
+{%- endmacro %}

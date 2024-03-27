@@ -4,7 +4,7 @@ import "@interactjs/auto-start";
 import "@interactjs/modifiers";
 import { useMainStore } from "../store/MainStore";
 import { useElementStore } from "../store/ElementStore";
-import { recursiveChildrens } from "../utils";
+import { recursiveChildrens, checkUpdateElementOverlapping } from "../utils";
 
 export function useDraggable({
 	element,
@@ -85,6 +85,7 @@ export function useDraggable({
 				droppedElement[splicedElement.id] = splicedElement;
 				MainStore.isDropped = droppedElement;
 			}
+			checkUpdateElementOverlapping(element);
 		});
 	return;
 }

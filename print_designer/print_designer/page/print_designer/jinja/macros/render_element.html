@@ -1,0 +1,26 @@
+{% from 'print_designer/page/print_designer/jinja/macros/statictext.html' import statictext with context %}
+{% from 'print_designer/page/print_designer/jinja/macros/dynamictext.html' import dynamictext with context %}
+{% from 'print_designer/page/print_designer/jinja/macros/spantag.html' import span_tag with context %}
+{% from 'print_designer/page/print_designer/jinja/macros/image.html' import image with context %}
+{% from 'print_designer/page/print_designer/jinja/macros/barcode.html' import barcode with context %}
+{% from 'print_designer/page/print_designer/jinja/macros/rectangle.html' import rectangle with context %}
+{% from 'print_designer/page/print_designer/jinja/macros/table.html' import table with context %}
+
+
+{% macro render_element(element, send_to_jinja, is_parent_dynamic_height = false) -%}
+    {% if element.type == "rectangle" %}
+        {{ rectangle(element, render_element, send_to_jinja) }}
+    {% elif element.type == "image" %}
+        {{image(element)}}
+    {% elif element.type == "table" %}
+        {{table(element, send_to_jinja, is_parent_dynamic_height)}}
+    {% elif element.type == "text" %}
+        {% if element.isDynamic %}
+            {{dynamictext(element, send_to_jinja, is_parent_dynamic_height)}}
+        {% else%}
+            {{statictext(element, send_to_jinja, is_parent_dynamic_height)}}
+        {% endif %}
+    {% elif element.type == "barcode" %}
+        {{barcode(element, send_to_jinja)}}
+    {% endif %}
+{%- endmacro %}

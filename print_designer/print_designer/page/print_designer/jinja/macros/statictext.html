@@ -1,0 +1,14 @@
+<!-- third Arg in render_user_text is row which is not sent outside table -->
+{% macro statictext(element, send_to_jinja, dynamic_containers) -%}
+<div style="position:{%- if dynamic_containers -%}relative{% else %}absolute{%- endif -%}; top:{{ element.startY }}px; left:{{ element.startX }}px;{% if element.isFixedSize %}width:{{ element.width }}px;{%- if not is_parent_dynamic_height -%}height:{{ element.height }}px; {%- endif -%}{% else %}width:fit-content; height:fit-content; max-width: {{ (settings.page.width - settings.page.marginLeft - settings.page.marginRight - element.startX) + 2 }}px; white-space:nowrap; {%endif%}" class="
+    {{ element.classes | join(' ') }}">
+    <p style="{% if element.isFixedSize %}width:{{ element.width }}px; {%- if not is_parent_dynamic_height -%}height:{{ element.height }}px; {%- endif -%}{% else %}width:fit-content; height:fit-content; max-width: {{ (settings.page.width - settings.page.marginLeft - settings.page.marginRight - element.startX ) + 2 }}px; white-space:nowrap;{%endif%} {{convert_css(element.style)}}"
+        class="staticText {{ element.classes | join(' ') }}">
+        {% if element.parseJinja %}
+           {{ render_user_text(element.content, doc, {}, send_to_jinja).get("message", "") }}
+        {% else %}
+            {{_(element.content)}}
+        {% endif %}
+    </p>
+</div>
+{%- endmacro %}

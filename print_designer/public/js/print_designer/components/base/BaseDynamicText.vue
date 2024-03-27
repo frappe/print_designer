@@ -158,6 +158,43 @@ watch(
 	}
 );
 
+const showWarning = frappe.utils.debounce((pageInfoInBody) => {
+	frappe.show_alert({
+		message: "Please move <b>" + pageInfoInBody.join(", ") + "</b> to header / footer",
+		indicator: "orange",
+	});
+}, 500);
+// Remove If Becomes Unnecessary Overhead. This will be fine once temparary state is introduced.
+watch(
+	() => [startY.value],
+	() => {
+		if (
+			startY.value + height.value < MainStore.page.headerHeight + MainStore.page.marginTop ||
+			startY.value >
+				MainStore.page.height -
+					MainStore.page.footerHeight -
+					MainStore.page.marginTop -
+					MainStore.page.marginBottom
+		) {
+			classes.value.splice(classes.value.indexOf("error"), 1);
+			return;
+		}
+		let pageInfoInBody = [];
+		dynamicContent.value
+			.filter((el) => ["page", "topage", "date", "time"].indexOf(el.fieldname) != -1)
+			.forEach((field) => {
+				pageInfoInBody.push(field.fieldname);
+			});
+		if (pageInfoInBody.length) {
+			if (classes.value.indexOf("error") == -1) {
+				classes.value.push("error");
+			}
+			showWarning(pageInfoInBody);
+		}
+	},
+	{ flush: "post" }
+);
+
 const handleMouseDown = (e, element) => {
 	lockAxis(element, e.shiftKey);
 	if (MainStore.openModal) return;
@@ -215,6 +252,12 @@ p:empty:before {
 [contenteditable]:empty:focus:before {
 	content: "";
 }
+
+.error {
+	color: var(--red-500) !important;
+	border: 1px solid var(--red-500) !important;
+}
+
 .text-hover:hover {
 	box-sizing: border-box !important;
 	border-bottom: 1px solid var(--primary-color) !important;
