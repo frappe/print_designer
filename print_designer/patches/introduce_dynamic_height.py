@@ -11,7 +11,7 @@ def execute():
 			return
 
 		if not "isDynamicHeight" in el:
-			el["isDynamicHeight"] = True
+			el["isDynamicHeight"] = False
 
 	patch_formats(
 		{"element": element_callback},

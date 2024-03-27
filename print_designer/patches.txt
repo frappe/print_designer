@@ -5,4 +5,5 @@ print_designer.patches.introduce_schema_versioning
 print_designer.patches.rerun_introduce_jinja
 print_designer.patches.introduce_table_alt_row_styles
 print_designer.patches.introduce_column_style
+print_designer.patches.introduce_dynamic_containers
 print_designer.patches.introduce_dynamic_height
