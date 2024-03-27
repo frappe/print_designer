@@ -533,5 +533,31 @@ export const useElementStore = defineStore("ElementStore", {
 				t.isPrimaryTable = t == tableEl;
 			});
 		},
+		// This is called to check if the element is overlapping with any other element
+		isElementOverlapping(currentEl, elements = this.Elements) {
+			const currentElIndex =
+				currentEl.index || this.Elements.findIndex((el) => el === currentEl);
+			const currentStartY = parseInt(currentEl.startY);
+			const currentEndY = currentEl.endY || parseInt(currentEl.startY + currentEl.height);
+
+			return (
+				elements.findIndex((el, index) => {
+					if (index == currentElIndex) return false;
+					const elStartY = parseInt(el.startY);
+					const elEndY = el.endY || parseInt(el.startY + el.height);
+					if (currentStartY <= elStartY && elStartY <= currentEndY) {
+						return true;
+					} else if (currentStartY <= elEndY && elEndY <= currentEndY) {
+						return true;
+					} else if (elStartY <= currentStartY && currentStartY <= elEndY) {
+						return true;
+					} else if (elStartY <= currentEndY && currentEndY <= elEndY) {
+						return true;
+					} else {
+						return false;
+					}
+				}) != -1
+			);
+		},
 	},
 });

@@ -10,6 +10,7 @@ import {
 } from "./utils";
 export const createPropertiesPanel = () => {
 	const MainStore = useMainStore();
+	const ElementStore = useElementStore();
 	const iconControl = ({
 		name,
 		size,
@@ -439,7 +440,17 @@ export const createPropertiesPanel = () => {
 					name: "isDynamicHeight",
 					isLabelled: true,
 					labelDirection: "column",
-					condtional: () => MainStore.getCurrentElementsValues[0],
+					condtional: () => {
+						const currentEl = MainStore.getCurrentElementsValues[0];
+						if (
+							(currentEl.parent === ElementStore.Elements &&
+								currentEl?.type === "table") ||
+							(currentEl.type === "text" && currentEl.isDynamic)
+						) {
+							return !currentEl.isElementOverlapping;
+						}
+						return false;
+					},
 					frappeControl: (ref, name) => {
 						const MainStore = useMainStore();
 						makeFeild({

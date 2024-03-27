@@ -37,7 +37,7 @@ import { useElementStore } from "./store/ElementStore";
 import { useDraggable } from "./composables/Draggable";
 import { useResizable } from "./composables/Resizable";
 import { useDropZone } from "./composables/DropZone";
-import { isRef } from "vue";
+import { isRef, nextTick } from "vue";
 
 export const changeDraggable = (element) => {
 	if (
@@ -346,6 +346,7 @@ export const deleteCurrentElements = () => {
 	MainStore.getCurrentElementsId.forEach((element) => {
 		delete MainStore.currentElements[element];
 	});
+	checkUpdateElementOverlapping();
 };
 
 export const cloneElement = () => {
@@ -805,4 +806,22 @@ export const selectElementContents = (el) => {
 	const sel = window.getSelection();
 	sel.removeAllRanges();
 	sel.addRange(range);
+};
+
+export const checkUpdateElementOverlapping = (element = null) => {
+	const MainStore = useMainStore();
+	const ElementStore = useElementStore();
+	nextTick(() => {
+		if (element && element.parent != ElementStore.Elements) return;
+		isOlderSchema = MainStore.isOlderSchema("1.1.0");
+		ElementStore.Elements.forEach((el) => {
+			const isElementOverlapping = ElementStore.isElementOverlapping(el);
+			if (el.isElementOverlapping != isElementOverlapping) {
+				el.isElementOverlapping = isElementOverlapping;
+			}
+			if (isOlderSchema && el.type == "table" && !isElementOverlapping) {
+				el.isDynamicHeight = true;
+			}
+		});
+	}, {});
 };
