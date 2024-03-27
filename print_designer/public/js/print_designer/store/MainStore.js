@@ -17,7 +17,7 @@ export const useMainStore = defineStore("MainStore", {
 		/**
 		 * @type {'editing'|'pdfSetup'|'preview'} mode
 		 */
-		schema_version: "1.0.1",
+		schema_version: "1.1.0",
 		mode: "editing",
 		cursor: "url('/assets/print_designer/images/mouse-pointer.svg'), default !important",
 		isMarqueeActive: false,
@@ -444,6 +444,27 @@ export const useMainStore = defineStore("MainStore", {
 				if (typeof state.getGlobalStyleObject[propertyName] == "string") {
 					return state.getGlobalStyleObject[propertyName];
 				}
+			}
+		},
+		isOlderSchema: (state) => (currentVersion) => {
+			if (!state.old_schema_version) return false;
+			let formatVersion = state.old_schema_version.split(".");
+			currentVersion = currentVersion.split(".");
+			if (parseInt(formatVersion[0]) < parseInt(currentVersion[0])) {
+				return true;
+			} else if (
+				parseInt(formatVersion[0]) === parseInt(currentVersion[0]) &&
+				parseInt(formatVersion[1]) < parseInt(currentVersion[1])
+			) {
+				return true;
+			} else if (
+				parseInt(formatVersion[0]) === parseInt(currentVersion[0]) &&
+				parseInt(formatVersion[1]) === parseInt(currentVersion[1]) &&
+				parseInt(formatVersion[2]) < parseInt(currentVersion[2])
+			) {
+				return true;
+			} else {
+				return false;
 			}
 		},
 	},

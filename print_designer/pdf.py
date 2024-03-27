@@ -78,6 +78,26 @@ def pdf_body_html(print_format, jenv, args, template):
 	return template.render(args, filters={"len": len})
 
 
+def is_older_schema(settings, current_version):
+	format_version = settings.get("schema_version")
+	format_version = format_version.split(".")
+	current_version = current_version.split(".")
+	if int(format_version[0]) < int(current_version[0]):
+		return True
+	elif int(format_version[0]) == int(current_version[0]) and int(format_version[1]) < int(
+		current_version[1]
+	):
+		return True
+	elif (
+		int(format_version[0]) == int(current_version[0])
+		and int(format_version[1]) == int(current_version[1])
+		and int(format_version[2]) < int(current_version[2])
+	):
+		return True
+	else:
+		return False
+
+
 def get_print_format_template(jenv, print_format):
 	# if print format is created using print designer, then use print designer template
 	if print_format and print_format.print_designer and print_format.print_designer_body:
