@@ -56,10 +56,19 @@ export const makeFeild = ({
 						last_value = value;
 						obj_value = formatValue(object, propertyName, isStyle);
 
-						if (value && formatValue(object, propertyName, isStyle) != value) {
+						if (
+							(value || fieldtype == "Color") &&
+							formatValue(object, propertyName, isStyle) != value
+						) {
 							object[propertyName] = value;
 							onChangeCallback && onChangeCallback(value);
 						} else if (!value && formatValue(object, propertyName, isStyle)) {
+							if (
+								fieldtype == "Color" &&
+								propertyName == "backgroundColor" &&
+								!value
+							)
+								return;
 							MainStore.frappeControls[name].set_value(
 								formatValue(object, propertyName, isStyle)
 							);
@@ -187,9 +196,10 @@ export const makeFeild = ({
 							];
 						} else {
 							MainStore.frappeControls[name].df.options = [
-								{ label: "Label Element", value: "label" },
-								{ label: "Main Element", value: "main" },
-								{ label: "Header Element", value: "header" },
+								{ label: "Table Header", value: "header" },
+								{ label: "All Rows", value: "main" },
+								{ label: "Alternate Rows", value: "alt" },
+								{ label: "Field Labels", value: "label" },
 							];
 						}
 						MainStore.frappeControls[name].refresh();

@@ -152,6 +152,7 @@ export const createTable = (cordinates, parent = null) => {
 		table: null,
 		columns: [],
 		PreviewRowNo: 1,
+		selectedColumn: null,
 		selectedDynamicText: null,
 		startX: cordinates.startX,
 		startY: cordinates.startY,
@@ -164,6 +165,7 @@ export const createTable = (cordinates, parent = null) => {
 		style: {},
 		labelStyle: {},
 		headerStyle: {},
+		altStyle: {},
 		classes: [],
 	};
 

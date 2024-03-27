@@ -11,7 +11,7 @@ app_license = "AGPLv3"
 # ------------------
 
 # include js, css files in header of desk.html
-app_include_js = "pdf.worker.bundle.js"
+# app_include_js = ""
 
 
 # include js, css files in header of web template
@@ -26,7 +26,10 @@ app_include_js = "pdf.worker.bundle.js"
 # webform_include_css = {"doctype": "public/css/doctype.css"}
 
 # include js in page
-page_js = {"print": "print_designer/client_scripts/print.js"}
+page_js = {
+	"print": "print_designer/client_scripts/print.js",
+	"point-of-sale": "print_designer/client_scripts/point_of_sale.js",
+}
 
 # include js in doctype views
 doctype_js = {"Print Format": "print_designer/client_scripts/print_format.js"}
@@ -84,6 +87,7 @@ pdf_header_html = "print_designer.pdf.pdf_header_footer_html"
 pdf_body_html = "print_designer.pdf.pdf_body_html"
 pdf_footer_html = "print_designer.pdf.pdf_header_footer_html"
 
+get_print_format_template = "print_designer.pdf.get_print_format_template"
 # Desk Notifications
 # ------------------
 # See frappe.core.notifications.get_notification_config

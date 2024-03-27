@@ -1,7 +1,7 @@
 {% macro render_statictext(element, send_to_jinja) -%}
-<div style="position: absolute; top:{% if 'printY' in element %}{{ element.printY }}{% else %}{{ element.startY }}{% endif %}px; left:{% if 'printX' in element %}{{ element.printX }}{% else %}{{ element.startX }}{% endif %}px;{% if element.isFixedSize %}width:{{ element.width }}px;height:{{ element.height }}px;{% else %}width:fit-content; height:fit-content; max-width: {{ settings.page.width - settings.page.marginLeft - settings.page.marginRight - element.startX }}px; {%endif%}" class="
+<div style="position: absolute; top:{% if 'printY' in element %}{{ element.printY }}{% else %}{{ element.startY }}{% endif %}px; left:{% if 'printX' in element %}{{ element.printX }}{% else %}{{ element.startX }}{% endif %}px;{% if element.isFixedSize %}width:{{ element.width }}px;height:{{ element.height }}px;{% else %}width:fit-content; height:fit-content; max-width: {{ (settings.page.width - settings.page.marginLeft - settings.page.marginRight - element.startX) + 2 }}px; white-space:nowrap; {%endif%}" class="
     {{ element.classes | join(' ') }}">
-    <p style="{% if element.isFixedSize %}width:{{ element.width }}px;height:{{ element.height }}px;{% else %}width:fit-content; height:fit-content; max-width: {{ settings.page.width - settings.page.marginLeft - settings.page.marginRight - element.startX }}px; {%endif%} {{convert_css(element.style)}}"
+    <p style="{% if element.isFixedSize %}width:{{ element.width }}px;height:{{ element.height }}px;{% else %}width:fit-content; height:fit-content; max-width: {{ (settings.page.width - settings.page.marginLeft - settings.page.marginRight - element.startX ) + 2 }}px; white-space:nowrap;{%endif%} {{convert_css(element.style)}}"
         class="staticText {{ element.classes | join(' ') }}">
         {% if element.parseJinja %}
         <!-- third Arg is row which is not sent outside table -->
@@ -18,9 +18,9 @@
     {% endif %}
 {% endmacro %}
 {% macro render_dynamictext(element, send_to_jinja) -%}
-<div style="position: absolute; top:{% if 'printY' in element %}{{ element.printY }}{% else %}{{ element.startY }}{% endif %}px; left:{% if 'printX' in element %}{{ element.printX }}{% else %}{{ element.startX }}{% endif %}px;{% if element.isFixedSize %}width:{{ element.width }}px;height:{{ element.height }}px;{% else %}width:fit-content; height:fit-content; max-width: {{ settings.page.width - settings.page.marginLeft - settings.page.marginRight - element.startX }}px;{%endif%}" class="
+<div style="position: absolute; top:{% if 'printY' in element %}{{ element.printY }}{% else %}{{ element.startY }}{% endif %}px; left:{% if 'printX' in element %}{{ element.printX }}{% else %}{{ element.startX }}{% endif %}px;{% if element.isFixedSize %}width:{{ element.width }}px;height:{{ element.height }}px;{% else %}width:fit-content; height:fit-content; white-space:nowrap; max-width: {{ (settings.page.width - settings.page.marginLeft - settings.page.marginRight - element.startX) + 2 }}px;{%endif%}" class="
     {{ element.classes | join(' ') }}">
-        <div style="{% if element.isFixedSize %}width:{{ element.width }}px;height:{{ element.height }}px;{% else %}width:fit-content; height:fit-content; max-width: {{ settings.page.width - settings.page.marginLeft - settings.page.marginRight - element.startX }}px;{%endif%} {{convert_css(element.style)}}"
+        <div style="{% if element.isFixedSize %}width:{{ element.width }}px;height:{{ element.height }}px;{% else %}width:fit-content; height:fit-content; white-space:nowrap; max-width: {{ (settings.page.width - settings.page.marginLeft - settings.page.marginRight - element.startX) + 2 }}px;{%endif%} {{convert_css(element.style)}}"
             class="dynamicText {{ element.classes | join(' ') }}">
             {% for field in element.dynamicContent %}
             <!-- third Arg is row which is not sent outside table -->
@@ -90,7 +90,7 @@ background-image: url('{{frappe.get_url()}}{%if element.isDynamic %}{{element.im
         {% if element.columns %}
             <tr>
         {% for column in element.columns%}
-                <th style="{% if column.width %}width: {{column.width}}%; max-width: {{column.width}}%;{%endif%} {{convert_css(element.headerStyle)}}border-top-style: solid !important;border-bottom-style: solid !important;{%if loop.first%}border-left-style: solid !important;{%elif loop.last%}border-right-style: solid !important;{%endif%}">
+                <th style="{% if column.width %}width: {{column.width}}%; max-width: {{column.width}}%;{%endif%} {{convert_css(element.headerStyle)}}border-top-style: solid !important;border-bottom-style: solid !important;{%if loop.first%}border-left-style: solid !important;{%elif loop.last%}border-right-style: solid !important;{%endif%}{%- if column.applyStyleToHeader and column.style -%}{{convert_css(column.style)}}{%- endif -%}">
                 {{ _(column.label) }}
                 </th>
         {% endfor %}
@@ -103,7 +103,7 @@ background-image: url('{{frappe.get_url()}}{%if element.isDynamic %}{{element.im
             <tr>
                 {% set isLastRow = loop.last %}
             {% for column in element.columns%}
-                <td style="{{convert_css(element.style)}}{%if isLastRow%}border-bottom-style: solid !important;{%endif%}{%if loop.first%}border-left-style: solid !important;{%elif loop.last%}border-right-style: solid !important;{%endif%}">
+                <td style="{{convert_css(element.style)}}{%if row.idx % 2 == 0 %}{{convert_css(element.altStyle)}}{%endif%}{%if isLastRow%}border-bottom-style: solid !important;{%endif%}{%if loop.first%}border-left-style: solid !important;{%elif loop.last%}border-right-style: solid !important;{%endif%}{%- if column.style -%}{{convert_css(column.style)}}{%- endif -%}">
             {% if column is mapping %}
                 {% for field in column.dynamicContent%}
                     {{ render_spantag(field, element, row, send_to_jinja) }}
@@ -142,14 +142,20 @@ background-image: url('{{frappe.get_url()}}{%if element.isDynamic %}{{element.im
 {% set span_value = render_spanvalue(field, element, row, send_to_jinja) %}
 <span class="{% if not field.is_static and field.is_labelled %}baseSpanTag{% endif %}">
     {% if not field.is_static and field.is_labelled and span_value %}
-    <span class="{% if row %}printTable{% else %}dynamicText{% endif %} label-text labelSpanTag" style="user-select:auto;{%if element.labelStyle %}{{convert_css(element.labelStyle)}}{%endif%}{%if field.labelStyle %}{{convert_css(field.labelStyle)}}{%endif%}">
+    <span class="{% if row %}printTable{% else %}dynamicText{% endif %} label-text labelSpanTag" style="user-select:auto; {%if element.labelStyle %}{{convert_css(element.labelStyle)}}{%endif%}{%if field.labelStyle %}{{convert_css(field.labelStyle)}}{%endif%} white-space:nowrap; ">
         {{ _(field.label) }}
     </span>
     {% endif %}
     <span class="dynamic-span {% if not field.is_static and field.is_labelled %}valueSpanTag{%endif%} {{page_class(field)}} }}"
-        style="{{convert_css(field.style)}} user-select:auto;">
+        style="{%- if element.style.get('color') -%}{{ convert_css({'color': element.style.get('color')})}}{%- endif -%} {{convert_css(field.style)}} user-select:auto;">
         {{ span_value }}
     </span>
+    {% if field.suffix and span_value %}
+    <span class="dynamic-span"
+        style="{%- if element.style.get('color') -%}{{ convert_css({'color': element.style.get('color')})}}{%- endif -%} {{convert_css(field.style)}} user-select:auto;">
+        {{ _(field.suffix) }}
+    </span>
+    {% endif %}
     {% if field.nextLine %}
     <br/>
     {% endif %}

@@ -370,6 +370,7 @@ export const useMainStore = defineStore("MainStore", {
 				main: "style",
 				label: "labelStyle",
 				header: "headerStyle",
+				alt: "altStyle",
 			});
 			let styleEditMode;
 			if (object) {
@@ -403,11 +404,14 @@ export const useMainStore = defineStore("MainStore", {
 				main: "style",
 				label: "labelStyle",
 				header: "headerStyle",
+				alt: "altStyle",
 			});
 			let styleEditMode = mapper[object.styleEditMode];
 			return !isFontStyle
-				? object[styleEditMode]
-				: object.selectedDynamicText?.[styleEditMode] || object[styleEditMode];
+				? object.selectedColumn?.["style"] || object[styleEditMode]
+				: object.selectedDynamicText?.[styleEditMode] ||
+						object.selectedColumn?.["style"] ||
+						object[styleEditMode];
 		},
 		getCurrentStyle: (state) => (propertyName) => {
 			let object = state.getCurrentElementsValues[0];
@@ -416,13 +420,31 @@ export const useMainStore = defineStore("MainStore", {
 				main: "style",
 				label: "labelStyle",
 				header: "headerStyle",
+				alt: "altStyle",
 			});
 			let styleEditMode = mapper[object.styleEditMode];
-			return (
-				object.selectedDynamicText?.[styleEditMode][propertyName] ||
-				object[styleEditMode][propertyName] ||
-				state.getGlobalStyleObject[propertyName]
-			);
+			if (propertyName != "backgroundColor") {
+				return (
+					object.selectedDynamicText?.[styleEditMode][propertyName] ||
+					object.selectedColumn?.["style"][propertyName] ||
+					object[styleEditMode][propertyName] ||
+					state.getGlobalStyleObject[propertyName]
+				);
+			} else {
+				// we need to check if empty string incase it is background color and set as transparent
+				if (typeof object.selectedDynamicText?.[styleEditMode][propertyName] == "string") {
+					return object.selectedDynamicText?.[styleEditMode][propertyName];
+				}
+				if (typeof object.selectedColumn?.["style"][propertyName] == "string") {
+					return object.selectedColumn?.["style"][propertyName];
+				}
+				if (typeof object[styleEditMode][propertyName] == "string") {
+					return object[styleEditMode][propertyName];
+				}
+				if (typeof state.getGlobalStyleObject[propertyName] == "string") {
+					return state.getGlobalStyleObject[propertyName];
+				}
+			}
 		},
 	},
 	actions: {
@@ -466,7 +488,7 @@ export const useMainStore = defineStore("MainStore", {
 				for (let pl = rule.length; j < pl; j++) {
 					const prop = rule[j];
 					prop[0] = prop[0]
-						.replace(/([a-z])([A-Z])/g, "$1-$2")
+						?.replace(/([a-z])([A-Z])/g, "$1-$2")
 						.replace(/[\s_]+/g, "-")
 						.toLowerCase();
 					propStr += `${prop[0]}: ${prop[1]}${prop[2] ? " !important" : ""};\n`;
@@ -508,6 +530,15 @@ export const useMainStore = defineStore("MainStore", {
 							[headerSelector, [...Object.entries(element[1].headerStyle)]],
 						]);
 						element[1].headerCssRule = markRaw(this.screenStyleSheet.cssRules[id]);
+					}
+				}
+				if (!element[1].altCssRule) {
+					let altSelector = element[1].altRuleSelector;
+					if (altSelector) {
+						const id = this.addStylesheetRules([
+							[altSelector, [...Object.entries(element[1].altStyle)]],
+						]);
+						element[1].altCssRule = markRaw(this.screenStyleSheet.cssRules[id]);
 					}
 				}
 			});

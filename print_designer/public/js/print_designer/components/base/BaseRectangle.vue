@@ -1,6 +1,10 @@
 <template>
 	<div
-		:style="[style, postionalStyles(startX, startY, width, height)]"
+		:style="[
+			style,
+			style.backgroundColor == '' && { backgroundColor: 'transparent' },
+			postionalStyles(startX, startY, width, height),
+		]"
 		:class="[
 			'rectangle',
 			{ 'active-elements': MainStore.getCurrentElementsId.includes(id) },

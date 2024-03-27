@@ -104,10 +104,13 @@ frappe.ui.form.PrintView = class PrintView extends frappe.ui.form.PrintView {
 	}
 	async designer_pdf(print_format) {
 		if (typeof pdfjsLib == "undefined") {
-			await frappe.require("assets/print_designer/js/pdf.min.js", () => {
-				pdfjsLib.GlobalWorkerOptions.workerSrc =
-					frappe.boot.assets_json["pdf.worker.bundle.js"];
-			});
+			await frappe.require(
+				["assets/print_designer/js/pdf.min.js", "pdf.worker.bundle.js"],
+				() => {
+					pdfjsLib.GlobalWorkerOptions.workerSrc =
+						frappe.boot.assets_json["pdf.worker.bundle.js"];
+				}
+			);
 		}
 		let me = this;
 		let print_designer_settings = JSON.parse(print_format.print_designer_settings);
@@ -142,16 +145,26 @@ frappe.ui.form.PrintView = class PrintView extends frappe.ui.form.PrintView {
 				await renderPage(this.pdfDoc, pageno);
 			}
 			this.pdf_download_btn.prop("disabled", false);
+			if (frappe.route_options.trigger_print) {
+				this.printit();
+			}
 			this.print_btn.prop("disabled", false);
 		} catch (err) {
-			console.log(err);
-			frappe.show_alert(
-				{
-					message: "Unable to generate PDF",
-					indicator: "red",
+			console.error(err);
+			frappe.msgprint({
+				title: __("Unable to generate PDF"),
+				message: `There was error while generating PDF. Please check the error log for more details.`,
+				indicator: "red",
+				primary_action: {
+					label: "Open Error Log",
+					action(values) {
+						frappe.set_route("List", "Error Log", {
+							doctype: "Error Log",
+							reference_doctype: "Print Format",
+						});
+					},
 				},
-				5
-			);
+			});
 		}
 		/**
 		 * Get page info from document, resize canvas accordingly, and render page.
@@ -235,6 +248,11 @@ frappe.ui.form.PrintView = class PrintView extends frappe.ui.form.PrintView {
 						setTimeout(() => {
 							iframe.focus();
 							iframe.contentWindow.print();
+							if (frappe.route_options.trigger_print) {
+								setTimeout(function () {
+									window.close();
+								}, 5000);
+							}
 						}, 1);
 					};
 				} else {

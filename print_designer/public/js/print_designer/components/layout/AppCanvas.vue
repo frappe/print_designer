@@ -175,7 +175,8 @@ const handleMouseMove = (e) => {
 			let width = MainStore.currentDrawListener.parameters.width;
 			let columns = Math.floor(width / 100);
 			let elementColumns = MainStore.lastCreatedElement.columns;
-			!elementColumns.length && elementColumns.push({ id: 0, label: "" });
+			!elementColumns.length &&
+				elementColumns.push({ id: 0, label: "", style: {}, applyStyleToHeader: false });
 			if (width > 100) {
 				let columnDif = columns - elementColumns.length;
 				if (columnDif == 0) {
@@ -187,6 +188,8 @@ const handleMouseMove = (e) => {
 						elementColumns.push({
 							id: elementColumns.length,
 							label: "",
+							style: {},
+							applyStyleToHeader: false,
 						});
 					}
 				}
@@ -229,6 +232,9 @@ const handleMouseUp = (e) => {
 			}
 			if (MainStore.activeControl == "table") {
 				MainStore.setActiveControl("MousePointer");
+				if (MainStore.frappeControls.table?.get_value() == "") {
+					MainStore.frappeControls.table.set_focus();
+				}
 			}
 		} else {
 			MainStore.currentDrawListener?.drawEventHandler.mouseup(e);
@@ -423,6 +429,23 @@ onMounted(() => {
 									).forEach((style) => {
 										if (element[1].headerCssRule.style[style[0]] != style[1]) {
 											element[1].headerCssRule.style[style[0]] = style[1];
+										}
+									});
+								}
+							},
+							{ deep: true, immediate: true }
+						);
+					}
+					if (element[1].altStyle) {
+						watch(
+							() => MainStore.globalStyles[element[0]].altStyle,
+							() => {
+								if (MainStore.screenStyleSheet && element[1].altCssRule) {
+									Object.entries(
+										MainStore.globalStyles[element[0]].altStyle
+									).forEach((style) => {
+										if (element[1].altCssRule.style[style[0]] != style[1]) {
+											element[1].altCssRule.style[style[0]] = style[1];
 										}
 									});
 								}
