@@ -478,8 +478,30 @@ export const useElementStore = defineStore("ElementStore", {
 
 			return element;
 		},
-		async loadElements(printDesignName) {
+		loadSettings(settings) {
 			const MainStore = useMainStore();
+			if (!settings) return;
+			Object.keys(settings).forEach((key) => {
+				switch (key) {
+					case "schema_version":
+						MainStore.old_schema_version = settings["schema_version"];
+					case "currentDoc":
+						frappe.db
+							.exists(MainStore.doctype, settings["currentDoc"])
+							.then((exists) => {
+								if (exists) {
+									MainStore.currentDoc = settings["currentDoc"];
+								}
+							});
+						break;
+					default:
+						MainStore[key] = settings[key];
+						break;
+				}
+			});
+			return;
+		},
+		async loadElements(printDesignName) {
 			frappe.dom.freeze(__("Loading Print Format"));
 			const printFormat = await frappe.db.get_value("Print Format", printDesignName, [
 				"print_designer_header",
@@ -493,97 +515,13 @@ export const useElementStore = defineStore("ElementStore", {
 			let ElementsAfterTable = JSON.parse(printFormat.message.print_designer_after_table);
 			let ElementsFooter = JSON.parse(printFormat.message.print_designer_footer);
 			let settings = JSON.parse(printFormat.message.print_designer_settings);
-			settings &&
-				Object.keys(settings).forEach(async (key) => {
-					if (
-						["currentDoc", "schema_version"].indexOf(key) == -1 ||
-						(await frappe.db.exists(MainStore.doctype, settings[key]))
-					) {
-						MainStore[key] = settings[key];
-					}
-					if (key == "schema_version" && settings[key] != MainStore.schema_version) {
-						MainStore.old_schema_version = settings[key];
-					}
-				});
+			this.loadSettings(settings);
 			this.Elements = [
 				...(ElementsHeader || []),
 				...(ElementsBody || []),
-				...(ElementsFooter || []),
 				...(ElementsAfterTable || []),
+				...(ElementsFooter || []),
 			];
-			if (this.Elements.length === 0 && !!MainStore.getTableMetaFields.length) {
-				const newTable = {
-					id: frappe.utils.get_random(10),
-					type: "table",
-					DOMRef: null,
-					parent: this.Elements,
-					isDraggable: true,
-					isResizable: true,
-					isDropZone: false,
-					table: null,
-					columns: [
-						{
-							id: 0,
-							label: "",
-							style: {},
-							applyStyleToHeader: false,
-						},
-						{
-							id: 1,
-							label: "",
-							style: {},
-							applyStyleToHeader: false,
-						},
-						{
-							id: 2,
-							label: "",
-							style: {},
-							applyStyleToHeader: false,
-						},
-						{
-							id: 3,
-							label: "",
-							style: {},
-							applyStyleToHeader: false,
-						},
-						{
-							id: 4,
-							label: "",
-							style: {},
-							applyStyleToHeader: false,
-						},
-						{
-							id: 5,
-							label: "",
-							style: {},
-							applyStyleToHeader: false,
-						},
-						{
-							id: 6,
-							label: "",
-							style: {},
-							applyStyleToHeader: false,
-						},
-					],
-					PreviewRowNo: 1,
-					selectedColumn: null,
-					selectedDynamicText: null,
-					startX: 11.338582677,
-					startY: 393.826771658,
-					pageX: 228,
-					pageY: 435,
-					width: 771.0236220564,
-					height: 442.20472441469997,
-					styleEditMode: "main",
-					labelDisplayStyle: "standard",
-					style: {},
-					labelStyle: {},
-					headerStyle: {},
-					altStyle: {},
-					classes: [],
-				};
-				this.Elements.push(newTable);
-			}
 			this.Elements.map((element) => {
 				element.DOMRef = null;
 				element.parent = this.Elements;
