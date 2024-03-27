@@ -7,3 +7,4 @@ print_designer.patches.introduce_table_alt_row_styles
 print_designer.patches.introduce_column_style
 print_designer.patches.introduce_dynamic_containers
 print_designer.patches.introduce_dynamic_height
+print_designer.patches.remove_unused_rectangle_gs_properties
