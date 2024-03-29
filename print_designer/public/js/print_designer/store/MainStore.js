@@ -87,6 +87,8 @@ export const useMainStore = defineStore("MainStore", {
 			marginRight: 0,
 			headerHeight: 0,
 			footerHeight: 0,
+			headerHeightWithMargin: 0,
+			footerHeightWithMargin: 0,
 			UOM: "mm",
 		},
 		controls: {

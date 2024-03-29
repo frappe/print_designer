@@ -37,6 +37,13 @@ export const useElementStore = defineStore("ElementStore", {
 		async saveElements() {
 			const MainStore = useMainStore();
 			if (this.checkIfAnyTableIsEmpty()) return;
+
+			// Update the header and footer height with margin
+			MainStore.page.headerHeightWithMargin =
+				MainStore.page.headerHeight + MainStore.page.marginTop;
+			MainStore.page.footerHeightWithMargin =
+				MainStore.page.footerHeight + MainStore.page.marginBottom;
+
 			const [headerElements, bodyElements, footerElements] = await this.computeLayout();
 			if (!this.handleHeaderFooterOverlapping(headerElements.flat())) return;
 			if (!this.handleHeaderFooterOverlapping(bodyElements.flat())) return;
@@ -65,10 +72,6 @@ export const useElementStore = defineStore("ElementStore", {
 				})
 			);
 			const updatedPage = { ...MainStore.page };
-			updatedPage.headerHeightWithMargin =
-				MainStore.page.headerHeight + MainStore.page.marginTop;
-			updatedPage.footerHeightWithMargin =
-				MainStore.page.footerHeight + MainStore.page.marginBottom;
 			const settingsForSave = {
 				page: updatedPage,
 				pdfPrintDPI: MainStore.pdfPrintDPI,
@@ -171,7 +174,10 @@ export const useElementStore = defineStore("ElementStore", {
 					headerContainer.push(currentEl);
 				} else if (
 					MainStore.page.footerHeight &&
-					currentEl.startY >= MainStore.page.height - MainStore.page.footerHeight
+					currentEl.startY >=
+						MainStore.page.height -
+							MainStore.page.footerHeightWithMargin -
+							MainStore.page.marginTop
 				) {
 					footerContainer.push(currentEl);
 				} else if (
@@ -415,6 +421,9 @@ export const useElementStore = defineStore("ElementStore", {
 				}
 				wrapperRectangleEl.childrens.forEach((el) => {
 					el.startY -= cordinates.startY;
+					if (containerType == "header") {
+						el.startY += MainStore.page.marginTop;
+					}
 				});
 				wrapperRectangleEl.style.backgroundColor = "";
 			});
