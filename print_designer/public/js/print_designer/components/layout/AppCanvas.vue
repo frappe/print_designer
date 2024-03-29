@@ -526,6 +526,9 @@ onMounted(() => {
 });
 watchEffect(() => {
 	if (MainStore.printStyleSheet && MainStore.page) {
+		for (let index = 0; index < MainStore.printStyleSheet.cssRules.length; index++) {
+			MainStore.printStyleSheet.deleteRule(index);
+		}
 		const convertToMM = (input) => {
 			let convertedUnit = useChangeValueUnit({
 				inputString: input,
@@ -557,6 +560,9 @@ watchEffect(() => {
 });
 watchEffect(() => {
 	if (MainStore.screenStyleSheet && MainStore.modalLocation) {
+		for (let index = 0; index < MainStore.screenStyleSheet.cssRules.length; index++) {
+			MainStore.screenStyleSheet.deleteRule(index);
+		}
 		MainStore.addStylesheetRules([
 			[
 				":root",

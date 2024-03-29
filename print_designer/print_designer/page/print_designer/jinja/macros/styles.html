@@ -1,15 +1,21 @@
 {% macro render_styles(settings) %}
 <style>
-    .print-format {
-        box-sizing: border-box;
-        padding: 0in;
+    // This class is used only by wkhtmltopdf to parse options to use while generating pdf
+    // We don't want to apply this in print view as it will break the layout so added fake class to prevent it
+    // framework uses regex to find '.print-format' class
+    .print-format.only-for-pdf-options {
         dpi: {{settings.PDFPrintDPI or 96}}mm;
         page-width: {{convert_uom(number=settings.page.width, to_uom="mm")}};
-        page-height:{{convert_uom(number=settings.page.height, to_uom="mm")}};
+        page-height: {{convert_uom(number=settings.page.height, to_uom="mm")}};
         margin-top:{{convert_uom(number=settings.page.headerHeightWithMargin or settings.page.marginTop, to_uom='mm')}};
         margin-bottom:{{convert_uom(number=settings.page.footerHeightWithMargin or settings.page.marginBottom, to_uom='mm')}};
         margin-left:{{convert_uom(number=settings.page.marginLeft, to_uom='mm')}};
         margin-right:{{convert_uom(number=settings.page.marginRight, to_uom='mm')}};
+    }
+    .print-format {
+        box-sizing: border-box;
+        padding: 0in;
+        max-width: {{convert_uom(number=settings.page.width, to_uom="mm")}} !important;
     }
     .print-designer-container {
         position: absolute;
@@ -58,5 +64,18 @@
     .flexDirectionColumn .baseSpanTag .valueSpanTag {
             display: block;
         }
+    .relative-container {
+        background-color: transparent !important;
+    }
+    // used to add margin to the print view when user is seeing it in the browser
+    @media screen {
+        #__print_designer {
+            position: relative;
+            margin-top:{{convert_uom(number=settings.page.marginTop, to_uom='px')}};
+            margin-bottom:{{convert_uom(number=settings.page.marginBottom, to_uom='px')}};
+            margin-left:{{convert_uom(number=settings.page.marginLeft, to_uom='px')}};
+            margin-right:{{convert_uom(number=settings.page.marginRight, to_uom='px')}};
+        }
+    }
 </style>
 {% endmacro %}
