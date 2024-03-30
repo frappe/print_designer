@@ -1,8 +1,8 @@
 {% macro render_styles(settings) %}
 <style>
-    // This class is used only by wkhtmltopdf to parse options to use while generating pdf
-    // We don't want to apply this in print view as it will break the layout so added fake class to prevent it
-    // framework uses regex to find '.print-format' class
+    /* This class is used only by wkhtmltopdf to parse options to use while generating pdf */
+    /* framework uses regex to find '.print-format' class */
+    /* We don't want to apply this in print view as it will break the layout so added fake class to prevent it */
     .print-format.only-for-pdf-options {
         dpi: {{settings.PDFPrintDPI or 96}}mm;
         page-width: {{convert_uom(number=settings.page.width, to_uom="mm")}};
@@ -67,7 +67,7 @@
     .relative-container {
         background-color: transparent !important;
     }
-    // used to add margin to the print view when user is seeing it in the browser
+    /* used to add margin to the print view when user is seeing it in the browser */
     @media screen {
         #__print_designer {
             position: relative;
