@@ -272,11 +272,23 @@ export const useElementStore = defineStore("ElementStore", {
 		calculateWrapperElementDimensions(prevDimensions, children, containerType, index) {
 			// basically returns lowest left - top  highest right - bottom from all of the children elements
 			const MainStore = useMainStore();
-			const parentRect = MainStore.mainContainer.getBoundingClientRect();
+			const parentRect = {
+				top: 0,
+				left: 0,
+				width:
+					MainStore.page.width - MainStore.page.marginLeft - MainStore.page.marginRight,
+				height:
+					MainStore.page.height - MainStore.page.marginTop - MainStore.page.marginBottom,
+			};
 			let offsetRect = children.reduce(
 				(offset, currentElement) => {
 					currentElement = currentElement.element;
-					let currentElementRect = currentElement.DOMRef.getBoundingClientRect();
+					let currentElementRect = {
+						top: currentElement.startY,
+						left: currentElement.startX,
+						right: currentElement.startX + currentElement.width,
+						bottom: currentElement.startY + currentElement.height,
+					};
 					currentElementRect.left < offset.left &&
 						(offset.left = currentElementRect.left);
 					currentElementRect.top < offset.top && (offset.top = currentElementRect.top);
@@ -296,7 +308,7 @@ export const useElementStore = defineStore("ElementStore", {
 				offsetRect.bottom = MainStore.page.headerHeight;
 			}
 			// if its the first element then update top to header height
-			// also checking if element is below header ( just safe gaurd )
+			// also checking if element is below header ( just safe guard )
 			if (containerType == "body") {
 				if (index == 0 && offsetRect.top >= MainStore.page.headerHeight) {
 					offsetRect.top = MainStore.page.headerHeight;
