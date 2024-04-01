@@ -451,6 +451,7 @@ export const useMainStore = defineStore("MainStore", {
 		isOlderSchema: (state) => (currentVersion) => {
 			if (!state.old_schema_version) return false;
 			let formatVersion = state.old_schema_version.split(".");
+			if (currentVersion == formatVersion) return false;
 			currentVersion = currentVersion.split(".");
 			if (parseInt(formatVersion[0]) < parseInt(currentVersion[0])) {
 				return true;
