@@ -644,4 +644,15 @@ watch(
 	margin-right: calc(var(--print-margin-right) * -1);
 	margin-bottom: calc(var(--print-margin-bottom) * -1);
 }
+.relative-row {
+	background-color: transparent !important;
+	border: none !important;
+	z-index: 9999 !important;
+}
+.relative-column {
+	background-color: transparent !important;
+	border: none !important;
+	z-index: 9999 !important;
+	outline: 1px solid var(--primary) !important;
+}
 </style>
