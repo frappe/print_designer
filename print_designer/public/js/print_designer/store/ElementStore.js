@@ -48,14 +48,21 @@ export const useElementStore = defineStore("ElementStore", {
 			// get filename before uploading new file
 			let old_filename = await frappe.db.get_value("File", filter, "name");
 			old_filename = old_filename.message.name;
+			if (old_filename) {
+				frappe.db.delete_doc("File", old_filename);
+				frappe.db.set_value(
+					"Print Format",
+					MainStore.printDesignName,
+					"print_designer_preview_img",
+					null
+				);
+			}
 
 			return new Promise((resolve, reject) => {
 				let xhr = new XMLHttpRequest();
 				xhr.onreadystatechange = () => {
 					if (xhr.readyState == XMLHttpRequest.DONE) {
 						if (xhr.status === 200) {
-							// delete old preview image when new image is successfully uploaded
-							old_filename && frappe.db.delete_doc("File", old_filename);
 							try {
 								r = JSON.parse(xhr.responseText);
 								if (r.message.doctype === "File") {
@@ -130,7 +137,7 @@ export const useElementStore = defineStore("ElementStore", {
 			preview_canvas.toBlob((blob) => {
 				const file = new File(
 					[blob],
-					`${MainStore.printDesignName}_${MainStore.currentDoc}.jpg`,
+					`print_designer-${frappe.scrub(MainStore.printDesignName)}-preview.jpg`,
 					{ type: "image/jpeg" }
 				);
 				const file_data = {
