@@ -324,6 +324,7 @@ const selectField = async (field, fieldtype) => {
 		value,
 		fieldtype,
 		label: props.table ? field.label : `${field.label} :`,
+		suffix: null,
 		is_labelled: false,
 		is_static: false,
 		print_hide: field.print_hide,

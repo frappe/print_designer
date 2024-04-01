@@ -42,21 +42,16 @@
 					:contenteditable="contenteditable"
 					:class="['label-text', selectedEl?.field == field && 'label-text-selected']"
 					:ref="(el) => (field.labelRef = el)"
-					@dblclick="handleDblClick($event, field)"
+					@dblclick="handleDblClick($event, field, 'label')"
 					@blur="handleBlur($event, field)"
-					v-html="
-						`${field.label}` ||
-						`{{ ${field.parentField ? field.parentField + '.' : ''}${
-							field.fieldname
-						} }}`
-					"
+					v-html="field.label || 'Add Label'"
 				></span>
 				<span
 					:ref="(el) => (field.spanRef = el)"
 					class="preview-text"
 					:class="{ 'preview-text-selected': selectedEl?.field == field }"
 					:contenteditable="contenteditable"
-					@dblclick="handleDblClick($event, field)"
+					@dblclick="handleDblClick($event, field, 'main')"
 					@blur="handleBlur($event, field)"
 					v-html="
 						field.value ||
@@ -66,6 +61,15 @@
 									field.fieldname
 							  } }}`)
 					"
+				></span>
+				<span
+					v-if="field.suffix"
+					:contenteditable="contenteditable"
+					:class="['label-text', selectedEl?.field == field && 'label-text-selected']"
+					:ref="(el) => (field.suffixRef = el)"
+					@dblclick="handleDblClick($event, field, 'suffix')"
+					@blur="handleBlur($event, field)"
+					v-html="field.suffix || 'Add Suffix'"
 				></span>
 				<span v-if="field.nextLine" class="next-line fa fa-level-down"></span>
 			</div>
@@ -93,6 +97,22 @@
 						selectedEl.field.is_labelled && 'color:var(--primary)',
 					]"
 					>{{ selectedEl.field.is_labelled ? "Remove Label" : "Add Label" }}</span
+				>
+			</div>
+			<div
+				v-if="selectedEl"
+				@click="selectedEl.field.suffix = !selectedEl.field.suffix && 'Add Suffix'"
+			>
+				<span
+					class="fa fa-angle-double-right"
+					:style="[selectedEl.field.suffix && 'color:var(--primary)']"
+				></span>
+				<span
+					:style="[
+						'font-size: 12px; padding: 0px 5px',
+						selectedEl.field.suffix && 'color:var(--primary)',
+					]"
+					>{{ selectedEl.field.suffix ? "Remove Suffix" : "Add Suffix" }}</span
 				>
 			</div>
 			<div v-if="selectedEl" @click="selectedEl.field.nextLine = !selectedEl.field.nextLine">
@@ -211,21 +231,49 @@ const handleClick = (event, field, index) => {
 	parentField.value = field.parentField;
 };
 
-const handleDblClick = (event, field) => {
-	if (field.fieldtype != "StaticText" && !field.is_labelled) return;
+const handleDblClick = (event, field, type) => {
+	let ref = null;
+	if (type == "label") {
+		ref = field.labelRef;
+	} else if (type == "suffix") {
+		ref = field.suffixRef;
+	} else if (type == "main" && field.is_static) {
+		ref = field.spanRef;
+	}
+	if (!ref) return;
 	contenteditable.value = true;
 	setTimeout(() => {
 		event.target.focus();
-		selectElementContents(field.labelRef || field.spanRef);
+		selectElementContents(ref);
 	}, 0);
 };
 
 const handleBlur = (event, field) => {
 	contenteditable.value = false;
-	if (event.target == field.spanRef) {
-		field.value = event.target.innerHTML;
-	} else {
-		field.label = event.target.innerHTML;
+	if (!event.target.innerHTML) {
+		// If the field is empty, set the default value in HTML as well as in the field object
+		switch (event.target) {
+			case field.spanRef:
+				event.target.innerHTML = "Add Text";
+				break;
+			case field.labelRef:
+				event.target.innerHTML = "Add Label";
+				break;
+			case field.suffixRef:
+				event.target.innerHTML = "Add Suffix";
+				break;
+		}
+	}
+	switch (event.target) {
+		case field.spanRef:
+			field.value = event.target.innerHTML;
+			break;
+		case field.labelRef:
+			field.label = event.target.innerHTML;
+			break;
+		case field.suffixRef:
+			field.suffix = event.target.innerHTML;
+			break;
 	}
 };
 
