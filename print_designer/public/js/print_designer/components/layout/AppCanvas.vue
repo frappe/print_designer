@@ -466,7 +466,11 @@ onMounted(() => {
 	watchEffect(() => {
 		if (MainStore.screenStyleSheet) {
 			if (MainStore.screenStyleSheet.CssRuleIndex != null) {
-				MainStore.screenStyleSheet.deleteRule(MainStore.screenStyleSheet.CssRuleIndex);
+				try {
+					MainStore.screenStyleSheet.deleteRule(MainStore.screenStyleSheet.CssRuleIndex);
+				} catch (error) {
+					console.warn("Error Deleting Rule", error);
+				}
 			}
 			MainStore.screenStyleSheet.CssRuleIndex = MainStore.addStylesheetRules([
 				[
@@ -527,7 +531,11 @@ onMounted(() => {
 watchEffect(() => {
 	if (MainStore.printStyleSheet && MainStore.page) {
 		for (let index = 0; index < MainStore.printStyleSheet.cssRules.length; index++) {
-			MainStore.printStyleSheet.deleteRule(index);
+			try {
+				MainStore.printStyleSheet.deleteRule(index);
+			} catch (error) {
+				console.warn("Error Deleting Rule", error);
+			}
 		}
 		const convertToMM = (input) => {
 			let convertedUnit = useChangeValueUnit({
@@ -561,7 +569,11 @@ watchEffect(() => {
 watchEffect(() => {
 	if (MainStore.screenStyleSheet && MainStore.modalLocation) {
 		for (let index = 0; index < MainStore.screenStyleSheet.cssRules.length; index++) {
-			MainStore.screenStyleSheet.deleteRule(index);
+			try {
+				MainStore.screenStyleSheet.deleteRule(index);
+			} catch (error) {
+				console.warn("Error Deleting Rule", error);
+			}
 		}
 		MainStore.addStylesheetRules([
 			[
