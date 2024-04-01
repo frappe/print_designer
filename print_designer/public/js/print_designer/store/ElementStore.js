@@ -156,6 +156,9 @@ export const useElementStore = defineStore("ElementStore", {
 			const [cleanedBodyElements, bodyFonts] = body;
 			const [cleanedHeaderElements, headerFonts] = header || [[], null];
 			const [cleanedFooterElements, footerFonts] = footer || [[], null];
+			MainStore.printHeaderFonts = headerFonts;
+			MainStore.printBodyFonts = bodyFonts;
+			MainStore.printFooterFonts = footerFonts;
 
 			MainStore.currentFonts.length = 0;
 			MainStore.currentFonts.push(
@@ -165,6 +168,7 @@ export const useElementStore = defineStore("ElementStore", {
 					...(footerFonts || {}),
 				})
 			);
+			debugger;
 			const updatedPage = { ...MainStore.page };
 			const settingsForSave = {
 				page: updatedPage,
@@ -431,12 +435,12 @@ export const useElementStore = defineStore("ElementStore", {
 		},
 		cleanUpElementsForSave(elements, type) {
 			if (this.checkIfPrintFormatIsEmpty(elements, type)) return;
-			const fontsArray = [];
+			const fontsObject = {};
 			const cleanedElements = [];
 			elements.forEach((container) => {
 				const cleanedContainer = [];
 				container.forEach((element) => {
-					let newElement = this.childrensSave(element.element, fontsArray);
+					let newElement = this.childrensSave(element.element, fontsObject);
 					newElement.classes = newElement.classes.filter(
 						(name) => ["inHeaderFooter", "overlappingHeaderFooter"].indexOf(name) == -1
 					);
@@ -451,7 +455,7 @@ export const useElementStore = defineStore("ElementStore", {
 				});
 				cleanedElements.push(cleanedContainer);
 			});
-			return [cleanedElements, fontsArray];
+			return [cleanedElements, fontsObject];
 		},
 		checkIfPrintFormatIsEmpty(elements, type) {
 			const MainStore = useMainStore();
