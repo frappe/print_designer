@@ -37,26 +37,9 @@ export const useElementStore = defineStore("ElementStore", {
 			}
 			return newElement;
 		},
-		// This is mofiied version of upload function used in frappe/FileUploader.vue
+		// This is modified version of upload function used in frappe/FileUploader.vue
 		async upload_file(file) {
 			const MainStore = useMainStore();
-			const filter = {
-				attached_to_doctype: "Print Format",
-				attached_to_name: MainStore.printDesignName,
-				attached_to_field: "print_designer_preview_img",
-			};
-			// get filename before uploading new file
-			let old_filename = await frappe.db.get_value("File", filter, "name");
-			old_filename = old_filename.message.name;
-			if (old_filename) {
-				frappe.db.delete_doc("File", old_filename);
-				frappe.db.set_value(
-					"Print Format",
-					MainStore.printDesignName,
-					"print_designer_preview_img",
-					null
-				);
-			}
 
 			return new Promise((resolve, reject) => {
 				let xhr = new XMLHttpRequest();
@@ -65,29 +48,6 @@ export const useElementStore = defineStore("ElementStore", {
 						if (xhr.status === 200) {
 							try {
 								r = JSON.parse(xhr.responseText);
-								if (r.message.doctype === "File") {
-									file_doc = r.message;
-									frappe.db.set_value(
-										"Print Format",
-										MainStore.printDesignName,
-										"print_designer_preview_img",
-										file_doc.file_url
-									);
-								}
-							} catch (e) {
-								r = xhr.responseText;
-							}
-							try {
-								r = JSON.parse(xhr.responseText);
-								if (r.message.doctype === "File") {
-									file_doc = r.message;
-									frappe.db.set_value(
-										"Print Format",
-										MainStore.printDesignName,
-										"print_designer_preview_img",
-										file_doc.file_url
-									);
-								}
 							} catch (e) {
 								r = xhr.responseText;
 							}
@@ -117,6 +77,19 @@ export const useElementStore = defineStore("ElementStore", {
 		},
 		async generatePreview() {
 			const MainStore = useMainStore();
+			// first delete old preview image
+			const filter = {
+				attached_to_doctype: "Print Format",
+				attached_to_name: MainStore.printDesignName,
+				attached_to_field: "print_designer_preview_img",
+			};
+			// get filename before uploading new file
+			let old_filename = await frappe.db.get_value("File", filter, "name");
+			old_filename = old_filename.message.name;
+			if (old_filename) {
+				frappe.db.delete_doc("File", old_filename);
+			}
+
 			const options = {
 				backgroundColor: "#ffffff",
 				height: MainStore.page.height / 2,
@@ -134,7 +107,7 @@ export const useElementStore = defineStore("ElementStore", {
 				options
 			);
 			document.getElementsByClassName("main-container")[0].removeChild(print_stylesheet);
-			preview_canvas.toBlob((blob) => {
+			preview_canvas.toBlob(async (blob) => {
 				const file = new File(
 					[blob],
 					`print_designer-${frappe.scrub(MainStore.printDesignName)}-preview.jpg`,
@@ -146,7 +119,7 @@ export const useElementStore = defineStore("ElementStore", {
 					name: file.name,
 					private: true,
 				};
-				this.upload_file(file_data);
+				await this.upload_file(file_data);
 			});
 		},
 		async saveElements() {
@@ -158,7 +131,7 @@ export const useElementStore = defineStore("ElementStore", {
 				MainStore.printDesignName,
 				"standard"
 			);
-			is_standard = is_standard.message.standard == "Yes";
+			MainStore.is_standard = is_standard.message.standard == "Yes";
 			// Update the header and footer height with margin
 			MainStore.page.headerHeightWithMargin =
 				MainStore.page.headerHeight + MainStore.page.marginTop;
@@ -241,7 +214,22 @@ export const useElementStore = defineStore("ElementStore", {
 				},
 			});
 
+			await this.generatePreview();
+
 			objectToSave.print_designer_print_format = PrintFormatData;
+			const filter = {
+				attached_to_doctype: "Print Format",
+				attached_to_name: MainStore.printDesignName,
+				attached_to_field: "print_designer_preview_img",
+			};
+			// update filename from file
+			let print_designer_preview_img = await frappe.db.get_value("File", filter, "file_url");
+			if (print_designer_preview_img.message.file_url) {
+				objectToSave.print_designer_preview_img =
+					print_designer_preview_img.message.file_url;
+			} else {
+				objectToSave.print_designer_preview_img = null;
+			}
 			if (MainStore.isOlderSchema("1.1.0")) {
 				await this.printFormatCopyOnOlderSchema(objectToSave);
 			} else {
@@ -254,7 +242,6 @@ export const useElementStore = defineStore("ElementStore", {
 					5
 				);
 			}
-			this.generatePreview();
 		},
 		checkIfAnyTableIsEmpty() {
 			const emptyTable = this.Elements.find((el) => el.type == "table" && el.table == null);
@@ -519,6 +506,7 @@ export const useElementStore = defineStore("ElementStore", {
 			return saveEl;
 		},
 		cleanUpDynamicContent(element) {
+			const MainStore = useMainStore();
 			if (
 				["table", "image"].includes(element.type) ||
 				(["text", "barcode"].includes(element.type) && element.isDynamic)
@@ -557,7 +545,7 @@ export const useElementStore = defineStore("ElementStore", {
 					});
 				} else {
 					element.image = { ...element.image };
-					if (is_standard) {
+					if (MainStore.is_standard) {
 						// remove file_url and file_name if format is standard
 						["value", "name", "file_name", "file_url", "modified"].forEach((key) => {
 							element.image[key] = "";
