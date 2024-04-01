@@ -1,0 +1,9 @@
+{% from 'print_designer/page/print_designer/jinja/macros/relative_containers.html' import relative_containers with context %}
+
+{% macro render(elements, send_to_jinja) -%}
+    {% if element is iterable and (element is not string and element is not mapping) %}
+            {% for object in elements %}
+                {{ relative_containers(object, send_to_jinja) }}
+            {% endfor %}
+    {% endif %}
+{%- endmacro %}

@@ -120,11 +120,6 @@ export const globalStyles = {
 		isDynamic: false,
 		mainRuleSelector: ".rectangle",
 		style: {
-			display: "inline-flex",
-			justifyContent: "flex-start",
-			alignItems: "flex-start",
-			alignContent: "flex-start",
-			flex: 1,
 			paddingTop: "0px",
 			paddingBottom: "0px",
 			paddingLeft: "0px",

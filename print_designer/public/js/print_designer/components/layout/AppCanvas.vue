@@ -73,7 +73,12 @@ import { useMainStore } from "../../store/MainStore";
 import { useElementStore } from "../../store/ElementStore";
 import { useMarqueeSelection } from "../../composables/MarqueeSelectionTool";
 import { useDraw } from "../../composables/Draw";
-import { updateElementParameters, setCurrentElement, recursiveChildrens } from "../../utils";
+import {
+	updateElementParameters,
+	setCurrentElement,
+	recursiveChildrens,
+	checkUpdateElementOverlapping,
+} from "../../utils";
 import { useChangeValueUnit } from "../../composables/ChangeValueUnit";
 import BaseBarcode from "../base/BaseBarcode.vue";
 const isComponent = Object.freeze({
@@ -457,10 +462,15 @@ onMounted(() => {
 			}
 		}
 	);
+
 	watchEffect(() => {
 		if (MainStore.screenStyleSheet) {
 			if (MainStore.screenStyleSheet.CssRuleIndex != null) {
-				MainStore.screenStyleSheet.deleteRule(MainStore.screenStyleSheet.CssRuleIndex);
+				try {
+					MainStore.screenStyleSheet.deleteRule(MainStore.screenStyleSheet.CssRuleIndex);
+				} catch (error) {
+					console.warn("Error Deleting Rule", error);
+				}
 			}
 			MainStore.screenStyleSheet.CssRuleIndex = MainStore.addStylesheetRules([
 				[
@@ -508,9 +518,25 @@ onMounted(() => {
 			]);
 		}
 	});
+
+	ElementStore.$subscribe((mutation, state) => {
+		if (
+			(mutation.events.type === "set" && mutation.events.key == "Elements") ||
+			(mutation.events.type === "add" && mutation.events.newValue.parent == state.Elements)
+		) {
+			checkUpdateElementOverlapping();
+		}
+	});
 });
 watchEffect(() => {
 	if (MainStore.printStyleSheet && MainStore.page) {
+		for (let index = 0; index < MainStore.printStyleSheet.cssRules.length; index++) {
+			try {
+				MainStore.printStyleSheet.deleteRule(index);
+			} catch (error) {
+				console.warn("Error Deleting Rule", error);
+			}
+		}
 		const convertToMM = (input) => {
 			let convertedUnit = useChangeValueUnit({
 				inputString: input,
@@ -542,6 +568,13 @@ watchEffect(() => {
 });
 watchEffect(() => {
 	if (MainStore.screenStyleSheet && MainStore.modalLocation) {
+		for (let index = 0; index < MainStore.screenStyleSheet.cssRules.length; index++) {
+			try {
+				MainStore.screenStyleSheet.deleteRule(index);
+			} catch (error) {
+				console.warn("Error Deleting Rule", error);
+			}
+		}
 		MainStore.addStylesheetRules([
 			[
 				":root",

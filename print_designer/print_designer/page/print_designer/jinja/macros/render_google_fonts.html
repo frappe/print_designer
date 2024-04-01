@@ -1,0 +1,26 @@
+{% macro getFontStyles(fonts) -%}{%for key, value in fonts.items()%}{{key ~ ':ital,wght@'}}{%for index, size in enumerate(value.weight)%}{%if index > 0%};{%endif%}0,{{size}}{%endfor%}{%for index, size in enumerate(value.italic)%}{%if index > 0%};{%endif%}1,{{size}}{%endfor%}{% if not loop.last %}{{'&display=swap&family='}}{%endif%}{%endfor%}{%- endmacro %}
+
+{% macro render_google_fonts(settings) %}
+    <link rel="preconnect" href="https://fonts.gstatic.com" />
+    {% if settings.printHeaderFonts %}
+        <link
+            href="https://fonts.googleapis.com/css2?family={{getFontStyles(settings.printHeaderFonts)}}"
+            rel="stylesheet"
+            id="headerFontsLinkTag"
+        />
+    {%endif%}
+    {% if settings.printBodyFonts %}
+        <link
+            href="https://fonts.googleapis.com/css2?family={{getFontStyles(settings.printBodyFonts)}}"
+            rel="stylesheet"
+            id="bodyFontsLinkTag"
+        />
+    {%endif%}
+    {% if settings.printFooterFonts %}
+        <link
+            href="https://fonts.googleapis.com/css2?family={{getFontStyles(settings.printFooterFonts)}}"
+            rel="stylesheet"
+            id="footerFontsLinkTag"
+        />
+    {%endif%}
+{% endmacro %}

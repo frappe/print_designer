@@ -8,7 +8,7 @@ import {
 	createTable,
 	createBarcode,
 } from "../defaultObjects";
-import { handlePrintFonts } from "../utils";
+import { handlePrintFonts, setCurrentElement } from "../utils";
 export const useElementStore = defineStore("ElementStore", {
 	state: () => ({
 		Elements: new Array(),
@@ -36,264 +36,42 @@ export const useElementStore = defineStore("ElementStore", {
 		},
 		async saveElements() {
 			const MainStore = useMainStore();
-			if (MainStore.mode == "preview") return;
-			let mainPrintFonts = {};
-			let headerPrintFonts = {};
-			let footerprintFonts = {};
-			const childrensSave = (element, printFonts) => {
-				let saveEl = { ...element };
-				delete saveEl.DOMRef;
-				delete saveEl.index;
-				delete saveEl.snapPoints;
-				delete saveEl.snapEdges;
-				delete saveEl.parent;
-				["text", "table"].indexOf(saveEl.type) != -1 &&
-					handlePrintFonts(saveEl, printFonts);
-				if (saveEl.type == "rectangle") {
-					const childrensArray = saveEl.childrens;
-					saveEl.childrens = [];
-					childrensArray.forEach((el) => {
-						const child = childrensSave(el, printFonts);
-						child && saveEl.childrens.push(child);
-					});
-				}
+			if (this.checkIfAnyTableIsEmpty()) return;
 
-				return saveEl;
-			};
-			const headerElements = [];
-			const mainElements = [];
-			const afterTableElements = [];
-			const footerElements = [];
-			let tableElement = this.Elements.filter((el) => el.type == "table");
-			if (tableElement.some((el) => el.table == null)) {
-				let message = __("You have Empty Table. Please add table fields or remove table.");
-				frappe.show_alert(
-					{
-						message: message,
-						indicator: "red",
-					},
-					5
-				);
-				return;
-			}
-			let isOverlapping = false;
-			if (tableElement.length == 1 && MainStore.isHeaderFooterAuto) {
-				this.Elements.forEach((element) => {
-					if (
-						(element.startY < tableElement[0].startY + MainStore.page.marginTop &&
-							element.startY + element.height >
-								tableElement[0].startY + MainStore.page.marginTop) ||
-						(element.startY <
-							MainStore.page.height -
-								(MainStore.page.height -
-									(tableElement[0].startY + tableElement[0].height)) -
-								MainStore.page.marginTop -
-								MainStore.page.marginBottom &&
-							element.startY + element.height >
-								MainStore.page.height -
-									(MainStore.page.height -
-										(tableElement[0].startY + tableElement[0].height)) -
-									MainStore.page.marginTop -
-									MainStore.page.marginBottom)
-					) {
-						isOverlapping = true;
-					}
-				});
-				if (isOverlapping) {
-					MainStore.mode = "editing";
-				} else if (!isOverlapping) {
-					MainStore.page.headerHeight = tableElement[0].startY;
-					MainStore.page.footerHeight =
-						MainStore.page.height -
-						(tableElement[0].startY +
-							tableElement[0].height +
-							MainStore.page.marginTop +
-							MainStore.page.marginBottom);
-				}
-			} else {
-				let isHeaderOverlapping = false;
-				let isFooterOverlapping = false;
-				this.Elements.forEach((element) => {
-					if (
-						element.startY < MainStore.page.headerHeight &&
-						element.startY + element.height > MainStore.page.headerHeight
-					) {
-						isHeaderOverlapping = true;
-					}
-					if (
-						element.startY <
-							MainStore.page.height -
-								MainStore.page.footerHeight -
-								MainStore.page.marginTop -
-								MainStore.page.marginBottom &&
-						element.startY + element.height >
-							MainStore.page.height -
-								MainStore.page.footerHeight -
-								MainStore.page.marginTop -
-								MainStore.page.marginBottom
-					) {
-						isFooterOverlapping = true;
-					}
-				});
-				if (isHeaderOverlapping || isFooterOverlapping) {
-					MainStore.mode = "pdfSetup";
-					frappe.show_alert(
-						{
-							message: `Please resolve overlapping ${
-								isHeaderOverlapping ? "header" : ""
-							} ${isHeaderOverlapping && isFooterOverlapping ? " and " : ""} ${
-								isFooterOverlapping ? "footer" : ""
-							}`,
-							indicator: "red",
-						},
-						5
-					);
-					return;
-				}
-			}
-			let isHeaderEmpty = true;
-			let isBodyEmpty = true;
-			let isFooterEmpty = true;
-			let pageInfoInBody = [];
-			if (tableElement.length == 1) {
-				tableElement[0].isPrimaryTable = true;
-			} else if (tableElement.length > 1) {
-				let primaryTableEl = tableElement.filter((el) => el.isPrimaryTable);
-				if (primaryTableEl.length == 1) {
-					tableElement = primaryTableEl;
-				} else {
-					const message = __(
-						"As You have multiple tables, you have to select Primary Table. <br></br> 1. Go to Table Element that you wish to set as Primary. <br></br> 2. Select it and from properties panel select <b>Set as Primary Table</b> as <b>Yes</b> "
-					);
-					frappe.msgprint(
-						{
-							title: __("Multiple Tables."),
-							message: message,
-							indicator: "red",
-						},
-						5
-					);
-					return;
-				}
-			}
-			this.Elements.forEach((element) => {
-				let is_header = false;
-				let is_footer = false;
-				if (
-					element.startY + element.height <
-					MainStore.page.headerHeight + MainStore.page.marginTop
-				) {
-					is_header = true;
-				} else if (
-					element.startY >
-					MainStore.page.height -
-						MainStore.page.footerHeight -
-						MainStore.page.marginTop -
-						MainStore.page.marginBottom
-				) {
-					is_footer = true;
-				} else {
-					if (element.type == "text" && element.isDynamic) {
-						element.dynamicContent
-							.filter(
-								(el) =>
-									["page", "topage", "date", "time"].indexOf(el.fieldname) != -1
-							)
-							.forEach((field) => {
-								pageInfoInBody.push(field.fieldname);
-							});
-					}
-				}
-				let printFonts = is_header
-					? headerPrintFonts
-					: is_footer
-					? footerprintFonts
-					: mainPrintFonts;
-				let newElement = childrensSave(element, printFonts);
-				newElement.classes = newElement.classes.filter(
-					(name) => ["inHeaderFooter", "overlappingHeaderFooter"].indexOf(name) == -1
-				);
-				if (element.type == "rectangle" && element.childrens.length) {
-					let childrensArray = element.childrens;
-					newElement.childrens = [];
-					childrensArray.forEach((el) => {
-						newElement.childrens.push(childrensSave(el, printFonts));
-					});
-				}
-				if (is_header) {
-					newElement.printY = newElement.startY + MainStore.page.marginTop;
-					MainStore.printHeaderFonts = printFonts;
-					headerElements.push(newElement);
-					isHeaderEmpty = false;
-				} else if (is_footer) {
-					newElement.printY =
-						newElement.startY -
-						(MainStore.page.height -
-							MainStore.page.footerHeight -
-							MainStore.page.marginBottom -
-							MainStore.page.marginTop);
-					MainStore.printFooterFonts = printFonts;
-					footerElements.push(newElement);
-					isFooterEmpty = false;
-				} else {
-					newElement.printY = newElement.startY - MainStore.page.headerHeight;
-					MainStore.printBodyFonts = printFonts;
-					if (
-						tableElement.length == 1 &&
-						tableElement[0].startY + tableElement[0].height <= newElement.startY + 2
-					) {
-						newElement.printY =
-							newElement.startY - (tableElement[0].startY + tableElement[0].height);
-						newElement.printX = newElement.startX - tableElement[0].startX;
+			// Update the header and footer height with margin
+			MainStore.page.headerHeightWithMargin =
+				MainStore.page.headerHeight + MainStore.page.marginTop;
+			MainStore.page.footerHeightWithMargin =
+				MainStore.page.footerHeight + MainStore.page.marginBottom;
 
-						afterTableElements.push(newElement);
-					} else {
-						mainElements.push(newElement);
-					}
-					isBodyEmpty = false;
-				}
-			});
-			if (isHeaderEmpty) {
-				MainStore.printHeaderFonts = null;
-			}
-			if (isBodyEmpty) {
-				if (!isHeaderEmpty || !isFooterEmpty) {
-					MainStore.mode = "pdfSetup";
-					frappe.show_alert(
-						{
-							message: "Atleast 1 element is required inside body",
-							indicator: "red",
-						},
-						5
-					);
-					return;
-				}
-				MainStore.printBodyFonts = null;
-			}
-			if (pageInfoInBody.length) {
-				frappe.show_alert({
-					message:
-						"Please move <b>" + pageInfoInBody.join(", ") + "</b> to header / footer",
-					indicator: "orange",
-				});
-				return;
-			}
-			if (isFooterEmpty) {
-				MainStore.printFooterFonts = null;
-			}
+			const [headerElements, bodyElements, footerElements] = await this.computeLayout();
+			if (!this.handleHeaderFooterOverlapping(headerElements.flat())) return;
+			if (!this.handleHeaderFooterOverlapping(bodyElements.flat())) return;
+			if (!this.handleHeaderFooterOverlapping(footerElements.flat())) return;
+
+			const headerDimensions = this.computeElementDimensions(headerElements, "header");
+			const bodyDimensions = this.computeElementDimensions(bodyElements, "body");
+			const footerDimensions = this.computeElementDimensions(footerElements, "footer");
+
+			const header = this.cleanUpElementsForSave(headerElements, "header");
+			const body = this.cleanUpElementsForSave(bodyElements, "body");
+			const footer = this.cleanUpElementsForSave(footerElements, "footer");
+
+			if (!body) return;
+
+			const [cleanedBodyElements, bodyFonts] = body;
+			const [cleanedHeaderElements, headerFonts] = header || [[], null];
+			const [cleanedFooterElements, footerFonts] = footer || [[], null];
+
 			MainStore.currentFonts.length = 0;
 			MainStore.currentFonts.push(
 				...Object.keys({
-					...(headerPrintFonts || {}),
-					...(mainPrintFonts || {}),
-					...(footerprintFonts || {}),
+					...(headerFonts || {}),
+					...(bodyFonts || {}),
+					...(footerFonts || {}),
 				})
 			);
 			const updatedPage = { ...MainStore.page };
-			updatedPage.headerHeightWithMargin =
-				MainStore.page.headerHeight + MainStore.page.marginTop;
-			updatedPage.footerHeightWithMargin =
-				MainStore.page.footerHeight + MainStore.page.marginBottom;
 			const settingsForSave = {
 				page: updatedPage,
 				pdfPrintDPI: MainStore.pdfPrintDPI,
@@ -309,7 +87,6 @@ export const useElementStore = defineStore("ElementStore", {
 				userProvidedJinja: MainStore.userProvidedJinja,
 				schema_version: MainStore.schema_version,
 			};
-			await frappe.dom.freeze();
 			const convertCsstoString = (stylesheet) => {
 				let cssRule = Array.from(stylesheet.cssRules)
 					.map((rule) => rule.cssText || "")
@@ -319,25 +96,484 @@ export const useElementStore = defineStore("ElementStore", {
 			const css =
 				convertCsstoString(MainStore.screenStyleSheet) +
 				convertCsstoString(MainStore.printStyleSheet);
-			await frappe.db.set_value("Print Format", MainStore.printDesignName, {
-				print_designer_header: JSON.stringify(headerElements),
-				print_designer_body: JSON.stringify(mainElements),
-				print_designer_after_table: JSON.stringify(afterTableElements),
-				print_designer_footer: JSON.stringify(footerElements),
+
+			const objectToSave = {
+				print_designer_header: JSON.stringify(cleanedHeaderElements[0]),
+				print_designer_body: JSON.stringify(cleanedBodyElements.flat()),
+				print_designer_after_table: null,
+				print_designer_footer: JSON.stringify(cleanedFooterElements[0]),
 				print_designer_settings: JSON.stringify(settingsForSave),
-				css,
+				css: css,
+			};
+			const PrintFormatData = this.getPrintFormatData({
+				header: {
+					elements: cleanedHeaderElements,
+					dimensions: headerDimensions,
+				},
+				body: {
+					elements: cleanedBodyElements,
+					dimensions: bodyDimensions,
+				},
+				footer: {
+					elements: cleanedFooterElements,
+					dimensions: footerDimensions,
+				},
 			});
-			await frappe.dom.unfreeze();
+
+			objectToSave.print_designer_print_format = PrintFormatData;
+			if (MainStore.isOlderSchema("1.1.0")) {
+				await this.printFormatCopyOnOlderSchema(objectToSave);
+			} else {
+				await frappe.db.set_value("Print Format", MainStore.printDesignName, objectToSave);
+				frappe.show_alert(
+					{
+						message: `Print Format Saved Successfully`,
+						indicator: "green",
+					},
+					5
+				);
+			}
+		},
+		checkIfAnyTableIsEmpty() {
+			const emptyTable = this.Elements.find((el) => el.type == "table" && el.table == null);
+			if (emptyTable) {
+				let message = __("You have Empty Table. Please add table fields or remove table.");
+				setCurrentElement({}, emptyTable);
+				frappe.show_alert(
+					{
+						message: message,
+						indicator: "red",
+					},
+					5
+				);
+				return true;
+			}
+			return false;
+		},
+		async computeLayout(element = null) {
+			const MainStore = useMainStore();
+			const elements = [...this.Elements].map((el, index) => {
+				return {
+					index,
+					startY: parseInt(el.startY),
+					endY: parseInt(el.startY + el.height),
+					element: el,
+				};
+			});
+			elements.sort((a, b) => {
+				return a.startY < b.startY ? -1 : 1;
+			});
+			const fullWidthElements = elements.filter(
+				(currentEl) => !currentEl.element.isElementOverlapping
+			);
+			const headerContainer = [];
+			const bodyContainer = [];
+			const footerContainer = [];
+			const tempElementsArray = [];
+			elements.forEach((currentEl) => {
+				if (MainStore.page.headerHeight && currentEl.endY <= MainStore.page.headerHeight) {
+					headerContainer.push(currentEl);
+				} else if (
+					MainStore.page.footerHeight &&
+					currentEl.startY >=
+						MainStore.page.height -
+							MainStore.page.footerHeightWithMargin -
+							MainStore.page.marginTop
+				) {
+					footerContainer.push(currentEl);
+				} else if (
+					fullWidthElements.includes(currentEl) &&
+					currentEl.element.isDynamicHeight
+				) {
+					if (tempElementsArray.length) {
+						bodyContainer.push([...tempElementsArray]);
+					}
+					bodyContainer.push([currentEl]);
+					tempElementsArray.length = 0;
+				} else {
+					tempElementsArray.push(currentEl);
+				}
+			});
+			if (tempElementsArray.length) {
+				bodyContainer.push(tempElementsArray);
+			}
+			return [[headerContainer], bodyContainer, [footerContainer]];
+		},
+		handleHeaderFooterOverlapping(elements) {
+			const MainStore = useMainStore();
+			const tableElement = this.Elements.filter((el) => el.type == "table");
+			let isOverlapping = false;
+
+			if (tableElement.length == 1 && MainStore.isHeaderFooterAuto) {
+				isOverlapping = !this.autoCalculateHeaderFooter(tableElement[0]);
+			} else {
+				isOverlapping = elements.some((element) => {
+					element = element.element;
+					if (
+						(element.startY < MainStore.page.headerHeight &&
+							element.startY + element.height > MainStore.page.headerHeight) ||
+						(element.startY <
+							MainStore.page.height -
+								MainStore.page.footerHeight -
+								MainStore.page.marginTop -
+								MainStore.page.marginBottom &&
+							element.startY + element.height >
+								MainStore.page.height -
+									MainStore.page.footerHeight -
+									MainStore.page.marginTop -
+									MainStore.page.marginBottom)
+					) {
+						return true;
+					}
+					return false;
+				});
+			}
+			if (!isOverlapping) return true;
+			MainStore.mode = "pdfSetup";
 			frappe.show_alert(
 				{
-					message: `Print Format Saved Successfully`,
-					indicator: "green",
+					message: "Please resolve overlapping header/footer elements",
+					indicator: "red",
 				},
 				5
 			);
 		},
-		async loadElements(printDesignName) {
+		autoCalculateHeaderFooter(tableEl) {
 			const MainStore = useMainStore();
+
+			if (this.isElementOverlapping(tableEl)) return false;
+
+			MainStore.page.headerHeight = tableEl.startY;
+			MainStore.page.footerHeight =
+				MainStore.page.height -
+				(tableEl.startY +
+					tableEl.height +
+					MainStore.page.marginTop +
+					MainStore.page.marginBottom);
+
+			return true;
+		},
+		computeElementDimensions(elements, containerType = "body") {
+			const dimensions = [];
+			elements.reduce(
+				(prevDimensions, container, index) => {
+					const calculatedDimensions = this.calculateWrapperElementDimensions(
+						prevDimensions,
+						container,
+						containerType,
+						index
+					);
+					dimensions.push(calculatedDimensions);
+					return calculatedDimensions;
+				},
+				{ top: 0, bottom: 0 }
+			);
+			return dimensions;
+		},
+		calculateWrapperElementDimensions(prevDimensions, children, containerType, index) {
+			// basically returns lowest left - top  highest right - bottom from all of the children elements
+			const MainStore = useMainStore();
+			const parentRect = {
+				top: 0,
+				left: 0,
+				width:
+					MainStore.page.width - MainStore.page.marginLeft - MainStore.page.marginRight,
+				height:
+					MainStore.page.height - MainStore.page.marginTop - MainStore.page.marginBottom,
+			};
+			let offsetRect = children.reduce(
+				(offset, currentElement) => {
+					currentElement = currentElement.element;
+					let currentElementRect = {
+						top: currentElement.startY,
+						left: currentElement.startX,
+						right: currentElement.startX + currentElement.width,
+						bottom: currentElement.startY + currentElement.height,
+					};
+					currentElementRect.left < offset.left &&
+						(offset.left = currentElementRect.left);
+					currentElementRect.top < offset.top && (offset.top = currentElementRect.top);
+					currentElementRect.right > offset.right &&
+						(offset.right = currentElementRect.right);
+					currentElementRect.bottom > offset.bottom &&
+						(offset.bottom = currentElementRect.bottom);
+					return offset;
+				},
+				{ left: 9999, top: 9999, right: 0, bottom: 0 }
+			);
+			(offsetRect.top -= parentRect.top), (offsetRect.left -= parentRect.left);
+			(offsetRect.right -= parentRect.left), (offsetRect.bottom -= parentRect.top);
+
+			if (containerType == "header") {
+				offsetRect.top = 0;
+				offsetRect.bottom = MainStore.page.headerHeight;
+			}
+			// if its the first element then update top to header height
+			// also checking if element is below header ( just safe guard )
+			if (containerType == "body") {
+				if (index == 0 && offsetRect.top >= MainStore.page.headerHeight) {
+					offsetRect.top = MainStore.page.headerHeight;
+				}
+				if (index != 0) {
+					offsetRect.top = prevDimensions.bottom;
+				}
+			}
+			return offsetRect;
+		},
+		cleanUpElementsForSave(elements, type) {
+			if (this.checkIfPrintFormatIsEmpty(elements, type)) return;
+			const fontsArray = [];
+			const cleanedElements = [];
+			elements.forEach((container) => {
+				const cleanedContainer = [];
+				container.forEach((element) => {
+					let newElement = this.childrensSave(element.element, fontsArray);
+					newElement.classes = newElement.classes.filter(
+						(name) => ["inHeaderFooter", "overlappingHeaderFooter"].indexOf(name) == -1
+					);
+					if (element.type == "rectangle" && element.childrens.length) {
+						let childrensArray = element.childrens;
+						newElement.childrens = [];
+						childrensArray.forEach((el) => {
+							newElement.childrens.push(this.childrensSave(el, printFonts));
+						});
+					}
+					cleanedContainer.push(newElement);
+				});
+				cleanedElements.push(cleanedContainer);
+			});
+			return [cleanedElements, fontsArray];
+		},
+		checkIfPrintFormatIsEmpty(elements, type) {
+			const MainStore = useMainStore();
+			if (elements.length == 0) {
+				switch (type) {
+					case "header":
+						MainStore.printHeaderFonts = null;
+						break;
+					case "body":
+						MainStore.printBodyFonts = null;
+						frappe.show_alert(
+							{
+								message: "Atleast 1 element is required inside body",
+								indicator: "red",
+							},
+							5
+						);
+						// This is intentionally using throw to stop the execution
+						throw new Error(__("Atleast 1 element is required inside body"));
+					case "footer":
+						MainStore.printFooterFonts = null;
+						break;
+				}
+				return true;
+			}
+			return false;
+		},
+		childrensSave(element, printFonts) {
+			let saveEl = { ...element };
+			delete saveEl.DOMRef;
+			delete saveEl.index;
+			delete saveEl.snapPoints;
+			delete saveEl.snapEdges;
+			delete saveEl.parent;
+			if (printFonts && ["text", "table"].indexOf(saveEl.type) != -1) {
+				handlePrintFonts(saveEl, printFonts);
+			}
+			if (saveEl.type == "rectangle") {
+				const childrensArray = saveEl.childrens;
+				saveEl.childrens = [];
+				childrensArray.forEach((el) => {
+					const child = this.childrensSave(el, printFonts);
+					child && saveEl.childrens.push(child);
+				});
+			}
+
+			return saveEl;
+		},
+		getPrintFormatData({ header, body, footer }) {
+			const headerElements = this.createWrapperElement(
+				header.elements,
+				header.dimensions,
+				"header"
+			);
+			const bodyElements = this.createWrapperElement(body.elements, body.dimensions, "body");
+			const footerElements = this.createWrapperElement(
+				footer.elements,
+				footer.dimensions,
+				"footer"
+			);
+			return JSON.stringify({
+				header: headerElements,
+				body: bodyElements,
+				footer: footerElements,
+			});
+		},
+		createWrapperElement(containers, dimensions, containerType = "body") {
+			const MainStore = useMainStore();
+			const wrapperContainers = { childrens: [] };
+			containers.forEach((container, index) => {
+				const calculatedDimensions = dimensions[index];
+				const cordinates = {
+					startY: calculatedDimensions.top,
+					pageY: calculatedDimensions.top,
+					startX: 0,
+					pageX: 0,
+				};
+				const wrapperRectangleEl = createRectangle(cordinates, wrapperContainers);
+				wrapperRectangleEl.height = calculatedDimensions.bottom - calculatedDimensions.top;
+				wrapperRectangleEl.width =
+					MainStore.page.width - MainStore.page.marginLeft - MainStore.page.marginRight;
+				wrapperRectangleEl.childrens = container;
+				if (
+					containerType == "body" &&
+					wrapperRectangleEl.childrens.length == 1 &&
+					wrapperRectangleEl.childrens[0].isDynamicHeight == true
+				) {
+					wrapperRectangleEl.isDynamicHeight = true;
+				}
+				wrapperRectangleEl.childrens.forEach((el) => {
+					el.startY -= cordinates.startY;
+					if (containerType == "header") {
+						el.startY += MainStore.page.marginTop;
+					}
+				});
+				wrapperRectangleEl.style.backgroundColor = "";
+			});
+			return wrapperContainers.childrens.map((el) => this.childrensSave(el));
+		},
+		async printFormatCopyOnOlderSchema(objectToSave) {
+			const MainStore = useMainStore();
+			let nextFormatCopyNumber = 0;
+			for (let i = 0; i < 100; i++) {
+				const pf_exists = await frappe.db.exists(
+					"Print Format",
+					MainStore.printDesignName + " ( Copy " + (i ? i : "") + " )"
+				);
+				if (pf_exists) continue;
+				nextFormatCopyNumber = i;
+				break;
+			}
+			const newName =
+				MainStore.printDesignName +
+				" ( Copy " +
+				(nextFormatCopyNumber ? nextFormatCopyNumber : "") +
+				" )";
+			// TODO: have better message.
+			let message = __(
+				"<b>This Print Format was created from older version of Print Designer.</b>"
+			);
+			message += "<hr />";
+			message += __(
+				"It is not compatible with current version so instead we will make copy of this format for you using new version"
+			);
+			message += "<hr />";
+			message += __(`Do you want to save it as <b>${newName}</b> ?`);
+
+			frappe.confirm(
+				message,
+				async () => {
+					await frappe.db.insert({
+						doctype: "Print Format",
+						name: newName,
+						doc_type: MainStore.doctype,
+						print_designer: 1,
+						print_designer_header: objectToSave.print_designer_header,
+						print_designer_body: objectToSave.print_designer_body,
+						print_designer_after_table: null,
+						print_designer_footer: objectToSave.print_designer_footer,
+						print_designer_print_format: objectToSave.print_designer_print_format,
+						print_designer_settings: objectToSave.print_designer_settings,
+					});
+					frappe.set_route("print-designer", newName);
+				},
+				async () => {
+					throw new Error(__("Print Format not saved"));
+				}
+			);
+		},
+
+		handleDynamicContent(element) {
+			const MainStore = useMainStore();
+			if (
+				element.type == "table" ||
+				(["text", "image", "barcode"].indexOf(element.type) != -1 && element.isDynamic)
+			) {
+				if (["text", "barcode"].indexOf(element.type) != -1) {
+					element.dynamicContent = [
+						...element.dynamicContent.map((el) => {
+							return { ...el };
+						}),
+					];
+					element.selectedDynamicText = null;
+					MainStore.dynamicData.push(...element.dynamicContent);
+				} else if (element.type === "table") {
+					element.columns = [
+						...element.columns.map((el) => {
+							return { ...el };
+						}),
+					];
+					element.columns.forEach((col) => {
+						if (!col.dynamicContent) return;
+						col.dynamicContent = [
+							...col.dynamicContent.map((el) => {
+								return { ...el };
+							}),
+						];
+						col.selectedDynamicText = null;
+						MainStore.dynamicData.push(...col.dynamicContent);
+					});
+				} else {
+					element.image = { ...element.image };
+					MainStore.dynamicData.push(element.image);
+				}
+			}
+		},
+		childrensLoad(element, parent) {
+			element.parent = parent;
+			element.DOMRef = null;
+			delete element.printY;
+			element.isDraggable = true;
+			element.isResizable = true;
+			this.handleDynamicContent(element);
+			if (element.type == "rectangle") {
+				element.isDropZone = true;
+				const childrensArray = element.childrens;
+				element.childrens = [];
+				childrensArray.forEach((el) => {
+					const child = this.childrensLoad(el, element);
+					child && element.childrens.push(child);
+				});
+			} else if (element.type == "text" && !element.isDynamic) {
+				element.contenteditable = false;
+			}
+
+			return element;
+		},
+		loadSettings(settings) {
+			const MainStore = useMainStore();
+			if (!settings) return;
+			Object.keys(settings).forEach((key) => {
+				switch (key) {
+					case "schema_version":
+						MainStore.old_schema_version = settings["schema_version"];
+					case "currentDoc":
+						frappe.db
+							.exists(MainStore.doctype, settings["currentDoc"])
+							.then((exists) => {
+								if (exists) {
+									MainStore.currentDoc = settings["currentDoc"];
+								}
+							});
+						break;
+					default:
+						MainStore[key] = settings[key];
+						break;
+				}
+			});
+			return;
+		},
+		async loadElements(printDesignName) {
 			frappe.dom.freeze(__("Loading Print Format"));
 			const printFormat = await frappe.db.get_value("Print Format", printDesignName, [
 				"print_designer_header",
@@ -351,168 +587,27 @@ export const useElementStore = defineStore("ElementStore", {
 			let ElementsAfterTable = JSON.parse(printFormat.message.print_designer_after_table);
 			let ElementsFooter = JSON.parse(printFormat.message.print_designer_footer);
 			let settings = JSON.parse(printFormat.message.print_designer_settings);
-			settings &&
-				Object.keys(settings).forEach(async (key) => {
-					if (
-						["currentDoc", "schema_version"].indexOf(key) == -1 ||
-						(await frappe.db.exists(MainStore.doctype, settings[key]))
-					) {
-						MainStore[key] = settings[key];
-					}
-					if (key == "schema_version" && settings[key] != MainStore.schema_version) {
-						MainStore.old_schema_version = settings[key];
-					}
-				});
-			const handleDynamicContent = (element) => {
-				const MainStore = useMainStore();
-				if (
-					element.type == "table" ||
-					(["text", "image", "barcode"].indexOf(element.type) != -1 && element.isDynamic)
-				) {
-					if (["text", "barcode"].indexOf(element.type) != -1) {
-						element.dynamicContent = [
-							...element.dynamicContent.map((el) => {
-								return { ...el };
-							}),
-						];
-						element.selectedDynamicText = null;
-						MainStore.dynamicData.push(...element.dynamicContent);
-					} else if (element.type === "table") {
-						element.columns = [
-							...element.columns.map((el) => {
-								return { ...el };
-							}),
-						];
-						element.columns.forEach((col) => {
-							if (!col.dynamicContent) return;
-							col.dynamicContent = [
-								...col.dynamicContent.map((el) => {
-									return { ...el };
-								}),
-							];
-							col.selectedDynamicText = null;
-							MainStore.dynamicData.push(...col.dynamicContent);
-						});
-					} else {
-						element.image = { ...element.image };
-						MainStore.dynamicData.push(element.image);
-					}
-				}
-			};
-			const childrensLoad = (element, parent) => {
-				element.parent = parent;
-				element.DOMRef = null;
-				delete element.printY;
-				element.isDraggable = true;
-				element.isResizable = true;
-				handleDynamicContent(element);
-				if (element.type == "rectangle") {
-					element.isDropZone = true;
-					const childrensArray = element.childrens;
-					element.childrens = [];
-					childrensArray.forEach((el) => {
-						const child = childrensLoad(el, element);
-						child && element.childrens.push(child);
-					});
-				} else if (element.type == "text" && !element.isDynamic) {
-					element.contenteditable = false;
-				}
-
-				return element;
-			};
+			this.loadSettings(settings);
 			this.Elements = [
 				...(ElementsHeader || []),
 				...(ElementsBody || []),
-				...(ElementsFooter || []),
 				...(ElementsAfterTable || []),
+				...(ElementsFooter || []),
 			];
-			if (this.Elements.length === 0 && !!MainStore.getTableMetaFields.length) {
-				const newTable = {
-					id: frappe.utils.get_random(10),
-					type: "table",
-					DOMRef: null,
-					parent: this.Elements,
-					isDraggable: true,
-					isResizable: true,
-					isDropZone: false,
-					table: null,
-					columns: [
-						{
-							id: 0,
-							label: "",
-							style: {},
-							applyStyleToHeader: false,
-						},
-						{
-							id: 1,
-							label: "",
-							style: {},
-							applyStyleToHeader: false,
-						},
-						{
-							id: 2,
-							label: "",
-							style: {},
-							applyStyleToHeader: false,
-						},
-						{
-							id: 3,
-							label: "",
-							style: {},
-							applyStyleToHeader: false,
-						},
-						{
-							id: 4,
-							label: "",
-							style: {},
-							applyStyleToHeader: false,
-						},
-						{
-							id: 5,
-							label: "",
-							style: {},
-							applyStyleToHeader: false,
-						},
-						{
-							id: 6,
-							label: "",
-							style: {},
-							applyStyleToHeader: false,
-						},
-					],
-					PreviewRowNo: 1,
-					selectedColumn: null,
-					selectedDynamicText: null,
-					startX: 11.338582677,
-					startY: 393.826771658,
-					pageX: 228,
-					pageY: 435,
-					width: 771.0236220564,
-					height: 442.20472441469997,
-					styleEditMode: "main",
-					labelDisplayStyle: "standard",
-					style: {},
-					labelStyle: {},
-					headerStyle: {},
-					altStyle: {},
-					classes: [],
-				};
-				this.Elements.push(newTable);
-			}
 			this.Elements.map((element) => {
 				element.DOMRef = null;
 				element.parent = this.Elements;
 				delete element.printY;
 				element.isDraggable = true;
 				element.isResizable = true;
-				handleDynamicContent(element);
+				this.handleDynamicContent(element);
 				if (element.type == "rectangle") {
 					element.isDropZone = true;
 					if (element.childrens.length) {
 						let childrensArray = element.childrens;
 						element.childrens = [];
 						childrensArray.forEach((el) => {
-							element.childrens.push(childrensLoad(el, element));
+							element.childrens.push(this.childrensLoad(el, element));
 						});
 					}
 				} else if (element.type == "text" && !element.isDynamic) {
@@ -531,6 +626,32 @@ export const useElementStore = defineStore("ElementStore", {
 			tables.forEach((t) => {
 				t.isPrimaryTable = t == tableEl;
 			});
+		},
+		// This is called to check if the element is overlapping with any other element
+		isElementOverlapping(currentEl, elements = this.Elements) {
+			const currentElIndex =
+				currentEl.index || this.Elements.findIndex((el) => el === currentEl);
+			const currentStartY = parseInt(currentEl.startY);
+			const currentEndY = currentEl.endY || parseInt(currentEl.startY + currentEl.height);
+
+			return (
+				elements.findIndex((el, index) => {
+					if (index == currentElIndex) return false;
+					const elStartY = parseInt(el.startY);
+					const elEndY = el.endY || parseInt(el.startY + el.height);
+					if (currentStartY <= elStartY && elStartY <= currentEndY) {
+						return true;
+					} else if (currentStartY <= elEndY && elEndY <= currentEndY) {
+						return true;
+					} else if (elStartY <= currentStartY && currentStartY <= elEndY) {
+						return true;
+					} else if (elStartY <= currentEndY && currentEndY <= elEndY) {
+						return true;
+					} else {
+						return false;
+					}
+				}) != -1
+			);
 		},
 	},
 });
