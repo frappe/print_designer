@@ -102,6 +102,8 @@ def get_filtered_formats_by_app(app, templates_folder, filter_by=""):
 
 def get_formats_from_folders(folders):
 	formats = set()
+	if not folders.exists():
+		return formats
 	for folder in folders.iterdir():
 		if folder.is_dir() and folder.name in frappe.get_installed_apps():
 			formats.update(get_json_files(folder))
