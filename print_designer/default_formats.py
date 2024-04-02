@@ -65,29 +65,29 @@ def install_default_formats(app, filter_by="", load_pd_formats=True):
 		app=app, templates_folder=pd_folder[0], filter_by=filter_by
 	)
 
-	preview_files = [f for f in print_formats if f.name.endswith("-preview.json")]
+	# preview_files = [f for f in print_formats if f.name.endswith("-preview.json")]
 	print_formats = [f for f in print_formats if not f.name.endswith("-preview.json")]
 
 	for json_file_path in print_formats:
 		import_file_by_path(path=json_file_path)
 		frappe.db.commit()
+	# TODO: enable this after this is released in v15 https://github.com/frappe/frappe/pull/25779
+	# for json_file_path in preview_files:
+	# 	import_file_by_path(path=json_file_path, pre_process=update_preview_img)
+	# 	frappe.db.commit()
 
-	for json_file_path in preview_files:
-		import_file_by_path(path=json_file_path, pre_process=update_preview_img)
-		frappe.db.commit()
-
-	for pf in frappe.db.get_all("Print Format", filters={"standard": "Yes", "print_designer": 1}):
-		updated_url = frappe.db.get_value(
-			"File",
-			{
-				"attached_to_doctype": "Print Format",
-				"attached_to_name": pf.name,
-				"attached_to_field": "print_designer_preview_img",
-			},
-			"file_url",
-		)
-		if updated_url:
-			frappe.set_value("Print Format", pf.name, "print_designer_preview_img", updated_url)
+	# for pf in frappe.db.get_all("Print Format", filters={"standard": "Yes", "print_designer": 1}):
+	# 	updated_url = frappe.db.get_value(
+	# 		"File",
+	# 		{
+	# 			"attached_to_doctype": "Print Format",
+	# 			"attached_to_name": pf.name,
+	# 			"attached_to_field": "print_designer_preview_img",
+	# 		},
+	# 		"file_url",
+	# 	)
+	# 	if updated_url:
+	# 		frappe.set_value("Print Format", pf.name, "print_designer_preview_img", updated_url)
 
 
 def get_filtered_formats_by_app(app, templates_folder, filter_by=""):
