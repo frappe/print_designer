@@ -40,7 +40,7 @@ export const useElementStore = defineStore("ElementStore", {
 		// This is modified version of upload function used in frappe/FileUploader.vue
 		async upload_file(file) {
 			const MainStore = useMainStore();
-
+			MainStore.print_designer_preview_img = null;
 			return new Promise((resolve, reject) => {
 				let xhr = new XMLHttpRequest();
 				xhr.onreadystatechange = () => {
@@ -48,6 +48,21 @@ export const useElementStore = defineStore("ElementStore", {
 						if (xhr.status === 200) {
 							try {
 								r = JSON.parse(xhr.responseText);
+								if (r.message.doctype === "File") {
+									file_url = r.message.file_url;
+									// if format is not saved then update the preview image value with it
+									if (MainStore.isFormatSaving) {
+										MainStore.print_designer_preview_img = file_url;
+									} else {
+										// if format is already saved then update the print_designer_preview_img field
+										frappe.db.set_value(
+											"Print Format",
+											MainStore.printDesignName,
+											"print_designer_preview_img",
+											file_url
+										);
+									}
+								}
 							} catch (e) {
 								r = xhr.responseText;
 							}
@@ -92,7 +107,7 @@ export const useElementStore = defineStore("ElementStore", {
 
 			const options = {
 				backgroundColor: "#ffffff",
-				height: MainStore.page.height / 2,
+				height: MainStore.page.height,
 				width: MainStore.page.width,
 			};
 			const print_stylesheet = document.createElement("style");
@@ -168,7 +183,6 @@ export const useElementStore = defineStore("ElementStore", {
 					...(footerFonts || {}),
 				})
 			);
-			debugger;
 			const updatedPage = { ...MainStore.page };
 			const settingsForSave = {
 				page: updatedPage,
@@ -217,27 +231,17 @@ export const useElementStore = defineStore("ElementStore", {
 					dimensions: footerDimensions,
 				},
 			});
+			MainStore.isFormatSaving = true;
 
 			await this.generatePreview();
 
 			objectToSave.print_designer_print_format = PrintFormatData;
-			const filter = {
-				attached_to_doctype: "Print Format",
-				attached_to_name: MainStore.printDesignName,
-				attached_to_field: "print_designer_preview_img",
-			};
-			// update filename from file
-			let print_designer_preview_img = await frappe.db.get_value("File", filter, "file_url");
-			if (print_designer_preview_img.message.file_url) {
-				objectToSave.print_designer_preview_img =
-					print_designer_preview_img.message.file_url;
-			} else {
-				objectToSave.print_designer_preview_img = null;
-			}
+			objectToSave.print_designer_preview_img = MainStore.print_designer_preview_img;
 			if (MainStore.isOlderSchema("1.1.0")) {
 				await this.printFormatCopyOnOlderSchema(objectToSave);
 			} else {
 				await frappe.db.set_value("Print Format", MainStore.printDesignName, objectToSave);
+				MainStore.isFormatSaving = false;
 				frappe.show_alert(
 					{
 						message: `Print Format Saved Successfully`,
