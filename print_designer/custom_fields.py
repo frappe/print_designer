@@ -44,5 +44,19 @@ CUSTOM_FIELDS = {
 			"fieldtype": "JSON",
 			"label": "Print Designer Settings",
 		},
+		{
+			"fieldname": "print_designer_preview_img",
+			"hidden": 1,
+			"fieldtype": "Attach Image",
+			"label": "Print Designer Preview Image",
+		},
+		{
+			"depends_on": "eval:doc.print_designer && doc.standard == 'Yes'",
+			"fieldname": "print_designer_template_app",
+			"fieldtype": "Select",
+			"label": "Print Designer Template Location",
+			"default": "print_designer",
+			"insert_after": "standard",
+		},
 	]
 }

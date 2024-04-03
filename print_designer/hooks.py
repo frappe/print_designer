@@ -72,6 +72,7 @@ jinja = {
 
 before_install = "print_designer.install.before_install"
 after_install = "print_designer.install.after_install"
+after_app_install = "print_designer.install.after_app_install"
 
 # Uninstallation
 # ------------
@@ -110,10 +111,12 @@ get_print_format_template = "print_designer.pdf.get_print_format_template"
 # ---------------
 # Override standard doctype classes
 
-# override_doctype_class = {
-# 	"ToDo": "custom_app.overrides.CustomToDo"
-# }
+override_doctype_class = {
+	"Print Format": "print_designer.print_designer.overrides.print_format.PDPrintFormat",
+}
 
+# Path Relative to the app folder where default templates should be stored
+pd_standard_format_folder = "default_templates"
 # Document Events
 # ---------------
 # Hook on document methods and events

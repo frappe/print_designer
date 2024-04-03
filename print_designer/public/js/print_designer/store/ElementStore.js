@@ -9,6 +9,9 @@ import {
 	createBarcode,
 } from "../defaultObjects";
 import { handlePrintFonts, setCurrentElement } from "../utils";
+
+import html2canvas from "html2canvas";
+
 export const useElementStore = defineStore("ElementStore", {
 	state: () => ({
 		Elements: new Array(),
@@ -34,10 +37,116 @@ export const useElementStore = defineStore("ElementStore", {
 			}
 			return newElement;
 		},
+		// This is modified version of upload function used in frappe/FileUploader.vue
+		async upload_file(file) {
+			const MainStore = useMainStore();
+			MainStore.print_designer_preview_img = null;
+			return new Promise((resolve, reject) => {
+				let xhr = new XMLHttpRequest();
+				xhr.onreadystatechange = () => {
+					if (xhr.readyState == XMLHttpRequest.DONE) {
+						if (xhr.status === 200) {
+							try {
+								r = JSON.parse(xhr.responseText);
+								if (r.message.doctype === "File") {
+									file_url = r.message.file_url;
+									// if format is not saved then update the preview image value with it
+									if (MainStore.isFormatSaving) {
+										MainStore.print_designer_preview_img = file_url;
+									} else {
+										// if format is already saved then update the print_designer_preview_img field
+										frappe.db.set_value(
+											"Print Format",
+											MainStore.printDesignName,
+											"print_designer_preview_img",
+											file_url
+										);
+									}
+								}
+							} catch (e) {
+								r = xhr.responseText;
+							}
+						}
+					}
+				};
+				xhr.open("POST", "/api/method/upload_file", true);
+				xhr.setRequestHeader("Accept", "application/json");
+				xhr.setRequestHeader("X-Frappe-CSRF-Token", frappe.csrf_token);
+
+				let form_data = new FormData();
+				if (file.file_obj) {
+					form_data.append("file", file.file_obj, file.name);
+				}
+				form_data.append("is_private", 1);
+
+				form_data.append("doctype", "Print Format");
+				form_data.append("docname", MainStore.printDesignName);
+
+				form_data.append("fieldname", "print_designer_preview_img");
+
+				if (file.optimize) {
+					form_data.append("optimize", true);
+				}
+				xhr.send(form_data);
+			});
+		},
+		async generatePreview() {
+			const MainStore = useMainStore();
+			// first delete old preview image
+			const filter = {
+				attached_to_doctype: "Print Format",
+				attached_to_name: MainStore.printDesignName,
+				attached_to_field: "print_designer_preview_img",
+			};
+			// get filename before uploading new file
+			let old_filename = await frappe.db.get_value("File", filter, "name");
+			old_filename = old_filename.message.name;
+			if (old_filename) {
+				frappe.db.delete_doc("File", old_filename);
+			}
+
+			const options = {
+				backgroundColor: "#ffffff",
+				height: MainStore.page.height,
+				width: MainStore.page.width,
+			};
+			const print_stylesheet = document.createElement("style");
+			print_stylesheet.rel = "stylesheet";
+			let st = `.main-container::after {
+				display: none;
+			}`;
+			document.getElementsByClassName("main-container")[0].appendChild(print_stylesheet);
+			print_stylesheet.sheet.insertRule(st, 0);
+			const preview_canvas = await html2canvas(
+				document.getElementsByClassName("main-container")[0],
+				options
+			);
+			document.getElementsByClassName("main-container")[0].removeChild(print_stylesheet);
+			preview_canvas.toBlob(async (blob) => {
+				const file = new File(
+					[blob],
+					`print_designer-${frappe.scrub(MainStore.printDesignName)}-preview.jpg`,
+					{ type: "image/jpeg" }
+				);
+				const file_data = {
+					file_obj: file,
+					optimize: 1,
+					name: file.name,
+					private: true,
+				};
+				await this.upload_file(file_data);
+			});
+		},
 		async saveElements() {
 			const MainStore = useMainStore();
 			if (this.checkIfAnyTableIsEmpty()) return;
-
+			if (MainStore.mode == "preview") return;
+			let is_standard = await frappe.db.get_value(
+				"Print Format",
+				MainStore.printDesignName,
+				"standard"
+			);
+			MainStore.is_standard = is_standard.message.standard == "Yes";
 			// Update the header and footer height with margin
 			MainStore.page.headerHeightWithMargin =
 				MainStore.page.headerHeight + MainStore.page.marginTop;
@@ -62,6 +171,9 @@ export const useElementStore = defineStore("ElementStore", {
 			const [cleanedBodyElements, bodyFonts] = body;
 			const [cleanedHeaderElements, headerFonts] = header || [[], null];
 			const [cleanedFooterElements, footerFonts] = footer || [[], null];
+			MainStore.printHeaderFonts = headerFonts;
+			MainStore.printBodyFonts = bodyFonts;
+			MainStore.printFooterFonts = footerFonts;
 
 			MainStore.currentFonts.length = 0;
 			MainStore.currentFonts.push(
@@ -119,12 +231,17 @@ export const useElementStore = defineStore("ElementStore", {
 					dimensions: footerDimensions,
 				},
 			});
+			MainStore.isFormatSaving = true;
+
+			await this.generatePreview();
 
 			objectToSave.print_designer_print_format = PrintFormatData;
+			objectToSave.print_designer_preview_img = MainStore.print_designer_preview_img;
 			if (MainStore.isOlderSchema("1.1.0")) {
 				await this.printFormatCopyOnOlderSchema(objectToSave);
 			} else {
 				await frappe.db.set_value("Print Format", MainStore.printDesignName, objectToSave);
+				MainStore.isFormatSaving = false;
 				frappe.show_alert(
 					{
 						message: `Print Format Saved Successfully`,
@@ -322,12 +439,12 @@ export const useElementStore = defineStore("ElementStore", {
 		},
 		cleanUpElementsForSave(elements, type) {
 			if (this.checkIfPrintFormatIsEmpty(elements, type)) return;
-			const fontsArray = [];
+			const fontsObject = {};
 			const cleanedElements = [];
 			elements.forEach((container) => {
 				const cleanedContainer = [];
 				container.forEach((element) => {
-					let newElement = this.childrensSave(element.element, fontsArray);
+					let newElement = this.childrensSave(element.element, fontsObject);
 					newElement.classes = newElement.classes.filter(
 						(name) => ["inHeaderFooter", "overlappingHeaderFooter"].indexOf(name) == -1
 					);
@@ -342,7 +459,7 @@ export const useElementStore = defineStore("ElementStore", {
 				});
 				cleanedElements.push(cleanedContainer);
 			});
-			return [cleanedElements, fontsArray];
+			return [cleanedElements, fontsObject];
 		},
 		checkIfPrintFormatIsEmpty(elements, type) {
 			const MainStore = useMainStore();
@@ -377,6 +494,11 @@ export const useElementStore = defineStore("ElementStore", {
 			delete saveEl.snapPoints;
 			delete saveEl.snapEdges;
 			delete saveEl.parent;
+			this.cleanUpDynamicContent(saveEl);
+			if (saveEl.type == "table") {
+				delete saveEl.table.childfields;
+				delete saveEl.table.default_layout;
+			}
 			if (printFonts && ["text", "table"].indexOf(saveEl.type) != -1) {
 				handlePrintFonts(saveEl, printFonts);
 			}
@@ -390,6 +512,55 @@ export const useElementStore = defineStore("ElementStore", {
 			}
 
 			return saveEl;
+		},
+		cleanUpDynamicContent(element) {
+			const MainStore = useMainStore();
+			if (
+				["table", "image"].includes(element.type) ||
+				(["text", "barcode"].includes(element.type) && element.isDynamic)
+			) {
+				if (["text", "barcode"].indexOf(element.type) != -1) {
+					element.dynamicContent = [
+						...element.dynamicContent.map((el) => {
+							const newEl = { ...el };
+							if (!el.is_static) {
+								newEl.value = "";
+							}
+							return newEl;
+						}),
+					];
+					element.selectedDynamicText = null;
+				} else if (element.type === "table") {
+					element.columns = [
+						...element.columns.map((el) => {
+							const newEl = { ...el };
+							delete newEl.DOMRef;
+							return newEl;
+						}),
+					];
+					element.columns.forEach((col) => {
+						if (!col.dynamicContent) return;
+						col.dynamicContent = [
+							...col.dynamicContent.map((el) => {
+								const newEl = { ...el };
+								if (!el.is_static) {
+									newEl.value = "";
+								}
+								return newEl;
+							}),
+						];
+						col.selectedDynamicText = null;
+					});
+				} else {
+					element.image = { ...element.image };
+					if (MainStore.is_standard) {
+						// remove file_url and file_name if format is standard
+						["value", "name", "file_name", "file_url", "modified"].forEach((key) => {
+							element.image[key] = "";
+						});
+					}
+				}
+			}
 		},
 		getPrintFormatData({ header, body, footer }) {
 			const headerElements = this.createWrapperElement(
@@ -443,6 +614,36 @@ export const useElementStore = defineStore("ElementStore", {
 			return wrapperContainers.childrens.map((el) => this.childrensSave(el));
 		},
 		async printFormatCopyOnOlderSchema(objectToSave) {
+			// TODO: have better message.
+			let message = __(
+				"<b>This Print Format was created from older version of Print Designer.</b>"
+			);
+			message += "<hr />";
+			message += __(
+				"It is not compatible with current version so instead make copy of this format using new version"
+			);
+			message += "<hr />";
+			message += __(`Do you want to save copy of it ?`);
+
+			frappe.confirm(
+				message,
+				async () => {
+					this.promptUserForNewFormatName(objectToSave);
+				},
+				async () => {
+					frappe.show_alert(
+						{
+							message: `Print Format not saved`,
+							indicator: "red",
+						},
+						5
+					);
+					// intentionally throwing error to stop the saving the format
+					throw new Error(__("Print Format not saved"));
+				}
+			);
+		},
+		async promptUserForNewFormatName(objectToSave) {
 			const MainStore = useMainStore();
 			let nextFormatCopyNumber = 0;
 			for (let i = 0; i < 100; i++) {
@@ -454,45 +655,59 @@ export const useElementStore = defineStore("ElementStore", {
 				nextFormatCopyNumber = i;
 				break;
 			}
-			const newName =
+			// This is just default value for the new print format name
+			const print_format_name =
 				MainStore.printDesignName +
 				" ( Copy " +
 				(nextFormatCopyNumber ? nextFormatCopyNumber : "") +
 				" )";
-			// TODO: have better message.
-			let message = __(
-				"<b>This Print Format was created from older version of Print Designer.</b>"
-			);
-			message += "<hr />";
-			message += __(
-				"It is not compatible with current version so instead we will make copy of this format for you using new version"
-			);
-			message += "<hr />";
-			message += __(`Do you want to save it as <b>${newName}</b> ?`);
 
-			frappe.confirm(
-				message,
-				async () => {
-					await frappe.db.insert({
-						doctype: "Print Format",
-						name: newName,
-						doc_type: MainStore.doctype,
-						print_designer: 1,
-						print_designer_header: objectToSave.print_designer_header,
-						print_designer_body: objectToSave.print_designer_body,
-						print_designer_after_table: null,
-						print_designer_footer: objectToSave.print_designer_footer,
-						print_designer_print_format: objectToSave.print_designer_print_format,
-						print_designer_settings: objectToSave.print_designer_settings,
-					});
-					frappe.set_route("print-designer", newName);
+			let d = new frappe.ui.Dialog({
+				title: "New Print Format",
+				fields: [
+					{
+						label: "Name",
+						fieldname: "print_format_name",
+						fieldtype: "Data",
+						reqd: 1,
+						default: print_format_name,
+					},
+				],
+				size: "small",
+				primary_action_label: "Save",
+				static: true,
+				async primary_action(values) {
+					try {
+						await frappe.db.insert({
+							doctype: "Print Format",
+							name: values.print_format_name,
+							doc_type: MainStore.doctype,
+							print_designer: 1,
+							print_designer_header: objectToSave.print_designer_header,
+							print_designer_body: objectToSave.print_designer_body,
+							print_designer_after_table: null,
+							print_designer_footer: objectToSave.print_designer_footer,
+							print_designer_print_format: objectToSave.print_designer_print_format,
+							print_designer_settings: objectToSave.print_designer_settings,
+						});
+						d.hide();
+						frappe.set_route("print-designer", values.print_format_name);
+					} catch (error) {
+						console.error(error);
+					}
 				},
-				async () => {
-					throw new Error(__("Print Format not saved"));
-				}
-			);
+			});
+			d.get_close_btn().on("click", () => {
+				frappe.show_alert(
+					{
+						message: `Print Format not saved`,
+						indicator: "red",
+					},
+					5
+				);
+			});
+			d.show();
 		},
-
 		handleDynamicContent(element) {
 			const MainStore = useMainStore();
 			if (
@@ -502,12 +717,25 @@ export const useElementStore = defineStore("ElementStore", {
 				if (["text", "barcode"].indexOf(element.type) != -1) {
 					element.dynamicContent = [
 						...element.dynamicContent.map((el) => {
-							return { ...el };
+							const newEl = { ...el };
+							if (!el.is_static) {
+								newEl.value = "";
+							}
+							return newEl;
 						}),
 					];
 					element.selectedDynamicText = null;
 					MainStore.dynamicData.push(...element.dynamicContent);
 				} else if (element.type === "table") {
+					if (element.table) {
+						const mf = MainStore.metaFields.find(
+							(field) => field.fieldname == element.table.fieldname
+						);
+						if (mf) {
+							element.table = mf;
+						}
+					}
+
 					element.columns = [
 						...element.columns.map((el) => {
 							return { ...el };
@@ -517,7 +745,11 @@ export const useElementStore = defineStore("ElementStore", {
 						if (!col.dynamicContent) return;
 						col.dynamicContent = [
 							...col.dynamicContent.map((el) => {
-								return { ...el };
+								const newEl = { ...el };
+								if (!el.is_static) {
+									newEl.value = "";
+								}
+								return newEl;
 							}),
 						];
 						col.selectedDynamicText = null;
