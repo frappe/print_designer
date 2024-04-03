@@ -403,9 +403,16 @@ frappe.ui.form.PrintView = class PrintView extends frappe.ui.form.PrintView {
 		)
 			return;
 		if (!this.frm.meta.default_print_format) {
-			if (this.frm.doctype != "Sales Invoice") return;
-			this.print_format_selector.val("Sales Invoice PD Format v2");
-			this.toolbar_print_format_selector.$input.val("Sales Invoice PD Format v2");
+			let pd_print_format = "";
+			if (this.frm.doctype == "Sales Invoice") {
+				pd_print_format = "Sales Invoice PD Format v2";
+			} else if (this.frm.doctype == "Sales Order") {
+				pd_print_format = "Sales Order PD v2";
+			}
+			if (pd_print_format) {
+				this.print_format_selector.val(pd_print_format);
+				this.toolbar_print_format_selector.$input.val(pd_print_format);
+			}
 			return;
 		}
 		this.toolbar_print_format_selector.$input.empty();
