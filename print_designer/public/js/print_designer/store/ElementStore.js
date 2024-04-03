@@ -614,6 +614,36 @@ export const useElementStore = defineStore("ElementStore", {
 			return wrapperContainers.childrens.map((el) => this.childrensSave(el));
 		},
 		async printFormatCopyOnOlderSchema(objectToSave) {
+			// TODO: have better message.
+			let message = __(
+				"<b>This Print Format was created from older version of Print Designer.</b>"
+			);
+			message += "<hr />";
+			message += __(
+				"It is not compatible with current version so instead make copy of this format using new version"
+			);
+			message += "<hr />";
+			message += __(`Do you want to save copy of it ?`);
+
+			frappe.confirm(
+				message,
+				async () => {
+					this.promptUserForNewFormatName(objectToSave);
+				},
+				async () => {
+					frappe.show_alert(
+						{
+							message: `Print Format not saved`,
+							indicator: "red",
+						},
+						5
+					);
+					// intentionally throwing error to stop the saving the format
+					throw new Error(__("Print Format not saved"));
+				}
+			);
+		},
+		async promptUserForNewFormatName(objectToSave) {
 			const MainStore = useMainStore();
 			let nextFormatCopyNumber = 0;
 			for (let i = 0; i < 100; i++) {
@@ -625,45 +655,59 @@ export const useElementStore = defineStore("ElementStore", {
 				nextFormatCopyNumber = i;
 				break;
 			}
-			const newName =
+			// This is just default value for the new print format name
+			const print_format_name =
 				MainStore.printDesignName +
 				" ( Copy " +
 				(nextFormatCopyNumber ? nextFormatCopyNumber : "") +
 				" )";
-			// TODO: have better message.
-			let message = __(
-				"<b>This Print Format was created from older version of Print Designer.</b>"
-			);
-			message += "<hr />";
-			message += __(
-				"It is not compatible with current version so instead we will make copy of this format for you using new version"
-			);
-			message += "<hr />";
-			message += __(`Do you want to save it as <b>${newName}</b> ?`);
 
-			frappe.confirm(
-				message,
-				async () => {
-					await frappe.db.insert({
-						doctype: "Print Format",
-						name: newName,
-						doc_type: MainStore.doctype,
-						print_designer: 1,
-						print_designer_header: objectToSave.print_designer_header,
-						print_designer_body: objectToSave.print_designer_body,
-						print_designer_after_table: null,
-						print_designer_footer: objectToSave.print_designer_footer,
-						print_designer_print_format: objectToSave.print_designer_print_format,
-						print_designer_settings: objectToSave.print_designer_settings,
-					});
-					frappe.set_route("print-designer", newName);
+			let d = new frappe.ui.Dialog({
+				title: "New Print Format",
+				fields: [
+					{
+						label: "Name",
+						fieldname: "print_format_name",
+						fieldtype: "Data",
+						reqd: 1,
+						default: print_format_name,
+					},
+				],
+				size: "small",
+				primary_action_label: "Save",
+				static: true,
+				async primary_action(values) {
+					try {
+						await frappe.db.insert({
+							doctype: "Print Format",
+							name: values.print_format_name,
+							doc_type: MainStore.doctype,
+							print_designer: 1,
+							print_designer_header: objectToSave.print_designer_header,
+							print_designer_body: objectToSave.print_designer_body,
+							print_designer_after_table: null,
+							print_designer_footer: objectToSave.print_designer_footer,
+							print_designer_print_format: objectToSave.print_designer_print_format,
+							print_designer_settings: objectToSave.print_designer_settings,
+						});
+						d.hide();
+						frappe.set_route("print-designer", values.print_format_name);
+					} catch (error) {
+						console.error(error);
+					}
 				},
-				async () => {
-					throw new Error(__("Print Format not saved"));
-				}
-			);
+			});
+			d.get_close_btn().on("click", () => {
+				frappe.show_alert(
+					{
+						message: `Print Format not saved`,
+						indicator: "red",
+					},
+					5
+				);
+			});
+			d.show();
 		},
-
 		handleDynamicContent(element) {
 			const MainStore = useMainStore();
 			if (
