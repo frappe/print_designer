@@ -155,26 +155,28 @@ background-image: url('{{frappe.get_url()}}{{value}}');
 <!-- third Arg is row which is not sent outside table -->
 {% macro render_spantag(field, element, row = {}, send_to_jinja = {}) -%}
 {% set span_value = render_spanvalue(field, element, row, send_to_jinja) %}
-<span class="{% if not field.is_static and field.is_labelled %}baseSpanTag{% endif %}">
-    {% if not field.is_static and field.is_labelled and span_value %}
-    <span class="{% if row %}printTable{% else %}dynamicText{% endif %} label-text labelSpanTag" style="user-select:auto; {%if element.labelStyle %}{{convert_css(element.labelStyle)}}{%endif%}{%if field.labelStyle %}{{convert_css(field.labelStyle)}}{%endif%} white-space:nowrap; ">
-        {{ _(field.label) }}
+{%- if span_value -%}
+    <span class="{% if not field.is_static and field.is_labelled %}baseSpanTag{% endif %}">
+        {% if not field.is_static and field.is_labelled %}
+            <span class="{% if row %}printTable{% else %}dynamicText{% endif %} label-text labelSpanTag" style="user-select:auto; {%if element.labelStyle %}{{convert_css(element.labelStyle)}}{%endif%}{%if field.labelStyle %}{{convert_css(field.labelStyle)}}{%endif%} white-space:nowrap; ">
+                {{ _(field.label) }}
+            </span>
+        {% endif %}
+        <span class="dynamic-span {% if not field.is_static and field.is_labelled %}valueSpanTag{%endif%} {{page_class(field)}} }}"
+            style="{%- if element.style.get('color') -%}{{ convert_css({'color': element.style.get('color')})}}{%- endif -%} {{convert_css(field.style)}} user-select:auto;">
+            {{ span_value }}
+        </span>
+        {% if field.suffix %}
+            <span class="dynamic-span"
+                style="{%- if element.style.get('color') -%}{{ convert_css({'color': element.style.get('color')})}}{%- endif -%} {{convert_css(field.style)}} user-select:auto;">
+                {{ _(field.suffix) }}
+            </span>
+        {% endif %}
+        {% if field.nextLine %}
+            <br/>
+        {% endif %}
     </span>
-    {% endif %}
-    <span class="dynamic-span {% if not field.is_static and field.is_labelled %}valueSpanTag{%endif%} {{page_class(field)}} }}"
-        style="{%- if element.style.get('color') -%}{{ convert_css({'color': element.style.get('color')})}}{%- endif -%} {{convert_css(field.style)}} user-select:auto;">
-        {{ span_value }}
-    </span>
-    {% if field.suffix and span_value %}
-    <span class="dynamic-span"
-        style="{%- if element.style.get('color') -%}{{ convert_css({'color': element.style.get('color')})}}{%- endif -%} {{convert_css(field.style)}} user-select:auto;">
-        {{ _(field.suffix) }}
-    </span>
-    {% endif %}
-    {% if field.nextLine %}
-    <br/>
-    {% endif %}
-</span>
+{% endif %}
 {%- endmacro %}
 {% macro render_element(element, send_to_jinja) -%}
 {% if element is iterable and (element is not string and element is not mapping) %}
