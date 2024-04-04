@@ -11,12 +11,14 @@
 <div id="__print_designer">
     <div id="header-html">
         <div style="position: relative; top:0px; left: 0px; width: 100%; height:{{ settings.page.headerHeightWithMargin }}px;">
+            <div class="visible-pdf" style="height: {{ settings.page.marginTop }}px;"></div>
+            <div class="hidden-pdf printview-header-margin" style="height: {{ settings.page.marginTop }}px;"></div>
             {% if headerElement %}{{ render(pd_format.header, send_to_jinja) }}{%endif%}
         </div>
     </div>
     {% if bodyElement %}{{ render(pd_format.body, send_to_jinja) }}{%endif%}
     <div id="footer-html">
-        <div style="width: 100%; position: relative; top:0px; left: 0px; height:{{ settings.page.footerHeightWithMargin }}px; ">
+        <div style="width: 100%; position: relative; top:0px; left: 0px; height:{{ settings.page.footerHeightWithMargin }}px;">
             {% if footerElement %}{{ render(pd_format.footer, send_to_jinja) }}{%endif%}
         </div>
     </div>
