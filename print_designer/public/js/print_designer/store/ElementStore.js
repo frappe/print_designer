@@ -549,6 +549,7 @@ export const useElementStore = defineStore("ElementStore", {
 		},
 		cleanUpElementsForSave(rows, type) {
 			if (this.checkIfPrintFormatIsEmpty(rows, type)) return;
+			const MainStore = useMainStore();
 			const fontsObject = {};
 			switch (type) {
 				case "header":
