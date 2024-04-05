@@ -73,7 +73,12 @@ import { useMainStore } from "../../store/MainStore";
 import { useElementStore } from "../../store/ElementStore";
 import { useMarqueeSelection } from "../../composables/MarqueeSelectionTool";
 import { useDraw } from "../../composables/Draw";
-import { updateElementParameters, setCurrentElement, recursiveChildrens } from "../../utils";
+import {
+	updateElementParameters,
+	setCurrentElement,
+	recursiveChildrens,
+	checkUpdateElementOverlapping,
+} from "../../utils";
 import { useChangeValueUnit } from "../../composables/ChangeValueUnit";
 import BaseBarcode from "../base/BaseBarcode.vue";
 const isComponent = Object.freeze({
@@ -457,11 +462,9 @@ onMounted(() => {
 			}
 		}
 	);
+
 	watchEffect(() => {
 		if (MainStore.screenStyleSheet) {
-			if (MainStore.screenStyleSheet.CssRuleIndex != null) {
-				MainStore.screenStyleSheet.deleteRule(MainStore.screenStyleSheet.CssRuleIndex);
-			}
 			MainStore.screenStyleSheet.CssRuleIndex = MainStore.addStylesheetRules([
 				[
 					":root, ::after, ::before",
@@ -506,6 +509,15 @@ onMounted(() => {
 					],
 				],
 			]);
+		}
+	});
+
+	ElementStore.$subscribe((mutation, state) => {
+		if (
+			(mutation.events.type === "set" && mutation.events.key == "Elements") ||
+			(mutation.events.type === "add" && mutation.events.newValue.parent == state.Elements)
+		) {
+			checkUpdateElementOverlapping();
 		}
 	});
 });
@@ -622,5 +634,16 @@ watch(
 	margin-left: var(--print-margin-left);
 	margin-right: calc(var(--print-margin-right) * -1);
 	margin-bottom: calc(var(--print-margin-bottom) * -1);
+}
+.relative-row {
+	background-color: transparent !important;
+	border: none !important;
+	z-index: 9999 !important;
+}
+.relative-column {
+	background-color: transparent !important;
+	border: none !important;
+	z-index: 9999 !important;
+	outline: 1px solid var(--primary) !important;
 }
 </style>

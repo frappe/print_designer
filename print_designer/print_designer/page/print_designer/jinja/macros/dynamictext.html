@@ -1,0 +1,14 @@
+{% from 'print_designer/page/print_designer/jinja/macros/spantag.html' import span_tag with context %}
+
+{% macro dynamictext(element, send_to_jinja, is_parent_dynamic_height) -%}
+<div style="position:{%- if is_parent_dynamic_height -%}relative{% else %}absolute{%- endif -%}; {%- if not is_parent_dynamic_height -%}top: {%- else -%}margin-top: {%- endif -%}{{ element.startY }}px; left:{{ element.startX }}px;{% if element.isFixedSize %}width:{{ element.width }}px; {%- if not is_parent_dynamic_height -%}height:{{ element.height }}px; {%- endif -%} {% else %} width:fit-content; height:fit-content; white-space:nowrap; max-width: {{ (settings.page.width - settings.page.marginLeft - settings.page.marginRight - element.startX) + 2 }}px;{%endif%}" class="
+    {{ element.classes | join(' ') }}">
+        <div style="{% if element.isFixedSize %}width:{{ element.width }}px; {%- if not is_parent_dynamic_height -%}height:{{ element.height }}px; {%- endif -%}{% else %}width:fit-content; height:fit-content; white-space:nowrap; max-width: {{ (settings.page.width - settings.page.marginLeft - settings.page.marginRight - element.startX) + 2 }}px;{%endif%} {{convert_css(element.style)}}"
+            class="dynamicText {{ element.classes | join(' ') }}">
+            {% for field in element.dynamicContent %}
+            <!-- third Arg is row which is not sent outside table -->
+            {{ span_tag(field, element, {}, send_to_jinja)}}
+            {% endfor %}
+        </div>
+</div>
+{%- endmacro %}

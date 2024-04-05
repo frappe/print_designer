@@ -1,0 +1,23 @@
+{% from 'print_designer/page/print_designer/jinja/macros/render_element.html' import render_element with context %}
+
+{% macro relative_columns(element, send_to_jinja) -%}
+    <div style="position:relative;  top: 0px; width:{{ element.width }}px; {%- if not element.isDynamicHeight -%} height:{{ element.height }}px; {%- endif -%} {{convert_css(element.style)}}"
+    class="rectangle {{ element.classes | join(' ') }}">
+        {% if element.childrens %}
+            {% for object in element.childrens %}
+                {{ render_element(object, send_to_jinja, element.get("isDynamicHeight", false)) }}
+            {% endfor %}
+        {% endif %}
+    </div>
+{%- endmacro %}
+
+{% macro relative_containers(element, send_to_jinja) -%}
+    <div style="position:relative; left:{{ element.startX }}px; {%- if not element.isDynamicHeight -%} height:{{ element.height }}px; {%- endif -%} {{convert_css(element.style)}}"
+    class="rectangle relative-row {{ element.classes | join(' ') }}">
+        {% if element.childrens %}
+            {% for object in element.childrens %}
+                {{ relative_columns(object, send_to_jinja) }}
+            {% endfor %}
+        {% endif %}
+    </div>
+{%- endmacro %}

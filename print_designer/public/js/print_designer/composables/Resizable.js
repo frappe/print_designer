@@ -4,7 +4,7 @@ import "@interactjs/auto-start";
 import "@interactjs/modifiers";
 import { useMainStore } from "../store/MainStore";
 import { useElementStore } from "../store/ElementStore";
-import { recursiveChildrens } from "../utils";
+import { recursiveChildrens, checkUpdateElementOverlapping } from "../utils";
 
 export function useResizable({
 	element,
@@ -44,6 +44,7 @@ export function useResizable({
 				if (element.DOMRef.className == "modal-dialog modal-sm") {
 					return;
 				}
+				checkUpdateElementOverlapping(element);
 				if (element.parent == e.target.piniaElementRef.parent) return;
 				if (
 					!e.dropzone &&

@@ -1,0 +1,99 @@
+{% macro render_styles(settings) %}
+<style>
+    .print-format {
+        box-sizing: border-box;
+        padding: 0in;
+        max-width: {{convert_uom(number=settings.page.width, to_uom="mm")}} !important;
+        dpi: {{settings.PDFPrintDPI or 96}}mm;
+        page-width: {{convert_uom(number=settings.page.width, to_uom="mm")}};
+        page-height: {{convert_uom(number=settings.page.height, to_uom="mm")}};
+        margin-top:{{convert_uom(number=settings.page.headerHeightWithMargin or settings.page.marginTop, to_uom='mm')}};
+        margin-bottom:{{convert_uom(number=settings.page.footerHeightWithMargin or settings.page.marginBottom, to_uom='mm')}};
+        margin-left:{{convert_uom(number=settings.page.marginLeft, to_uom='mm')}};
+        margin-right:{{convert_uom(number=settings.page.marginRight, to_uom='mm')}};
+    }
+    @media screen {
+        #__print_designer {
+            position: relative;
+            margin-top:{{convert_uom(number=settings.page.marginTop, to_uom='px')}};
+            margin-bottom:{{convert_uom(number=settings.page.marginBottom, to_uom='px')}};
+            margin-left:{{convert_uom(number=settings.page.marginLeft, to_uom='px')}};
+            margin-right:{{convert_uom(number=settings.page.marginRight, to_uom='px')}};
+        }
+        .print-format {
+            margin: auto !important;
+        }
+    }
+    /* set margin to 0 for print (Ctrl + p) on client browsers
+    and remove margin container that was added for screen ( viewing )  */
+    @media print {
+       .print-format {
+            margin: 0 !important;
+        }
+        .printview-header-margin {
+            display: none;
+        }
+    }
+    .print-designer-container {
+        position: absolute;
+    }
+    .table {
+        margin: 0;
+    }
+	.print-format p {
+        margin: 0 !important;
+    }
+    tr:first-child th {
+        border-top-style: solid !important;
+    }
+    tr th:first-child {
+        border-left-style: solid !important;
+    }
+    tr th:last-child {
+        border-right-style: solid !important;
+    }
+    tr:last-child td {
+        border-bottom-style: solid !important;
+    }
+    tr td:first-child {
+        border-left-style: solid !important;
+    }
+    tr td:last-child {
+        border-right-style: solid !important;
+    }
+    .flexDynamicText .baseSpanTag {
+		 display: block;
+    }
+	.flexDynamicText .baseSpanTag .labelSpanTag {
+        display: inline-block;
+        vertical-align: top;
+    }
+	.flexDynamicText .baseSpanTag .valueSpanTag {
+        display: inline-block;
+        vertical-align: top;
+    }
+    .flexDirectionColumn .baseSpanTag {
+        display: block;
+    }
+    .flexDirectionColumn .baseSpanTag .labelSpanTag {
+        display: block;
+    }
+    .flexDirectionColumn .baseSpanTag .valueSpanTag {
+        display: block;
+    }
+    /* https://github.com/wkhtmltopdf/wkhtmltopdf/issues/1522 */
+    .relative-row {
+        display: -webkit-box;
+        display: -webkit-flex;
+        display: flex;
+        border-width: 0 !important;
+    }
+    .relative-column {
+        border-width: 1px !important;
+        border-color: white !important;
+    }
+    * {
+        -webkit-box-sizing: border-box;
+    }
+</style>
+{% endmacro %}
