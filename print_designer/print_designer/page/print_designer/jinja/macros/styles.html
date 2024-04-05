@@ -24,6 +24,16 @@
             margin: auto !important;
         }
     }
+    /* set margin to 0 for print (Ctrl + p) on client browsers
+    and remove margin container that was added for screen ( viewing )  */
+    @media print {
+       .print-format {
+            margin: 0 !important;
+        }
+        .printview-header-margin {
+            display: none;
+        }
+    }
     .print-designer-container {
         position: absolute;
     }
@@ -71,8 +81,19 @@
     .flexDirectionColumn .baseSpanTag .valueSpanTag {
         display: block;
     }
+    /* https://github.com/wkhtmltopdf/wkhtmltopdf/issues/1522 */
+    .relative-row {
+        display: -webkit-box;
+        display: -webkit-flex;
+        display: flex;
+        border-width: 0 !important;
+    }
     .relative-column {
-        margin-right: -4px;
+        border-width: 1px !important;
+        border-color: white !important;
+    }
+    * {
+        -webkit-box-sizing: border-box;
     }
 </style>
 {% endmacro %}

@@ -447,7 +447,7 @@ export const createPropertiesPanel = () => {
 								currentEl?.type === "table") ||
 							(currentEl.type === "text" && currentEl.isDynamic)
 						) {
-							return !currentEl.isElementOverlapping;
+							return true;
 						}
 						return false;
 					},
