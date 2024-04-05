@@ -703,15 +703,6 @@ export const useElementStore = defineStore("ElementStore", {
 				body: bodyElements,
 				footer: footerElements,
 			});
-			const layoutElements = [...headerElements, ...bodyElements, ...footerElements];
-			this.Elements.push(
-				...layoutElements.map((row) => {
-					row.childrens.map((column) => {
-						column.childrens = [];
-					});
-					return this.childrensLoad(row);
-				})
-			);
 			return data;
 		},
 		createRowWrapperElement(rows, dimensions, containerType = "body") {
