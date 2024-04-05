@@ -163,6 +163,7 @@ const {
 	selectedColumn,
 	selectedDynamicText,
 	DOMRef,
+	isDynamicHeight,
 } = toRefs(props.object);
 
 watch(
