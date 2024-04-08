@@ -683,21 +683,9 @@ export const useElementStore = defineStore("ElementStore", {
 			}
 		},
 		getPrintFormatData({ header, body, footer }) {
-			const headerElements = this.createRowWrapperElement(
-				header.layout,
-				header.dimensions,
-				"header"
-			);
-			const bodyElements = this.createRowWrapperElement(
-				body.layout,
-				body.dimensions,
-				"body"
-			);
-			const footerElements = this.createRowWrapperElement(
-				footer.layout,
-				footer.dimensions,
-				"footer"
-			);
+			const headerElements = this.createRowWrapperElement(header.layout, header.dimensions);
+			const bodyElements = this.createRowWrapperElement(body.layout, body.dimensions);
+			const footerElements = this.createRowWrapperElement(footer.layout, footer.dimensions);
 			const data = JSON.stringify({
 				header: headerElements,
 				body: bodyElements,
@@ -705,7 +693,7 @@ export const useElementStore = defineStore("ElementStore", {
 			});
 			return data;
 		},
-		createRowWrapperElement(rows, dimensions, containerType = "body") {
+		createRowWrapperElement(rows, dimensions) {
 			if (!rows) return [];
 			const MainStore = useMainStore();
 			const wrapperContainer = { childrens: [] };
@@ -740,7 +728,7 @@ export const useElementStore = defineStore("ElementStore", {
 					calculatedDimensions.left = 0;
 				}
 				const cordinates = {
-					startY: 0, // parentDimensions.top,
+					startY: 0,
 					pageY: 0,
 					startX: calculatedDimensions.left,
 					pageX: calculatedDimensions.left,
