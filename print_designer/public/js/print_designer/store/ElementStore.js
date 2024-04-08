@@ -40,11 +40,6 @@ export const useElementStore = defineStore("ElementStore", {
 		async computedLayoutForSave() {
 			const { headerRowElements, bodyRowElements, footerRowElements } =
 				await this.computeRowLayout();
-			// check if any element is overlapping with header or footer and raise errors.
-			if (!this.handleHeaderFooterOverlapping(headerRowElements.flat())) return;
-			if (!this.handleHeaderFooterOverlapping(bodyRowElements.flat())) return;
-			if (!this.handleHeaderFooterOverlapping(footerRowElements.flat())) return;
-
 			// calculate dimensions for rows
 			const headerDimensions = this.computeRowElementDimensions(headerRowElements, "header");
 			const bodyDimensions = this.computeRowElementDimensions(bodyRowElements, "body");
@@ -217,7 +212,6 @@ export const useElementStore = defineStore("ElementStore", {
 			const layout = await this.computedLayoutForSave();
 			if (!layout) return;
 			const { header, body, footer } = layout;
-
 			const updatedPage = { ...MainStore.page };
 			const settingsForSave = {
 				page: updatedPage,
@@ -302,6 +296,7 @@ export const useElementStore = defineStore("ElementStore", {
 						element: el,
 					};
 				});
+				this.handleHeaderFooterOverlapping(columnContainer);
 			}
 			columnContainer.sort((a, b) => {
 				return a.startY < b.startY ? -1 : 1;
@@ -397,51 +392,66 @@ export const useElementStore = defineStore("ElementStore", {
 		},
 		handleHeaderFooterOverlapping(elements) {
 			const MainStore = useMainStore();
+
+			const throwOverlappingError = (type) => {
+				let message = __(`Please resolve overlapping elements `);
+				const messageType = Object.freeze({
+					header: "<b>" + __("in header") + "</b>",
+					footer: "<b>" + __("in footer") + "</b>",
+					auto: __("in table, auto layout failed"),
+				});
+				message += messageType[type];
+				MainStore.mode = "pdfSetup";
+				frappe.show_alert(
+					{
+						message: message,
+						indicator: "red",
+					},
+					6
+				);
+				throw new Error(message);
+			};
+
 			const tableElement = this.Elements.filter((el) => el.type == "table");
-			let isOverlapping = false;
 
 			if (tableElement.length == 1 && MainStore.isHeaderFooterAuto) {
-				isOverlapping = !this.autoCalculateHeaderFooter(tableElement[0]);
+				if (!this.autoCalculateHeaderFooter(tableElement[0])) {
+					throwOverlappingError("auto");
+				}
 			} else {
-				isOverlapping = elements.some((element) => {
+				elements.forEach((element) => {
 					element = element.element;
 					if (
-						(element.startY < MainStore.page.headerHeight &&
-							element.startY + element.height > MainStore.page.headerHeight) ||
-						(element.startY <
+						element.startY < MainStore.page.headerHeight &&
+						element.startY + element.height > MainStore.page.headerHeight
+					) {
+						throwOverlappingError("header");
+					} else if (
+						element.startY <
 							MainStore.page.height -
 								MainStore.page.footerHeight -
 								MainStore.page.marginTop -
 								MainStore.page.marginBottom &&
-							element.startY + element.height >
-								MainStore.page.height -
-									MainStore.page.footerHeight -
-									MainStore.page.marginTop -
-									MainStore.page.marginBottom)
+						element.startY + element.height >
+							MainStore.page.height -
+								MainStore.page.footerHeight -
+								MainStore.page.marginTop -
+								MainStore.page.marginBottom
 					) {
-						return true;
+						throwOverlappingError("footer");
 					}
-					return false;
 				});
 			}
-			if (!isOverlapping) return true;
-			MainStore.mode = "pdfSetup";
-			frappe.show_alert(
-				{
-					message: "Please resolve overlapping header/footer elements",
-					indicator: "red",
-				},
-				5
-			);
 		},
 		autoCalculateHeaderFooter(tableEl) {
 			const MainStore = useMainStore();
 
 			if (this.isElementOverlapping(tableEl)) return false;
 
-			MainStore.page.headerHeight = tableEl.startY;
+			MainStore.page.headerHeight = tableEl.startY - 1;
 			MainStore.page.footerHeight =
-				MainStore.page.height -
+				MainStore.page.height +
+				1 -
 				(tableEl.startY +
 					tableEl.height +
 					MainStore.page.marginTop +
@@ -590,15 +600,16 @@ export const useElementStore = defineStore("ElementStore", {
 						break;
 					case "body":
 						MainStore.printBodyFonts = null;
+						let message = __("Atleast 1 element is required inside body");
 						frappe.show_alert(
 							{
-								message: "Atleast 1 element is required inside body",
+								message: message,
 								indicator: "red",
 							},
 							5
 						);
 						// This is intentionally using throw to stop the execution
-						throw new Error(__("Atleast 1 element is required inside body"));
+						throw new Error(message);
 					case "footer":
 						MainStore.printFooterFonts = null;
 						break;
