@@ -38,36 +38,19 @@ export const useElementStore = defineStore("ElementStore", {
 			return newElement;
 		},
 		async computedLayoutForSave() {
-			const { headerRowElements, bodyRowElements, footerRowElements } =
-				await this.computeRowLayout();
-			// calculate dimensions for rows
-			const headerDimensions = this.computeRowElementDimensions(headerRowElements, "header");
-			const bodyDimensions = this.computeRowElementDimensions(bodyRowElements, "body");
-			const footerDimensions = this.computeRowElementDimensions(footerRowElements, "footer");
-			// calculate columns inside rows and update dimensions to passed array
-			const headerColumnsInsideRows = await this.computeColumnLayout(
+			const {
 				headerRowElements,
-				headerDimensions
-			);
-			const bodyColumnsInsideRows = await this.computeColumnLayout(
 				bodyRowElements,
-				bodyDimensions
-			);
-			const footerColumnsInsideRows = await this.computeColumnLayout(
 				footerRowElements,
-				footerDimensions
-			);
+				headerDimensions,
+				bodyDimensions,
+				footerDimensions,
+			} = await this.computeRowLayout();
 
 			// clean up elements for save
-			const cleanedHeaderElements = this.cleanUpElementsForSave(
-				headerColumnsInsideRows,
-				"header"
-			);
-			const cleanedBodyElements = this.cleanUpElementsForSave(bodyColumnsInsideRows, "body");
-			const cleanedFooterElements = this.cleanUpElementsForSave(
-				footerColumnsInsideRows,
-				"footer"
-			);
+			const cleanedHeaderElements = this.cleanUpElementsForSave(headerRowElements, "header");
+			const cleanedBodyElements = this.cleanUpElementsForSave(bodyRowElements, "body");
+			const cleanedFooterElements = this.cleanUpElementsForSave(footerRowElements, "footer");
 
 			// update fonts in store
 			const MainStore = useMainStore();
@@ -301,7 +284,7 @@ export const useElementStore = defineStore("ElementStore", {
 			columnContainer.sort((a, b) => {
 				return a.startY < b.startY ? -1 : 1;
 			});
-			return columnContainer.reduce(
+			const rows = columnContainer.reduce(
 				(computedLayout, currentEl) => {
 					let rows = computedLayout[activeSection || computedLayout.activeSection];
 					if (
@@ -347,7 +330,6 @@ export const useElementStore = defineStore("ElementStore", {
 					} else {
 						lastRow.splice(-1, 0, currentEl);
 					}
-
 					return computedLayout;
 				},
 				{
@@ -357,6 +339,40 @@ export const useElementStore = defineStore("ElementStore", {
 					activeSection: "headerRowElements",
 				}
 			);
+
+			// calculate row element dimensions
+			const headerDimensions = this.computeRowElementDimensions(
+				rows.headerRowElements,
+				"header"
+			);
+			const bodyDimensions = this.computeRowElementDimensions(rows.bodyRowElements, "body");
+			const footerDimensions = this.computeRowElementDimensions(
+				rows.footerRowElements,
+				"footer"
+			);
+
+			// calculate column element layout
+			const headerRowElements = await this.computeColumnLayout(
+				rows.headerRowElements,
+				headerDimensions
+			);
+			const bodyRowElements = await this.computeColumnLayout(
+				rows.bodyRowElements,
+				bodyDimensions
+			);
+			const footerRowElements = await this.computeColumnLayout(
+				rows.footerRowElements,
+				footerDimensions
+			);
+
+			return {
+				headerRowElements,
+				bodyRowElements,
+				footerRowElements,
+				headerDimensions,
+				bodyDimensions,
+				footerDimensions,
+			};
 		},
 		async computeColumnLayout(rows, rowDimensions) {
 			const columns = rows.map((elements) => {
