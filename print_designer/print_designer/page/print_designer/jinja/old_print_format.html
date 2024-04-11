@@ -155,7 +155,7 @@ background-image: url('{{frappe.get_url()}}{{value}}');
 <!-- third Arg is row which is not sent outside table -->
 {% macro render_spantag(field, element, row = {}, send_to_jinja = {}) -%}
 {% set span_value = render_spanvalue(field, element, row, send_to_jinja) %}
-{%- if span_value -%}
+{%- if span_value or field.fieldname in ['page', 'topage', 'time', 'date'] -%}
     <span class="{% if not field.is_static and field.is_labelled %}baseSpanTag{% endif %}">
         {% if not field.is_static and field.is_labelled %}
             <span class="{% if row %}printTable{% else %}dynamicText{% endif %} label-text labelSpanTag" style="user-select:auto; {%if element.labelStyle %}{{convert_css(element.labelStyle)}}{%endif%}{%if field.labelStyle %}{{convert_css(field.labelStyle)}}{%endif%} white-space:nowrap; ">
