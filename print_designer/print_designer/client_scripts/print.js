@@ -1,3 +1,4 @@
+// TODO: revisit and properly implement this client script
 frappe.pages["print"].on_page_load = function (wrapper) {
 	frappe.require(["pdfjs.bundle.css", "print_designer.bundle.css"]);
 	frappe.ui.make_app_page({
@@ -398,10 +399,22 @@ frappe.ui.form.PrintView = class PrintView extends frappe.ui.form.PrintView {
 		if (
 			frappe.meta
 				.get_print_formats(this.frm.doctype)
-				.includes(this.toolbar_print_format_selector.$input.val()) ||
-			!this.frm.meta.default_print_format
+				.includes(this.toolbar_print_format_selector.$input.val())
 		)
 			return;
+		if (!this.frm.meta.default_print_format) {
+			let pd_print_format = "";
+			if (this.frm.doctype == "Sales Invoice") {
+				pd_print_format = "Sales Invoice PD Format v2";
+			} else if (this.frm.doctype == "Sales Order") {
+				pd_print_format = "Sales Order PD v2";
+			}
+			if (pd_print_format) {
+				this.print_format_selector.val(pd_print_format);
+				this.toolbar_print_format_selector.$input.val(pd_print_format);
+			}
+			return;
+		}
 		this.toolbar_print_format_selector.$input.empty();
 		this.toolbar_print_format_selector.$input.val(this.frm.meta.default_print_format);
 	}
