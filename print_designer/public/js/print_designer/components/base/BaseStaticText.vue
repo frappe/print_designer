@@ -214,7 +214,7 @@ const handleBlur = (e) => {
 		width.value = targetRect.width + 2;
 		height.value = targetRect.height + 2;
 	}
-	content.value = DOMRef.value.firstElementChild.innerHTML;
+	content.value = DOMRef.value.firstElementChild.innerText; // This will break styled texts :(
 	MainStore.getCurrentElementsId.includes(id.value) &&
 		DOMRef.value.classList.add("active-elements");
 	contenteditable.value = false;

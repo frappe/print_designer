@@ -112,18 +112,12 @@ export const useElementStore = defineStore("ElementStore", {
 								r = JSON.parse(xhr.responseText);
 								if (r.message.doctype === "File") {
 									file_url = r.message.file_url;
-									// if format is not saved then update the preview image value with it
-									if (MainStore.isFormatSaving) {
-										MainStore.print_designer_preview_img = file_url;
-									} else {
-										// if format is already saved then update the print_designer_preview_img field
-										frappe.db.set_value(
-											"Print Format",
-											MainStore.printDesignName,
-											"print_designer_preview_img",
-											file_url
-										);
-									}
+									frappe.db.set_value(
+										"Print Format",
+										MainStore.printDesignName,
+										"print_designer_preview_img",
+										file_url
+									);
 								}
 							} catch (e) {
 								r = xhr.responseText;
@@ -254,16 +248,12 @@ export const useElementStore = defineStore("ElementStore", {
 				css: css,
 			};
 			const PrintFormatData = this.getPrintFormatData({ header, body, footer });
-			MainStore.isFormatSaving = true;
-			await this.generatePreview();
 
 			objectToSave.print_designer_print_format = PrintFormatData;
-			objectToSave.print_designer_preview_img = MainStore.print_designer_preview_img;
 			if (MainStore.isOlderSchema("1.1.0")) {
 				await this.printFormatCopyOnOlderSchema(objectToSave);
 			} else {
 				await frappe.db.set_value("Print Format", MainStore.printDesignName, objectToSave);
-				MainStore.isFormatSaving = false;
 				frappe.show_alert(
 					{
 						message: `Print Format Saved Successfully`,
@@ -271,6 +261,7 @@ export const useElementStore = defineStore("ElementStore", {
 					},
 					5
 				);
+				await this.generatePreview();
 			}
 		},
 		checkIfAnyTableIsEmpty() {
