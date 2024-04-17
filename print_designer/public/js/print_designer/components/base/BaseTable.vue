@@ -231,10 +231,20 @@ const handleDblClick = (table, column) => {
 const handleMenuClick = (index, action) => {
 	switch (action) {
 		case "before":
-			columns.value.splice(index, 0, { id: index, label: "" });
+			columns.value.splice(index, 0, {
+				id: index,
+				label: "",
+				style: {},
+				applyStyleToHeader: false,
+			});
 			break;
 		case "after":
-			columns.value.splice(index + 1, 0, { id: index + 1, label: "" });
+			columns.value.splice(index + 1, 0, {
+				id: index + 1,
+				label: "",
+				style: {},
+				applyStyleToHeader: false,
+			});
 			break;
 		case "delete":
 			columns.value.splice(index, 1)[0].dynamicContent?.forEach((el) => {
