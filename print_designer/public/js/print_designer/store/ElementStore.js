@@ -37,20 +37,33 @@ export const useElementStore = defineStore("ElementStore", {
 			}
 			return newElement;
 		},
-		async computedLayoutForSave() {
-			const {
-				headerRowElements,
-				bodyRowElements,
-				footerRowElements,
-				headerDimensions,
-				bodyDimensions,
-				footerDimensions,
-			} = await this.computeRowLayout();
+		computeLayoutForSave() {
+			this.handleHeaderFooterOverlapping();
 
-			// clean up elements for save
-			const cleanedHeaderElements = this.cleanUpElementsForSave(headerRowElements, "header");
-			const cleanedBodyElements = this.cleanUpElementsForSave(bodyRowElements, "body");
-			const cleanedFooterElements = this.cleanUpElementsForSave(footerRowElements, "footer");
+			const { header, body, footer } = this.computeMainLayout();
+			// before modifying save json object that is used by loadElements and UI.
+			const objectToSave = {
+				print_designer_header: JSON.stringify(header || []),
+				print_designer_body: JSON.stringify(body),
+				print_designer_footer: JSON.stringify(footer || []),
+				print_designer_after_table: null,
+			};
+			const layout = {
+				header: [],
+				body: [],
+				footer: [],
+			};
+			// {childrens: []} is passed because we update parent in createRectangle function.
+			if (header) {
+				layout.header = this.computeRowLayout(header, { childrens: [] }, "header");
+			}
+			// it will throw error if body is empty so no need to check here
+			layout.body = this.computeRowLayout(body, { childrens: [] }, "body");
+			if (footer) {
+				layout.footer = this.computeRowLayout(footer, { childrens: [] }, "footer");
+			}
+
+			objectToSave.print_designer_print_format = JSON.stringify(layout);
 
 			// update fonts in store
 			const MainStore = useMainStore();
@@ -62,20 +75,7 @@ export const useElementStore = defineStore("ElementStore", {
 					...(MainStore.printFooterFonts || {}),
 				})
 			);
-			return {
-				header: {
-					layout: cleanedHeaderElements,
-					dimensions: headerDimensions,
-				},
-				body: {
-					layout: cleanedBodyElements,
-					dimensions: bodyDimensions,
-				},
-				footer: {
-					layout: cleanedFooterElements,
-					dimensions: footerDimensions,
-				},
-			};
+			return objectToSave;
 		},
 		// This is modified version of upload function used in frappe/FileUploader.vue
 		async upload_file(file) {
@@ -186,9 +186,8 @@ export const useElementStore = defineStore("ElementStore", {
 				MainStore.page.headerHeight + MainStore.page.marginTop;
 			MainStore.page.footerHeightWithMargin =
 				MainStore.page.footerHeight + MainStore.page.marginBottom;
-			const layout = await this.computedLayoutForSave();
-			if (!layout) return;
-			const { header, body, footer } = layout;
+			const objectToSave = this.computeLayoutForSave();
+			if (!objectToSave) return;
 			const updatedPage = { ...MainStore.page };
 			const settingsForSave = {
 				page: updatedPage,
@@ -215,18 +214,9 @@ export const useElementStore = defineStore("ElementStore", {
 				convertCsstoString(MainStore.screenStyleSheet) +
 				convertCsstoString(MainStore.printStyleSheet);
 
-			const objectToSave = {
-				// flatten the layout array to 2 levels to remove row and column structure
-				print_designer_header: JSON.stringify(header.layout?.flat(2) || []),
-				print_designer_body: JSON.stringify(body.layout.flat(2)),
-				print_designer_footer: JSON.stringify(footer.layout?.flat(2) || []),
-				print_designer_settings: JSON.stringify(settingsForSave),
-				print_designer_after_table: null,
-				css: css,
-			};
-			const PrintFormatData = this.getPrintFormatData({ header, body, footer });
-
-			objectToSave.print_designer_print_format = PrintFormatData;
+			objectToSave.print_designer_settings = JSON.stringify(settingsForSave);
+			objectToSave.print_designer_after_table = null;
+			objectToSave.css = css;
 			if (MainStore.isOlderSchema("1.1.0")) {
 				await this.printFormatCopyOnOlderSchema(objectToSave);
 			} else {
@@ -257,147 +247,181 @@ export const useElementStore = defineStore("ElementStore", {
 			}
 			return false;
 		},
-		async computeRowLayout(columnContainer = null, activeSection = null) {
+		computeMainLayout() {
 			const MainStore = useMainStore();
-			if (!columnContainer) {
-				columnContainer = [...this.Elements].map((el, index) => {
-					return {
-						index,
-						startY: parseInt(el.startY),
-						endY: parseInt(el.startY + el.height),
-						startX: parseInt(el.startX),
-						endX: parseInt(el.startX + el.width),
-						element: el,
-					};
-				});
-				this.handleHeaderFooterOverlapping(columnContainer);
-			}
-			columnContainer.sort((a, b) => {
+			elements = [...this.Elements];
+			elements.sort((a, b) => {
 				return a.startY < b.startY ? -1 : 1;
 			});
-			const rows = columnContainer.reduce(
-				(computedLayout, currentEl) => {
-					let rows = computedLayout[activeSection || computedLayout.activeSection];
-					if (
-						!activeSection &&
-						computedLayout.activeSection == "headerRowElements" &&
-						currentEl.startY >= MainStore.page.headerHeight
-					) {
-						// handle empty headerRowElements
-						rows.length == 0 && rows.push([]);
-						// change activeSection and rows to bodyRowElements
-						computedLayout.activeSection = "bodyRowElements";
-						rows = computedLayout["bodyRowElements"];
-					}
-					if (
-						!activeSection &&
-						computedLayout.activeSection == "bodyRowElements" &&
-						currentEl.startY >=
-							MainStore.page.height -
-								MainStore.page.marginTop -
-								MainStore.page.footerHeightWithMargin
-					) {
-						// no need to handle empty bodyRowElements as it will throw error and never reach here
-						// change activeSection and rows to footerRowElements
-						computedLayout.activeSection = "footerRowElements";
-						rows = computedLayout["footerRowElements"];
-					}
-					if (rows.length == 0) {
-						rows.push([currentEl]);
-						return computedLayout;
-					}
-
-					// replace with .at() after checking compatibility for our user base.
-					const lastRow = rows[rows.length - 1];
-					const elementWithMaxEndY = lastRow[lastRow.length - 1];
-
-					if (currentEl.startY >= elementWithMaxEndY.endY) {
-						rows.push([currentEl]);
-						return computedLayout;
-					}
-
-					if (currentEl.endY > elementWithMaxEndY.endY) {
-						lastRow.push(currentEl);
-					} else {
-						lastRow.splice(-1, 0, currentEl);
-					}
-					return computedLayout;
-				},
-				{
-					headerRowElements: [],
-					bodyRowElements: [],
-					footerRowElements: [],
-					activeSection: "headerRowElements",
-				}
-			);
-
-			// calculate row element dimensions
-			const headerDimensions = this.computeRowElementDimensions(
-				rows.headerRowElements,
-				"header"
-			);
-			const bodyDimensions = this.computeRowElementDimensions(rows.bodyRowElements, "body");
-			const footerDimensions = this.computeRowElementDimensions(
-				rows.footerRowElements,
+			const findLastHeaderEl = (el) => {
+				return el.startY >= MainStore.page.headerHeight;
+			};
+			const findFirstFooterEl = (el) => {
+				return (
+					el.startY >=
+					MainStore.page.height -
+						MainStore.page.footerHeight -
+						MainStore.page.marginTop -
+						MainStore.page.marginBottom
+				);
+			};
+			let headerIndex = elements.findIndex((el) => findLastHeaderEl(el));
+			headerIndex == -1 && (headerIndex = elements.length);
+			const header = this.cleanUpElementsForSave(elements.splice(0, headerIndex), "header");
+			let footerIndex = elements.findIndex((el) => findFirstFooterEl(el));
+			footerIndex == -1 && (footerIndex = elements.length);
+			const footer = this.cleanUpElementsForSave(
+				elements.splice(footerIndex, elements.length - footerIndex),
 				"footer"
 			);
-
-			// calculate column element layout
-			const headerRowElements = await this.computeColumnLayout(
-				rows.headerRowElements,
-				headerDimensions
-			);
-			const bodyRowElements = await this.computeColumnLayout(
-				rows.bodyRowElements,
-				bodyDimensions
-			);
-			const footerRowElements = await this.computeColumnLayout(
-				rows.footerRowElements,
-				footerDimensions
-			);
-
-			return {
-				headerRowElements,
-				bodyRowElements,
-				footerRowElements,
-				headerDimensions,
-				bodyDimensions,
-				footerDimensions,
-			};
+			const body = this.cleanUpElementsForSave(elements, "body");
+			return { header, body, footer };
 		},
-		async computeColumnLayout(rows, rowDimensions) {
-			const columns = rows.map((elements) => {
-				elements.sort((a, b) => {
-					return a.startX < b.startX ? -1 : 1;
-				});
-				return elements.reduce((columns, currentEl) => {
-					if (columns.length == 0) {
-						columns.push([currentEl]);
-						return columns;
-					}
-					// replace with .at() after checking compatibility for our user base.
-					const lastColumn = columns[columns.length - 1];
-					const elementWithMaxEndX = lastColumn[lastColumn.length - 1];
+		// TODO: Refactor this function
+		computeRowLayout(column, parentContainer = null, type = "row") {
+			const MainStore = useMainStore();
+			const rowElements = [];
+			let prevDimension = null;
+			column.sort((a, b) => (a.startY < b.startY ? -1 : 1));
+			const rows = column.reduce((currentRow, currentEl) => {
+				if (currentRow.length == 0) {
+					currentRow.push(currentEl);
+					return currentRow;
+				}
+				// replace with .at() after checking compatibility for our user base.
+				const el = currentRow.at(-1);
+				const currentStartY = parseInt(currentEl.startY);
+				const currentEndY = parseInt(currentEl.startY + currentEl.height);
+				const maxEndY = parseInt(el.startY + el.height);
 
-					if (currentEl.startX >= elementWithMaxEndX.endX) {
-						columns.push([currentEl]);
-						return columns;
-					}
-					if (currentEl.endX > elementWithMaxEndX.endX) {
-						lastColumn.push(currentEl);
-					} else {
-						lastColumn.splice(-1, 0, currentEl);
-					}
-					return columns;
-				}, []);
-			});
-			// sort elements inside columns by startY
-			columns.forEach((column) => column.sort((a, b) => (a.startY < b.startY ? -1 : 1)));
-			// This will add column dimensions under key columnDimensions inside bodyDimensions.
-			this.computeColumnElementDimensions(columns, rowDimensions);
-			return columns;
+				if (currentStartY >= maxEndY) {
+					const dimension = this.computeRowElementDimensions(
+						currentRow,
+						rowElements.length,
+						prevDimension,
+						type
+					);
+					prevDimension = dimension;
+					const wrapper = this.createRowWrapperElement(
+						dimension,
+						currentRow,
+						parentContainer
+					);
+					rowElements.push(wrapper);
+					currentRow.length = 0;
+					currentRow.push(currentEl);
+					return currentRow;
+				}
+
+				if (currentEndY > maxEndY) {
+					currentRow.push(currentEl);
+				} else {
+					currentRow.splice(-1, 0, currentEl);
+				}
+				return currentRow;
+			}, []);
+			// don't create row if it is there is only one row and parent is column
+			if (parentContainer?.layoutType == "column" && rowElements.length == 0) {
+				return;
+			}
+			if (rows.length != 0) {
+				const dimension = this.computeRowElementDimensions(
+					rows,
+					rowElements.length,
+					prevDimension,
+					type
+				);
+				if (parentContainer.layoutType == "column") {
+					dimension.bottom = parentContainer.height;
+				}
+				prevDimension = dimension;
+				const wrapper = this.createRowWrapperElement(dimension, rows, parentContainer);
+				rowElements.push(wrapper);
+			}
+			rowElements.sort((a, b) => (a.startY < b.startY ? -1 : 1));
+			if (type == "header") {
+				const lastHeaderRow = rowElements[rowElements.length - 1];
+				lastHeaderRow.height =
+					MainStore.page.headerHeight - MainStore.page.marginTop - lastHeaderRow.startY;
+			} else if (type == "footer") {
+				const lastHeaderRow = rowElements[rowElements.length - 1];
+				lastHeaderRow.height =
+					MainStore.page.height -
+					MainStore.page.marginTop -
+					MainStore.page.marginBottom -
+					lastHeaderRow.startY;
+			}
+			return rowElements;
 		},
-		handleHeaderFooterOverlapping(elements) {
+		// TODO: extract repeated code to a function
+		computeColumnLayout(row, parentContainer) {
+			const columnElements = [];
+			let prevDimension = null;
+			row.sort((a, b) => (a.startX < b.startX ? -1 : 1));
+			const columns = row.reduce((currentColumn, currentEl) => {
+				if (currentColumn.length == 0) {
+					currentColumn.push(currentEl);
+					return currentColumn;
+				}
+				const el = currentColumn.at(-1);
+				const currentStartX = parseInt(currentEl.startX);
+				const currentEndX = parseInt(currentEl.startX + currentEl.width);
+				const maxEndX = parseInt(el.startX + el.width);
+				if (currentStartX >= maxEndX) {
+					const dimension = this.computeColumnElementDimensions(
+						currentColumn,
+						columnElements.length,
+						prevDimension
+					);
+					prevDimension = dimension;
+					const wrapper = this.createColumnWrapperElement(
+						dimension,
+						currentColumn,
+						parentContainer
+					);
+					columnElements.push(wrapper);
+					currentColumn.length = 0;
+					currentColumn.push(currentEl);
+					return currentColumn;
+				}
+				if (currentEndX > maxEndX) {
+					currentColumn.push(currentEl);
+				} else {
+					currentColumn.splice(-1, 0, currentEl);
+				}
+				return currentColumn;
+			}, []);
+			if (columnElements.length == 0) {
+				return;
+			}
+			if (columns.length != 0) {
+				// column is defined so now run row layout
+				const dimension = this.computeColumnElementDimensions(
+					columns,
+					columnElements.length,
+					prevDimension
+				);
+				// if parent is row then set right to parent width else page width
+				if (parentContainer.layoutType == "row") {
+					dimension.right = parentContainer.width;
+				} else {
+					dimension.right =
+						MainStore.page.width -
+						MainStore.page.marginLeft -
+						MainStore.page.marginRight;
+				}
+				prevDimension = dimension;
+				const wrapper = this.createColumnWrapperElement(
+					dimension,
+					columns,
+					parentContainer
+				);
+				columnElements.push(wrapper);
+			}
+			return columnElements;
+		},
+		handleHeaderFooterOverlapping() {
+			const elements = this.Elements;
 			const MainStore = useMainStore();
 
 			const throwOverlappingError = (type) => {
@@ -427,7 +451,6 @@ export const useElementStore = defineStore("ElementStore", {
 				}
 			} else {
 				elements.forEach((element) => {
-					element = element.element;
 					if (
 						element.startY < MainStore.page.headerHeight &&
 						element.startY + element.height > MainStore.page.headerHeight
@@ -466,48 +489,33 @@ export const useElementStore = defineStore("ElementStore", {
 
 			return true;
 		},
-		computeRowElementDimensions(elements, containerType = "body") {
-			const dimensions = [];
-			elements.reduce(
-				(prevDimensions, container, index) => {
-					const calculatedDimensions = this.calculateWrapperElementDimensions(
-						prevDimensions,
-						container,
-						containerType,
-						index
-					);
-					dimensions.push(calculatedDimensions);
-					return calculatedDimensions;
-				},
-				{ bottom: 0 }
-			);
-			return dimensions;
-		},
-		computeColumnElementDimensions(rows, rowDimensions) {
+		computeRowElementDimensions(row, index, prevDimensions = null, containerType = "row") {
 			const MainStore = useMainStore();
-			rows.forEach((row, index) => {
-				const dimensions = [];
-				row.reduceRight(
-					(prevDimensions, container, index) => {
-						const calculatedDimensions = this.calculateWrapperElementDimensions(
-							prevDimensions,
-							container,
-							"column",
-							index
-						);
-						dimensions.push(calculatedDimensions);
-						return calculatedDimensions;
-					},
-					{
-						left:
-							MainStore.page.width -
-							MainStore.page.marginRight -
-							MainStore.page.marginLeft,
-					}
-				);
-				rowDimensions[index]["columnDimensions"] = dimensions.reverse();
-			});
+			if (!prevDimensions) {
+				prevDimensions = {
+					left:
+						MainStore.page.width -
+						MainStore.page.marginRight -
+						MainStore.page.marginLeft,
+					bottom: 0,
+				};
+			}
+			return this.calculateWrapperElementDimensions(
+				prevDimensions,
+				row,
+				containerType,
+				index
+			);
 		},
+		computeColumnElementDimensions(column, index, prevDimensions = null) {
+			if (!prevDimensions) {
+				prevDimensions = {
+					right: 0,
+				};
+			}
+			return this.calculateWrapperElementDimensions(prevDimensions, column, "column", index);
+		},
+		// TODO: move logic to computeRowElementDimensions
 		calculateWrapperElementDimensions(prevDimensions, children, containerType, index) {
 			// basically returns lowest left - top  highest right - bottom from all of the children elements
 			const MainStore = useMainStore();
@@ -521,7 +529,6 @@ export const useElementStore = defineStore("ElementStore", {
 			};
 			let offsetRect = children.reduce(
 				(offset, currentElement) => {
-					currentElement = currentElement.element;
 					let currentElementRect = {
 						top: currentElement.startY,
 						left: currentElement.startX,
@@ -556,11 +563,20 @@ export const useElementStore = defineStore("ElementStore", {
 					MainStore.page.footerHeightWithMargin -
 					MainStore.page.marginTop;
 			}
-			if (index != 0) {
+			// element is parent level row.
+			if (index > 0 && ["header", "body", "footer"].includes(containerType)) {
 				offsetRect.top = prevDimensions.bottom;
 			}
 			if (containerType == "column") {
-				offsetRect.right = prevDimensions.left;
+				offsetRect.left = prevDimensions.right;
+				offsetRect.top = 0;
+			}
+			if (containerType == "row") {
+				if (index == 0) {
+					offsetRect.top = 0;
+				} else {
+					offsetRect.top = prevDimensions.bottom;
+				}
 			}
 			return offsetRect;
 		},
@@ -578,24 +594,12 @@ export const useElementStore = defineStore("ElementStore", {
 				case "footer":
 					MainStore.printFooterFonts = fontsObject;
 			}
-			return rows.map((columns) => {
-				return columns.map((column) => {
-					return column.map((element) => {
-						let newElement = this.childrensSave(element.element, fontsObject);
-						newElement.classes = newElement.classes.filter(
-							(name) =>
-								["inHeaderFooter", "overlappingHeaderFooter"].indexOf(name) == -1
-						);
-						if (element.type == "rectangle" && element.childrens.length) {
-							let childrensArray = element.childrens;
-							newElement.childrens = [];
-							childrensArray.forEach((el) => {
-								newElement.childrens.push(this.childrensSave(el, fontsObject));
-							});
-						}
-						return newElement;
-					});
-				});
+			return rows.map((element) => {
+				let newElement = this.childrensSave(element, fontsObject);
+				newElement.classes = newElement.classes.filter(
+					(name) => ["inHeaderFooter", "overlappingHeaderFooter"].indexOf(name) == -1
+				);
+				return newElement;
 			});
 		},
 		checkIfPrintFormatIsEmpty(elements, type) {
@@ -700,86 +704,152 @@ export const useElementStore = defineStore("ElementStore", {
 				}
 			}
 		},
-		getPrintFormatData({ header, body, footer }) {
-			const headerElements = this.createRowWrapperElement(header.layout, header.dimensions);
-			const bodyElements = this.createRowWrapperElement(body.layout, body.dimensions);
-			const footerElements = this.createRowWrapperElement(footer.layout, footer.dimensions);
-			const data = JSON.stringify({
-				header: headerElements,
-				body: bodyElements,
-				footer: footerElements,
-			});
-			return data;
-		},
-		createRowWrapperElement(rows, dimensions) {
-			if (!rows) return [];
+		createWrapperElement(dimensions, parent) {
 			const MainStore = useMainStore();
-			const wrapperContainer = { childrens: [] };
-			rows.forEach((row, index) => {
-				const calculatedDimensions = dimensions[index];
-				const cordinates = {
-					startY: calculatedDimensions.top,
-					pageY: calculatedDimensions.top,
-					startX: 0,
-					pageX: 0,
-				};
-				const wrapperRectangleEl = createRectangle(cordinates, wrapperContainer);
-				wrapperRectangleEl.width =
+			const coordinates = {};
+			if (Array.isArray(parent)) {
+				coordinates["startY"] = dimensions.top;
+				coordinates["pageY"] = dimensions.top;
+				coordinates["startX"] = 0;
+				coordinates["pageX"] = 0;
+			} else if (parent.layoutType == "row") {
+				coordinates["startY"] = 0;
+				coordinates["pageY"] = 0;
+				coordinates["startX"] = dimensions.left;
+				coordinates["pageX"] = dimensions.left;
+			} else {
+				coordinates["startY"] = dimensions.top;
+				coordinates["pageY"] = dimensions.top;
+				coordinates["startX"] = dimensions.left;
+				coordinates["pageX"] = dimensions.left;
+			}
+			const wrapper = createRectangle(coordinates, parent);
+			wrapper.layoutType = parent.layoutType == "row" ? "column" : "row";
+			if (wrapper.layoutType == "column") {
+				wrapper.width = dimensions.right - dimensions.left;
+				wrapper.height = parent.height || 0;
+				wrapper.classes.push("relative-column");
+				wrapper.relativeColumn = true;
+			} else {
+				wrapper.width =
+					parent.width ||
 					MainStore.page.width - MainStore.page.marginLeft - MainStore.page.marginRight;
-				wrapperRectangleEl.height = calculatedDimensions.bottom - calculatedDimensions.top;
-				wrapperRectangleEl.childrens = this.createColumnWrapperElement(
-					row,
-					calculatedDimensions.columnDimensions,
-					wrapperRectangleEl
-				);
-				if (wrapperRectangleEl.childrens.some((el) => el.isDynamicHeight == true)) {
-					wrapperRectangleEl.isDynamicHeight = true;
-				}
-				wrapperRectangleEl.classes.push("relative-row");
-			});
-			return wrapperContainer.childrens.map((el) => this.childrensSave(el));
+				wrapper.height = dimensions.bottom - dimensions.top;
+				wrapper.classes.push("relative-row");
+				wrapper.classes.push(wrapper.id);
+			}
+			return wrapper;
 		},
-		createColumnWrapperElement(row, dimensions, rowContainer = null) {
-			return row.map((column, index) => {
-				const calculatedDimensions = dimensions[index];
-				if (index == 0) {
-					calculatedDimensions.left = 0;
-				}
-				const cordinates = {
-					startY: 0,
-					pageY: 0,
-					startX: calculatedDimensions.left,
-					pageX: calculatedDimensions.left,
-				};
-				const wrapperRectangleEl = createRectangle(cordinates, rowContainer);
-				wrapperRectangleEl.width = calculatedDimensions.right - calculatedDimensions.left;
-				wrapperRectangleEl.height = rowContainer.height;
-				wrapperRectangleEl.childrens = column;
-				if (
-					wrapperRectangleEl.childrens.length == 1 &&
-					wrapperRectangleEl.childrens[0].isDynamicHeight == true
-				) {
-					wrapperRectangleEl.isDynamicHeight = true;
-				}
-				wrapperRectangleEl.childrens.forEach((el) => {
-					el.startY -= rowContainer.startY;
-					el.startX -= cordinates.startX;
-					["startX", "startY", "height", "width"].forEach((property) => {
-						if (typeof el[property] == "string") {
-							el[property] = parseFloat(el[property]);
-						}
-						el[property] = parseFloat(el[property].toFixed(3));
-					});
+		updateChildrenInRowWrapper(wrapper, children) {
+			wrapper.childrens = children;
+			if (
+				wrapper.childrens.some(
+					(el) => el.layoutType == "column" || el.isDynamicHeight == true
+				)
+			) {
+				wrapper.isDynamicHeight = true;
+			}
+			wrapper.childrens.sort((a, b) => (a.startY < b.startY ? -1 : 1));
+			wrapper.startX = 0;
+			return;
+		},
+		updateRowChildrenDimensions(wrapper, children, parent) {
+			if (Array.isArray(parent)) {
+				children.forEach((el) => {
+					el.startY -= wrapper.startY;
 				});
-				["startX", "startY", "height", "width"].forEach((property) => {
-					wrapperRectangleEl[property] = parseFloat(
-						wrapperRectangleEl[property].toFixed(3)
-					);
-				});
-				wrapperRectangleEl.classes.push("relative-column");
-				wrapperRectangleEl.relativeColumn = true;
-				return wrapperRectangleEl;
+				return;
+			}
+			children.forEach((el) => {
+				el.startY -= wrapper.startY;
 			});
+		},
+		updateColumnChildrenDimensions(wrapper, children) {
+			children.sort((a, b) => (a.startX < b.startX ? -1 : 1));
+
+			children.forEach((el) => {
+				el.startY -= wrapper.startY;
+				el.startX -= wrapper.startX;
+			});
+		},
+		updateChildrenInColumnWrapper(wrapper, children) {
+			wrapper.childrens = children;
+			wrapper.childrens.forEach((el) => {
+				el.startY += wrapper.startY;
+			});
+			// TODO: add better control for dynamic height
+			wrapper.startY = 0;
+			if (
+				wrapper.childrens.some(
+					(el) => el.layoutType == "row" || el.isDynamicHeight == true
+				)
+			) {
+				wrapper.isDynamicHeight = true;
+			}
+		},
+		createRowWrapperElement(dimension, currentRow, parent) {
+			const MainStore = useMainStore();
+			const coordinates = {};
+			if (Array.isArray(parent)) {
+				coordinates["startY"] = dimension.top;
+				coordinates["pageY"] = dimension.top;
+				coordinates["startX"] = 0;
+				coordinates["pageX"] = 0;
+			} else {
+				coordinates["startY"] = dimension.top;
+				coordinates["pageY"] = dimension.top;
+				coordinates["startX"] = dimension.left;
+				coordinates["pageX"] = dimension.left;
+			}
+			const wrapper = createRectangle(coordinates, parent);
+			wrapper.layoutType = "row";
+			wrapper.width =
+				parent.width ||
+				MainStore.page.width - MainStore.page.marginLeft - MainStore.page.marginRight;
+			wrapper.height = dimension.bottom - dimension.top;
+			wrapper.classes.push("relative-row");
+			delete wrapper.parent;
+			this.updateRowElement(wrapper, currentRow, parent);
+			return wrapper;
+		},
+		updateRowElement(wrapper, currentRow, parent) {
+			wrapper.layoutType = "row";
+			this.updateRowChildrenDimensions(wrapper, currentRow, parent);
+			let childElements = [...currentRow];
+			if (currentRow.length > 1) {
+				let columnEls = this.computeColumnLayout(childElements, wrapper);
+				if (columnEls) {
+					childElements = columnEls;
+				}
+			}
+			this.updateChildrenInRowWrapper(wrapper, childElements);
+		},
+		createColumnWrapperElement(dimension, currentColumn, parent) {
+			const coordinates = {
+				startY: dimension.top,
+				pageY: dimension.top,
+				startX: dimension.left,
+				pageX: dimension.left,
+			};
+			const wrapper = createRectangle(coordinates, parent);
+			wrapper.layoutType = "column";
+			wrapper.width = dimension.right - dimension.left;
+			wrapper.height = parent.height;
+			wrapper.classes.push("relative-column");
+			wrapper.relativeColumn = true;
+			delete wrapper.parent;
+			this.updateColumnElement(wrapper, currentColumn);
+			return wrapper;
+		},
+		updateColumnElement(wrapper, currentColumn) {
+			wrapper.layoutType = "column";
+			this.updateColumnChildrenDimensions(wrapper, currentColumn);
+			let childElements = [...currentColumn];
+			const rowEls = this.computeRowLayout(childElements, wrapper);
+			if (rowEls) {
+				childElements = rowEls;
+			}
+			this.updateChildrenInColumnWrapper(wrapper, childElements);
 		},
 		async printFormatCopyOnOlderSchema(objectToSave) {
 			// TODO: have better message.
@@ -1033,13 +1103,13 @@ export const useElementStore = defineStore("ElementStore", {
 			const currentElIndex =
 				currentEl.index || this.Elements.findIndex((el) => el === currentEl);
 			const currentStartY = parseInt(currentEl.startY);
-			const currentEndY = currentEl.endY || parseInt(currentEl.startY + currentEl.height);
+			const currentEndY = parseInt(currentEl.startY + currentEl.height);
 
 			return (
 				elements.findIndex((el, index) => {
 					if (index == currentElIndex) return false;
 					const elStartY = parseInt(el.startY);
-					const elEndY = el.endY || parseInt(el.startY + el.height);
+					const elEndY = parseInt(el.startY + el.height);
 					if (
 						currentStartY <= elStartY &&
 						elStartY <= currentEndY &&
