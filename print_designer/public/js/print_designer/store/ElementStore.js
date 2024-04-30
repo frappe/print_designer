@@ -426,6 +426,24 @@ export const useElementStore = defineStore("ElementStore", {
 			}
 			return columnElements;
 		},
+		computeLayoutInsideRectangle(childElements) {
+			if (childElements.at(-1).type == "rectangle") {
+				const el = childElements.at(-1);
+				if (el.type == "rectangle") {
+					el.childrens = this.computeRowLayout(el.childrens, el);
+					el.layoutType = "column";
+					el.classes.push("relative-column");
+					el.rectangleContainer = true;
+					if (el.childrens.some((e) => e.heightType == "auto-min-height")) {
+						el.heightType = "auto-min-height";
+					} else if (el.childrens.some((e) => e.heightType == "auto")) {
+						el.heightType = "auto";
+					} else {
+						el.heightType = "fixed";
+					}
+				}
+			}
+		},
 		handleHeaderFooterOverlapping() {
 			const elements = this.Elements;
 			const MainStore = useMainStore();
@@ -834,22 +852,7 @@ export const useElementStore = defineStore("ElementStore", {
 			if (columnEls) {
 				childElements = columnEls;
 			} else {
-				if (childElements.at(-1).type == "rectangle") {
-					const el = childElements.at(-1);
-					if (el.type == "rectangle") {
-						el.childrens = this.computeRowLayout(el.childrens, el);
-						el.layoutType = "column";
-						el.classes.push("relative-column");
-						el.rectangleContainer = true;
-						if (el.childrens.some((e) => e.heightType == "auto-min-height")) {
-							el.heightType = "auto-min-height";
-						} else if (el.childrens.some((e) => e.heightType == "auto")) {
-							el.heightType = "auto";
-						} else {
-							el.heightType = "fixed";
-						}
-					}
-				}
+				this.computeLayoutInsideRectangle(childElements);
 			}
 			this.updateChildrenInRowWrapper(wrapper, childElements);
 			if (childElements.some((el) => el.heightType == "auto-min-height")) {
@@ -885,22 +888,7 @@ export const useElementStore = defineStore("ElementStore", {
 			if (rowEls) {
 				childElements = rowEls;
 			} else {
-				if (childElements.at(-1).type == "rectangle") {
-					const el = childElements.at(-1);
-					if (el.type == "rectangle") {
-						el.childrens = this.computeRowLayout(el.childrens, el);
-						el.layoutType = "column";
-						el.classes.push("relative-column");
-						el.rectangleContainer = true;
-						if (el.childrens.some((e) => e.heightType == "auto-min-height")) {
-							el.heightType = "auto-min-height";
-						} else if (el.childrens.some((e) => e.heightType == "auto")) {
-							el.heightType = "auto";
-						} else {
-							el.heightType = "fixed";
-						}
-					}
-				}
+				this.computeLayoutInsideRectangle(childElements);
 			}
 			this.updateChildrenInColumnWrapper(wrapper, childElements);
 			if (childElements.some((el) => el.heightType == "auto-min-height")) {
