@@ -820,7 +820,7 @@ export const checkUpdateElementOverlapping = (element = null) => {
 				el.isElementOverlapping = isElementOverlapping;
 			}
 			if (isOlderSchema && el.type == "table" && !isElementOverlapping) {
-				el.isDynamicHeight = true;
+				el.heightType = "auto";
 			}
 		});
 	}, {});

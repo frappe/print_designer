@@ -166,7 +166,7 @@ export const createTable = (cordinates, parent = null) => {
 		labelStyle: {},
 		headerStyle: {},
 		altStyle: {},
-		isDynamicHeight: true,
+		heightType: "auto",
 		classes: [],
 	};
 
@@ -259,7 +259,7 @@ export const createDynamicText = (cordinates, parent = null) => {
 		labelDisplayStyle: "standard",
 		style: {},
 		labelStyle: {},
-		isDynamicHeight: true,
+		heightType: "auto",
 		classes: [],
 	};
 	parent !== ElementStore.Elements

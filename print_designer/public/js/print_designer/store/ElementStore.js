@@ -54,13 +54,19 @@ export const useElementStore = defineStore("ElementStore", {
 				footer: [],
 			};
 			// {childrens: []} is passed because we update parent in createRectangle function.
+			let headerElements = { childrens: [] };
+			let bodyElements = { childrens: [] };
+			let footerElements = { childrens: [] };
+			// WARNING: 2 lines below are for debugging purpose only.
+			// this.Elements.length = 0;
+			// headerElements = bodyElements = footerElements = this.Elements;
 			if (header) {
-				layout.header = this.computeRowLayout(header, { childrens: [] }, "header");
+				layout.header = this.computeRowLayout(header, headerElements, "header");
 			}
 			// it will throw error if body is empty so no need to check here
-			layout.body = this.computeRowLayout(body, { childrens: [] }, "body");
+			layout.body = this.computeRowLayout(body, bodyElements, "body");
 			if (footer) {
-				layout.footer = this.computeRowLayout(footer, { childrens: [] }, "footer");
+				layout.footer = this.computeRowLayout(footer, footerElements, "footer");
 			}
 
 			objectToSave.print_designer_print_format = JSON.stringify(layout);
@@ -742,12 +748,12 @@ export const useElementStore = defineStore("ElementStore", {
 		},
 		updateChildrenInRowWrapper(wrapper, children) {
 			wrapper.childrens = children;
-			if (
-				wrapper.childrens.some(
-					(el) => el.layoutType == "column" || el.isDynamicHeight == true
-				)
-			) {
-				wrapper.isDynamicHeight = true;
+			if (wrapper.childrens.some((el) => el.heightType == "auto-min-height")) {
+				wrapper.heightType = "auto-min-height";
+			} else if (wrapper.childrens.some((el) => el.heightType == "auto")) {
+				wrapper.heightType = "auto";
+			} else {
+				wrapper.heightType = "fixed";
 			}
 			wrapper.childrens.sort((a, b) => (a.startY < b.startY ? -1 : 1));
 			wrapper.startX = 0;
@@ -781,10 +787,18 @@ export const useElementStore = defineStore("ElementStore", {
 			wrapper.startY = 0;
 			if (
 				wrapper.childrens.some(
-					(el) => el.layoutType == "row" || el.isDynamicHeight == true
+					(el) => el.layoutType == "row" || el.heightType == "auto-min-height"
 				)
 			) {
-				wrapper.isDynamicHeight = true;
+				wrapper.heightType = "auto-min-height";
+			} else if (
+				wrapper.childrens.some(
+					(el) => el.layoutType == "column" || el.heightType == "auto"
+				)
+			) {
+				wrapper.heightType = "auto";
+			} else {
+				wrapper.heightType = "fixed";
 			}
 		},
 		createRowWrapperElement(dimension, currentRow, parent) {
@@ -816,13 +830,35 @@ export const useElementStore = defineStore("ElementStore", {
 			wrapper.layoutType = "row";
 			this.updateRowChildrenDimensions(wrapper, currentRow, parent);
 			let childElements = [...currentRow];
-			if (currentRow.length > 1) {
-				let columnEls = this.computeColumnLayout(childElements, wrapper);
-				if (columnEls) {
-					childElements = columnEls;
+			const columnEls = this.computeColumnLayout(childElements, wrapper);
+			if (columnEls) {
+				childElements = columnEls;
+			} else {
+				if (childElements.at(-1).type == "rectangle") {
+					const el = childElements.at(-1);
+					if (el.type == "rectangle") {
+						el.childrens = this.computeRowLayout(el.childrens, el);
+						el.layoutType = "column";
+						el.classes.push("relative-column");
+						el.rectangleContainer = true;
+						if (el.childrens.some((e) => e.heightType == "auto-min-height")) {
+							el.heightType = "auto-min-height";
+						} else if (el.childrens.some((e) => e.heightType == "auto")) {
+							el.heightType = "auto";
+						} else {
+							el.heightType = "fixed";
+						}
+					}
 				}
 			}
 			this.updateChildrenInRowWrapper(wrapper, childElements);
+			if (childElements.some((el) => el.heightType == "auto-min-height")) {
+				wrapper.heightType = "auto-min-height";
+			} else if (childElements.some((el) => el.heightType == "auto")) {
+				wrapper.heightType = "auto";
+			} else {
+				wrapper.heightType = "fixed";
+			}
 		},
 		createColumnWrapperElement(dimension, currentColumn, parent) {
 			const coordinates = {
@@ -848,8 +884,32 @@ export const useElementStore = defineStore("ElementStore", {
 			const rowEls = this.computeRowLayout(childElements, wrapper);
 			if (rowEls) {
 				childElements = rowEls;
+			} else {
+				if (childElements.at(-1).type == "rectangle") {
+					const el = childElements.at(-1);
+					if (el.type == "rectangle") {
+						el.childrens = this.computeRowLayout(el.childrens, el);
+						el.layoutType = "column";
+						el.classes.push("relative-column");
+						el.rectangleContainer = true;
+						if (el.childrens.some((e) => e.heightType == "auto-min-height")) {
+							el.heightType = "auto-min-height";
+						} else if (el.childrens.some((e) => e.heightType == "auto")) {
+							el.heightType = "auto";
+						} else {
+							el.heightType = "fixed";
+						}
+					}
+				}
 			}
 			this.updateChildrenInColumnWrapper(wrapper, childElements);
+			if (childElements.some((el) => el.heightType == "auto-min-height")) {
+				wrapper.heightType = "auto-min-height";
+			} else if (childElements.some((el) => el.heightType == "auto")) {
+				wrapper.heightType = "auto";
+			} else {
+				wrapper.heightType = "fixed";
+			}
 		},
 		async printFormatCopyOnOlderSchema(objectToSave) {
 			// TODO: have better message.
