@@ -5,6 +5,8 @@ from typing import Callable, Dict, List, Optional, Union
 
 import frappe
 
+from print_designer.pdf import is_older_schema
+
 """
 Example Callback Functions used to Demonstrate Data Structure.
 Example functions are just printing the values of the object passed to them.
@@ -71,6 +73,7 @@ While developing patches, pass save=False to function so that it will not save t
 def patch_formats(
 	callbacks: Union[Callable[[Dict], None], Dict[str, Callable[[Dict], None]]],
 	types: Optional[List[str]] = None,
+	update_print_json: bool = False,
 	save: bool = True,
 ) -> None:
 	"""
@@ -81,7 +84,7 @@ def patch_formats(
 	                                  `element, dynamic_content, style, dynamic_content_style` each with a function as its value.
 	                                  Each callback function should take a dictionary as an argument and can modify it and return nothing.
 	                                  The dictionary passed to the callback function represents a element or style object.
-
+	:param update_print_json: If True, the function will update the generated print format json that is used by jinja template.
 	:param types: A list of print format types to which the callback function should be applied.
 	                          If not provided, it defaults to ["text", "image", "barcode", "rectangle", "table"].
 	"""
@@ -98,10 +101,23 @@ def patch_formats(
 			"print_designer_body",
 			"print_designer_after_table",
 			"print_designer_footer",
+			"print_designer_print_format",
+			"print_designer_settings",
 		],
 		as_list=1,
 	)
-	for pf in print_formats:
+	if update_print_json:
+		for pf in print_formats:
+			# print_designer_print_format was introduced in schema version 1.1.0 so running this on older version is not required
+			if not is_older_schema(settings=frappe.json.loads(pf[6] or "{}"), current_version="1.1.0"):
+				print_json = frappe.json.loads(pf[5] or "{}")
+				if print_json.get("header", None):
+					print_json["header"] = patch_elements(print_json["header"], callbacks, types)
+				if print_json.get("body", None):
+					print_json["body"] = patch_elements(print_json["body"], callbacks, types)
+				if print_json.get("footer", None):
+					print_json["footer"] = patch_elements(print_json["footer"], callbacks, types)
+
 		updated_doc = frappe.get_doc("Print Format", pf[0]).update(
 			{
 				"print_designer_header": frappe.json.dumps(
@@ -116,6 +132,7 @@ def patch_formats(
 				"print_designer_footer": frappe.json.dumps(
 					patch_elements(frappe.json.loads(pf[4] or "[]"), callbacks, types)
 				),
+				"print_designer_print_format": frappe.json.dumps(print_json),
 			}
 		)
 		if save:
