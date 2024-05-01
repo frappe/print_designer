@@ -639,11 +639,12 @@ watch(
 	background-color: transparent !important;
 	border: none !important;
 	z-index: 9999 !important;
+	outline: 1px double var(--primary) !important;
 }
 .relative-column {
 	background-color: transparent !important;
+	outline: 1px double var(--primary) !important;
 	border: none !important;
 	z-index: 9999 !important;
-	outline: 1px solid var(--primary) !important;
 }
 </style>

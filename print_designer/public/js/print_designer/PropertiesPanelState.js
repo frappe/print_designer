@@ -437,15 +437,15 @@ export const createPropertiesPanel = () => {
 			[
 				{
 					label: "Height",
-					name: "isDynamicHeight",
+					name: "heightType",
 					isLabelled: true,
 					labelDirection: "column",
 					condtional: () => {
 						const currentEl = MainStore.getCurrentElementsValues[0];
 						if (
-							(currentEl.parent === ElementStore.Elements &&
-								currentEl?.type === "table") ||
-							(currentEl.type === "text" && currentEl.isDynamic)
+							currentEl?.type === "table" ||
+							(currentEl.type === "text" &&
+								(currentEl.isDynamic || currentEl.parseJinja))
 						) {
 							return true;
 						}
@@ -459,23 +459,13 @@ export const createPropertiesPanel = () => {
 							fieldtype: "Select",
 							requiredData: [MainStore.getCurrentElementsValues[0]],
 							reactiveObject: () => MainStore.getCurrentElementsValues[0],
-							propertyName: "isDynamicHeight",
+							propertyName: "heightType",
 							isStyle: false,
 							options: () => [
 								{ label: "Auto", value: "auto" },
+								{ label: "Auto ( min-height)", value: "auto-min-height" },
 								{ label: "Fixed", value: "fixed" },
 							],
-							formatValue: (object, property, isStyle) => {
-								if (!object) return;
-								return object[property] ? "auto" : "fixed";
-							},
-							onChangeCallback: (value = null) => {
-								if (value && MainStore.getCurrentElementsValues[0]) {
-									MainStore.getCurrentElementsValues[0]["isDynamicHeight"] =
-										value === "auto";
-									MainStore.frappeControls[name].$input.blur();
-								}
-							},
 						});
 					},
 					flex: 1,

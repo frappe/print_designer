@@ -87,7 +87,7 @@ def pdf_body_html(print_format, jenv, args, template):
 
 
 def is_older_schema(settings, current_version):
-	format_version = settings.get("schema_version")
+	format_version = settings.get("schema_version", "1.0.0")
 	format_version = format_version.split(".")
 	current_version = current_version.split(".")
 	if int(format_version[0]) < int(current_version[0]):
