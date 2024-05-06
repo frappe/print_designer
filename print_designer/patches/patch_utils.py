@@ -106,17 +106,20 @@ def patch_formats(
 		],
 		as_list=1,
 	)
-	if update_print_json:
-		for pf in print_formats:
-			# print_designer_print_format was introduced in schema version 1.1.0 so running this on older version is not required
-			if not is_older_schema(settings=frappe.json.loads(pf[6] or "{}"), current_version="1.1.0"):
-				print_json = frappe.json.loads(pf[5] or "{}")
-				if print_json.get("header", None):
-					print_json["header"] = patch_elements(print_json["header"], callbacks, types)
-				if print_json.get("body", None):
-					print_json["body"] = patch_elements(print_json["body"], callbacks, types)
-				if print_json.get("footer", None):
-					print_json["footer"] = patch_elements(print_json["footer"], callbacks, types)
+	for pf in print_formats:
+		print_json = pf[5] or "{}"
+		# print_designer_print_format was introduced in schema version 1.1.0 so running this on older version is not required
+		if update_print_json and not is_older_schema(
+			settings=frappe.json.loads(pf[6] or "{}"), current_version="1.1.0"
+		):
+			print_json = frappe.json.loads(print_json)
+			if print_json.get("header", None):
+				print_json["header"] = patch_elements(print_json["header"], callbacks, types)
+			if print_json.get("body", None):
+				print_json["body"] = patch_elements(print_json["body"], callbacks, types)
+			if print_json.get("footer", None):
+				print_json["footer"] = patch_elements(print_json["footer"], callbacks, types)
+			print_json = frappe.json.dumps(print_json)
 
 		updated_doc = frappe.get_doc("Print Format", pf[0]).update(
 			{
@@ -132,7 +135,7 @@ def patch_formats(
 				"print_designer_footer": frappe.json.dumps(
 					patch_elements(frappe.json.loads(pf[4] or "[]"), callbacks, types)
 				),
-				"print_designer_print_format": frappe.json.dumps(print_json),
+				"print_designer_print_format": print_json,
 			}
 		)
 		if save:
