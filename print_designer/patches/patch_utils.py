@@ -109,10 +109,10 @@ def patch_formats(
 	for pf in print_formats:
 		print_json = pf[5] or "{}"
 		# print_designer_print_format was introduced in schema version 1.1.0 so running this on older version is not required
+		pf_doc = frappe.get_doc("Print Format", pf[0])
 		if update_print_json and not is_older_schema(
 			settings=frappe.json.loads(pf[6] or "{}"), current_version="1.1.0"
 		):
-			pf_doc = frappe.get_doc("Print Format", pf[0])
 			print_json = frappe.json.loads(print_json)
 			if print_json.get("header", None):
 				print_json["header"] = patch_elements(print_json["header"], callbacks, types)
