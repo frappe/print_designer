@@ -11,3 +11,4 @@ print_designer.patches.introduce_dynamic_height
 print_designer.patches.remove_unused_rectangle_gs_properties
 execute:from print_designer.patches.create_custom_fields import custom_field_patch; custom_field_patch()
 print_designer.patches.change_dynamic_height_variable
+print_designer.patches.introduce_z_index
