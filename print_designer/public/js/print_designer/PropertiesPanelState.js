@@ -470,6 +470,30 @@ export const createPropertiesPanel = () => {
 					},
 					flex: 1,
 				},
+				{
+					label: "Z Index",
+					name: "zIndex",
+					isLabelled: true,
+					labelDirection: "column",
+					condtional: () => MainStore.getCurrentElementsValues[0],
+					frappeControl: (ref, name) => {
+						const MainStore = useMainStore();
+						makeFeild({
+							name,
+							ref,
+							fieldtype: "Int",
+							requiredData: [MainStore.getCurrentElementsValues[0]],
+							reactiveObject: () => MainStore.getCurrentElementsValues[0],
+							propertyName: "zIndex",
+							isStyle: true,
+							formatValue: (object, property, isStyle) => {
+								if (!object) return;
+								return parseInt(object[property]) || 0;
+							},
+						});
+					},
+					flex: 1,
+				},
 			],
 		],
 	});
