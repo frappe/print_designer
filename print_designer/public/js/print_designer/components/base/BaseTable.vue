@@ -5,7 +5,10 @@
 		@mouseup="handleMouseUp($event, width)"
 		@mousemove="mouseMoveHandler($event, width)"
 		@mouseleave="mouseLeaveHandler(width)"
-		:style="[postionalStyles(startX, startY, width, height)]"
+		:style="[
+			postionalStyles(startX, startY, width, height),
+			style.zIndex && { zIndex: style.zIndex },
+		]"
 		:class="[
 			'table-container',
 			classes,

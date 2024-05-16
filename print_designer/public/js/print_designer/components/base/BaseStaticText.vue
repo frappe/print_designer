@@ -15,6 +15,7 @@
 					startX +
 					'px',
 			},
+			style.zIndex && { zIndex: style.zIndex },
 		]"
 		:class="MainStore.getCurrentElementsId.includes(id) ? 'active-elements' : 'text-hover'"
 		:ref="setElements(object, index)"
