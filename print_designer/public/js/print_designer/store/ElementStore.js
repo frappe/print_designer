@@ -54,9 +54,9 @@ export const useElementStore = defineStore("ElementStore", {
 				footer: [],
 			};
 			// {childrens: []} is passed because we update parent in createRectangle function.
-			let headerElements = { childrens: [] };
-			let bodyElements = { childrens: [] };
-			let footerElements = { childrens: [] };
+			let headerElements = [];
+			let bodyElements = [];
+			let footerElements = [];
 			// WARNING: 2 lines below are for debugging purpose only.
 			// this.Elements.length = 0;
 			// headerElements = bodyElements = footerElements = this.Elements;

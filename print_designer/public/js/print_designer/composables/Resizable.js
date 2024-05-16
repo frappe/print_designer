@@ -48,14 +48,14 @@ export function useResizable({
 				if (element.parent == e.target.piniaElementRef.parent) return;
 				if (
 					!e.dropzone &&
-					e.target.piniaElementRef.parent !== ElementStore.Elements &&
+					!Array.isArray(e.target.piniaElementRef.parent) &&
 					!MainStore.lastCloned
 				) {
 					let splicedElement;
 					let currentRect = e.target.getBoundingClientRect();
 					let canvasRect = MainStore.mainContainer.getBoundingClientRect();
 					let currentParent = e.target.piniaElementRef.parent;
-					if (currentParent == ElementStore.Elements) {
+					if (Array.isArray(currentParent)) {
 						splicedElement = currentParent.splice(
 							e.target.piniaElementRef.index,
 							1

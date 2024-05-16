@@ -128,7 +128,7 @@ export function useElement({ draggable = true, resizable = true }) {
 			},
 			dragStartListener: (e) => {
 				let parentRect;
-				if (element.parent == ElementStore.Elements) {
+				if (Array.isArray(element.parent)) {
 					parentRect = MainStore.mainContainer.getBoundingClientRect();
 				} else {
 					parentRect = element.parent.DOMRef.getBoundingClientRect();
@@ -187,7 +187,7 @@ export function useElement({ draggable = true, resizable = true }) {
 			restrict: MainStore.mainContainer,
 			resizeStartListener: (e) => {
 				let parentRect;
-				if (element.parent == ElementStore.Elements) {
+				if (Array.isArray(element.parent)) {
 					parentRect = MainStore.mainContainer.getBoundingClientRect();
 				} else {
 					parentRect = element.parent.DOMRef.getBoundingClientRect();

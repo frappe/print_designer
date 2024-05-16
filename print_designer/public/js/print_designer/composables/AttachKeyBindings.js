@@ -9,7 +9,7 @@ export function useAttachKeyBindings() {
 	function updateStartXY(axis, value) {
 		MainStore.getCurrentElementsValues.forEach((element) => {
 			let restrict;
-			if (element.parent === ElementStore.Elements) {
+			if (Array.isArray(element.parent)) {
 				restrict = MainStore.mainContainer.getBoundingClientRect();
 			} else {
 				restrict = element.parent.DOMRef.getBoundingClientRect();
@@ -33,7 +33,7 @@ export function useAttachKeyBindings() {
 	function updateWidthHeight(key, value) {
 		MainStore.getCurrentElementsValues.forEach((element) => {
 			let restrict;
-			if (element.parent === ElementStore.Elements) {
+			if (Array.isArray(element.parent)) {
 				restrict = MainStore.mainContainer.getBoundingClientRect();
 			} else {
 				restrict = element.parent.DOMRef.getBoundingClientRect();

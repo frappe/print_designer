@@ -203,13 +203,13 @@ const childrensCleanUp = (parentElement, element, isClone, isMainElement) => {
 		}
 	}
 	if (isMainElement && isClone) {
-		if (parentElement.parent === ElementStore.Elements) {
+		if (Array.isArray(parentElement.parent)) {
 			parentElement.parent.push(element);
 		} else {
 			parentElement.parent.childrens.push(element);
 		}
 	} else if (!isMainElement) {
-		if (parentElement === ElementStore.Elements) {
+		if (Array.isArray(parentElement)) {
 			parentElement.push(element);
 		} else {
 			parentElement.childrens.push(element);
@@ -319,14 +319,14 @@ export const deleteCurrentElements = () => {
 	if (MainStore.getCurrentElementsValues.length === 1) {
 		let curobj = MainStore.getCurrentElementsValues[0];
 		deleteDynamicReferance(curobj);
-		if (curobj.parent == ElementStore.Elements) {
+		if (Array.isArray(curobj.parent)) {
 			deleteSnapObjects(curobj.parent.splice(curobj.index, 1)[0], true);
 		} else {
 			deleteSnapObjects(curobj.parent.childrens.splice(curobj.index, 1)[0], true);
 		}
 	} else {
 		MainStore.getCurrentElementsValues.forEach((element) => {
-			if (element.parent == ElementStore.Elements) {
+			if (Array.isArray(element.parent)) {
 				deleteSnapObjects(
 					element.parent.splice(element.parent.indexOf(element), 1)[0],
 					true
@@ -453,7 +453,7 @@ export const handleAlignIconClick = (value) => {
 	let parent;
 	MainStore.getCurrentElementsValues.forEach((element) => {
 		if (parent == null) {
-			if (element.parent == ElementStore.Elements) {
+			if (Array.isArray(element.parent)) {
 				parent = false;
 				return;
 			}
@@ -812,9 +812,9 @@ export const checkUpdateElementOverlapping = (element = null) => {
 	const MainStore = useMainStore();
 	const ElementStore = useElementStore();
 	nextTick(() => {
-		if (element && element.parent != ElementStore.Elements) return;
+		if (element && !Array.isArray(element.parent)) return;
 		isOlderSchema = MainStore.isOlderSchema("1.1.0");
-		ElementStore.Elements.forEach((el) => {
+		element.parent.forEach((el) => {
 			const isElementOverlapping = ElementStore.isElementOverlapping(el);
 			if (el.isElementOverlapping != isElementOverlapping) {
 				el.isElementOverlapping = isElementOverlapping;

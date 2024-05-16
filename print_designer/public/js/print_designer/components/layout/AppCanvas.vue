@@ -267,7 +267,7 @@ const handleMouseUp = (e) => {
 	}
 	if (MainStore.isDrawing && MainStore.lastCreatedElement?.type == "rectangle") {
 		const recursiveParentLoop = (currentElement, offset = { startX: 0, startY: 0 }) => {
-			if (currentElement.parent != ElementStore.Elements) {
+			if (!Array.isArray(currentElement.parent)) {
 				let currentDOM = MainStore.lastCreatedElement.DOMRef.getBoundingClientRect();
 				let parentDOM = currentElement.parent.DOMRef.getBoundingClientRect();
 				if (
@@ -296,7 +296,7 @@ const handleMouseUp = (e) => {
 					MainStore.currentElements[tempElement.id] = tempElement;
 					return;
 				}
-			} else if (MainStore.lastCreatedElement.parent != ElementStore.Elements) {
+			} else if (!Array.isArray(MainStore.lastCreatedElement.parent)) {
 				let tempElement = { ...MainStore.lastCreatedElement.parent.childrens.pop() };
 				tempElement.id = frappe.utils.get_random(10);
 				tempElement.index = null;
@@ -321,7 +321,7 @@ const handleMouseUp = (e) => {
 			right: MainStore.lastCreatedElement.startX + MainStore.lastCreatedElement.width,
 		};
 		let parentElement;
-		if (MainStore.lastCreatedElement.parent == ElementStore.Elements) {
+		if (Array.isArray(MainStore.lastCreatedElement.parent)) {
 			parentElement = MainStore.lastCreatedElement.parent;
 		} else {
 			parentElement = MainStore.lastCreatedElement.parent.childrens;
@@ -342,7 +342,7 @@ const handleMouseUp = (e) => {
 						Rect.bottom > elementRect.bottom
 					) {
 						let splicedElement;
-						if (element.parent == ElementStore.Elements) {
+						if (Array.isArray(element.parent)) {
 							splicedElement = {
 								...element.parent.splice(element.parent.indexOf(element), 1)[0],
 							};
@@ -360,7 +360,7 @@ const handleMouseUp = (e) => {
 							element.startY - MainStore.lastCreatedElement.startY;
 						splicedElement.parent = MainStore.lastCreatedElement;
 						recursiveChildrens({ element: splicedElement, isClone: false });
-						if (splicedElement.parent === ElementStore.Elements) {
+						if (Array.isArray(splicedElement.parent)) {
 							splicedElement.parent.push(splicedElement);
 						} else {
 							splicedElement.parent.childrens.push(splicedElement);

@@ -21,7 +21,7 @@ export function useDropZone({ element }) {
 			let dropRect = event.dropzone.target.getBoundingClientRect();
 			if (currentDROP === currentRef.parent) return;
 			let splicedElement;
-			if (currentRef.parent == ElementStore.Elements) {
+			if (Array.isArray(currentRef.parent)) {
 				splicedElement = currentRef.parent.splice(currentRef.index, 1)[0];
 			} else {
 				splicedElement = currentRef.parent.childrens.splice(currentRef.index, 1)[0];
@@ -31,8 +31,8 @@ export function useDropZone({ element }) {
 			splicedElement.startY = currentRect.top - dropRect.top;
 			splicedElement.parent = currentDROP;
 			recursiveChildrens({ element: splicedElement, isClone: false });
-			if (currentDROP === ElementStore.Elements) {
-				ElementStore.Elements.push(splicedElement);
+			if (Array.isArray(currentDROP)) {
+				currentDROP.push(splicedElement);
 			} else {
 				currentDROP.childrens.push(splicedElement);
 			}

@@ -35,9 +35,7 @@ export const createRectangle = (cordinates, parent = null) => {
 		classes: [],
 	};
 
-	parent !== ElementStore.Elements
-		? parent.childrens.push(newRectangle)
-		: ElementStore.Elements.push(newRectangle);
+	Array.isArray(parent) ? parent.push(newRectangle) : parent.childrens.push(newRectangle);
 	MainStore.lastCreatedElement = newRectangle;
 	return newRectangle;
 };
@@ -76,9 +74,7 @@ export const createImage = (cordinates, parent = null) => {
 		classes: [],
 	};
 
-	parent !== ElementStore.Elements
-		? parent.childrens.push(newImage)
-		: ElementStore.Elements.push(newImage);
+	Array.isArray(parent) ? parent.push(newImage) : parent.childrens.push(newImage);
 	MainStore.lastCreatedElement = newImage;
 	return newImage;
 };
@@ -121,9 +117,7 @@ export const createBarcode = (cordinates, parent = null) => {
 		classes: [],
 	};
 
-	parent !== ElementStore.Elements
-		? parent.childrens.push(newBarcode)
-		: ElementStore.Elements.push(newBarcode);
+	Array.isArray(parent) ? parent.push(newBarcode) : parent.childrens.push(newBarcode);
 	MainStore.lastCreatedElement = newBarcode;
 	return newBarcode;
 };
@@ -170,9 +164,7 @@ export const createTable = (cordinates, parent = null) => {
 		classes: [],
 	};
 
-	parent !== ElementStore.Elements
-		? parent.childrens.push(newTable)
-		: ElementStore.Elements.push(newTable);
+	Array.isArray(parent) ? parent.push(newTable) : parent.childrens.push(newTable);
 	MainStore.lastCreatedElement = newTable;
 	return newTable;
 };
@@ -215,9 +207,7 @@ export const createText = (cordinates, parent = null) => {
 		style: {},
 		classes: [],
 	};
-	parent !== ElementStore.Elements
-		? parent.childrens.push(newStaticText)
-		: ElementStore.Elements.push(newStaticText);
+	Array.isArray(parent) ? parent.push(newStaticText) : parent.childrens.push(newStaticText);
 	MainStore.lastCreatedElement = newStaticText;
 	return newStaticText;
 };
@@ -262,9 +252,7 @@ export const createDynamicText = (cordinates, parent = null) => {
 		heightType: "auto",
 		classes: [],
 	};
-	parent !== ElementStore.Elements
-		? parent.childrens.push(newDynamicText)
-		: ElementStore.Elements.push(newDynamicText);
+	Array.isArray(parent) ? parent.push(newDynamicText) : parent.childrens.push(newDynamicText);
 	MainStore.lastCreatedElement = newDynamicText;
 	return newDynamicText;
 };
