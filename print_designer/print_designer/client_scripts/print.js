@@ -232,7 +232,8 @@ frappe.ui.form.PrintView = class PrintView extends frappe.ui.form.PrintView {
 			super.printit();
 			return;
 		}
-		if (this.get_print_format().print_designer) {
+		let pdState = this.isPDRawPrintEnable(this.get_print_format())
+		if (this.get_print_format().print_designer && !pdState) {
 			if (!this.pdfDoc) return;
 			this.pdfDoc.getData().then((arrBuff) => {
 				let file = new Blob([arrBuff], { type: "application/pdf" });
@@ -276,7 +277,8 @@ frappe.ui.form.PrintView = class PrintView extends frappe.ui.form.PrintView {
 	}
 	preview() {
 		let print_format = this.get_print_format();
-		if (print_format.print_designer && print_format.print_designer_body) {
+		let rawprintPD = this.isPDRawPrintEnable(print_format)
+		if (print_format.print_designer && print_format.print_designer_body && !rawprintPD) {
 			this.inner_msg.hide();
 			this.print_wrapper.find(".print-preview-wrapper").hide();
 			this.print_wrapper.find(".preview-beta-wrapper").hide();

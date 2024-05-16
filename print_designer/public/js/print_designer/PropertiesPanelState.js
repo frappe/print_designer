@@ -306,6 +306,78 @@ export const createPropertiesPanel = () => {
 		],
 	});
 	MainStore.propertiesPanel.push({
+		title: "Raw Printing",
+		sectionCondtional: () =>
+            true,
+        fields: [
+			{
+				label: "Enable Raw Printing",
+				name: "isRawPrintEnable",
+				isLabelled: true,
+				condtional: () => !MainStore.getCurrentElementsId.length,
+				frappeControl: (ref, name) => {
+					const MainStore = useMainStore();
+					makeFeild({
+						name: name,
+						ref: ref,
+						fieldtype: "Select",
+						requiredData: [MainStore],
+						options: () => [
+							{ label: "Yes", value: true },
+							{ label: "No", value: false },
+						],
+						onChangeCallback: (value = null) => {
+							MainStore.frappeControls[name].$input.blur();
+						},
+						reactiveObject: () => MainStore.page,
+						propertyName: "isRawPrintEnable",
+					});
+				},
+			},
+			{
+				label: "Raw Cmd Before Element",
+				name: "rawCmdBeforeEle",
+				isLabelled: true,
+				condtional: () => MainStore.isRawPrintAllowed && MainStore.getCurrentElementsId.length == 1,
+				frappeControl: (ref, name) => {
+					const MainStore = useMainStore();
+					makeFeild({
+						name: name,
+						ref: ref,
+						fieldtype: "Data",
+						requiredData: [MainStore],
+						
+						onChangeCallback: (value = null) => {
+							MainStore.frappeControls[name].$input.blur();
+						},
+						reactiveObject: () => MainStore.page,
+						propertyName: "rawCmdBeforeEle",
+					});
+				},
+			},
+			{
+				label: "Raw Cmd After Element",
+				name: "rawCmdAfterEle",
+				isLabelled: true,
+				condtional: () => MainStore.isRawPrintAllowed && MainStore.getCurrentElementsId.length == 1,
+				frappeControl: (ref, name) => {
+					const MainStore = useMainStore();
+					makeFeild({
+						name: name,
+						ref: ref,
+						fieldtype: "Data",
+						requiredData: [MainStore],
+						onChangeCallback: (value = null) => {
+							MainStore.frappeControls[name].$input.blur();
+						},
+						reactiveObject: () => MainStore.page,
+						propertyName: "rawCmdAfterEle",
+					});
+				},
+			},
+		],
+	});
+	MainStore.propertiesPanel.push({
 		title: "Page Settings",
 		sectionCondtional: () =>
 			!MainStore.getCurrentElementsId.length && MainStore.activeControl === "mouse-pointer",
@@ -1101,7 +1173,7 @@ export const createPropertiesPanel = () => {
 				}),
 				styleInputwithIcon("lineHeight", 23, {
 					padding: 5,
-					isRaw: true,
+					isRaw: false,
 					isFontStyle: true,
 				}),
 			],

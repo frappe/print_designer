@@ -146,6 +146,7 @@ export const useMainStore = defineStore("MainStore", {
 				id: "barcode",
 				cursor: "url('/assets/print_designer/images/add-barcode.svg') 6 6, crosshair",
 			},
+		
 		},
 		propertiesPanel: [],
 	}),
@@ -189,6 +190,10 @@ export const useMainStore = defineStore("MainStore", {
 		},
 		getCurrentElementsId() {
 			return Object.keys(this.currentElements);
+		},
+		isRawPrintAllowed(){
+			let printSettings = frappe.model.get_doc(":Print Settings", "Print Settings")
+			return (printSettings.enable_raw_printing == '1')? true:false
 		},
 		getLinkMetaFields: (state) => {
 			return (search_string = null, parentField) => {

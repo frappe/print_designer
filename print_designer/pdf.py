@@ -75,8 +75,27 @@ def pdf_body_html(print_format, jenv, args, template):
 		)
 		try:
 			template = jenv.from_string(template_source)
-			return template.render(args, filters={"len": len})
+			elementList = json.loads(print_format.print_designer_print_format)
+			htmlRawCmdList = []
+			page = json.loads(print_format.print_designer_settings)['page']
+			raw_cmd_before_ele = page.get('rawCmdBeforeEle', " ")
+			raw_cmd_after_ele = page.get('rawCmdAfterEle', " ")
+			htmlBodyTemplate = jenv.loader.get_source(jenv, 'print_designer/page/print_designer/jinja/render_header.html')[0]
+			htmlBodyTemplate = jenv.from_string(htmlBodyTemplate)
+			args.update({"rawBeforeElement": raw_cmd_before_ele, "rawAfterElement": raw_cmd_after_ele})
+			htmlBodyTemplate = htmlBodyTemplate.render(args, filters={"len": len})
+			htmlStr = ""
+			htmlBodyTemplate = htmlBodyTemplate.split('<!-- ElementBreakPoint -->')
 
+			for index, set_type in enumerate(elementList):
+					htmlRawCmdList.append({'type':'html','data':htmlBodyTemplate[index]})
+					for element in elementList[set_type]:
+						args.update({"element": [element]})
+						htmlRawCmdList.append({'type':'raw_cmd','data':raw_cmd_before_ele})
+						htmlRawCmdList.append({'type':'html','data':template.render(args, filters={"len": len})})
+						htmlRawCmdList.append({'type':'raw_cmd','data':raw_cmd_after_ele})
+			return  htmlRawCmdList
+		
 		except Exception as e:
 			error = log_error(title=e, reference_doctype="Print Format", reference_name=print_format.name)
 			if frappe.conf.developer_mode:

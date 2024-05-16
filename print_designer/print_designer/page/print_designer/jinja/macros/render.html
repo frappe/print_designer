@@ -1,9 +1,18 @@
 {% from 'print_designer/page/print_designer/jinja/macros/relative_containers.html' import relative_containers with context %}
 
-{% macro render(elements, send_to_jinja) -%}
+{% macro render(elements, send_to_jinja, rawEleBefore, rawEleAfter) -%}
     {% if element is iterable and (element is not string and element is not mapping) %}
+    
             {% for object in elements %}
+                {% if rawEleBefore %}
+                    <p style="text-align: center;"> ---------------------------------------------------------------------- </p>
+                {% endif %}
                 {{ relative_containers(object, send_to_jinja) }}
+                {% if rawEleAfter %}
+                    <p style="text-align: center;"> ---------------------------------------------------------------------- </p>
+                {% endif %}
             {% endfor %}
+    
     {% endif %}
+
 {%- endmacro %}
