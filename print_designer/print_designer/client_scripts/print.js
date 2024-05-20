@@ -265,6 +265,37 @@ frappe.ui.form.PrintView = class PrintView extends frappe.ui.form.PrintView {
 			});
 			return;
 		}
+		if (me.is_raw_printing()) {
+				
+				me.get_raw_commands(function (out) {
+					frappe.ui.form
+						.qz_connect()
+						.then(function () {
+							let printer_map = me.get_mapped_printer()[0];
+
+							let data = ['^XA\n'];
+							let rawCmdArray = out.raw_commands
+							for(let rawElement of rawCmdArray){
+								if (rawElement.startsWith("^")) {
+									data.push(rawElement)
+									continue
+								} else {
+									let htmlObj = { type: 'raw', format: 'html', flavor: 'plain', data: rawElement, options: {language: 'ESCPOS'} }
+									data.push(htmlObj)
+									continue
+									
+								}
+							}
+							data.push('^XZ\n')
+							let config = qz.configs.create(printer_map.printer);
+							return qz.print(config, data);
+						})
+						.then(frappe.ui.form.qz_success)
+						.catch((err) => {
+							frappe.ui.form.qz_fail(err);
+						});
+				});
+			} 
 		super.printit();
 	}
 	show(frm) {
@@ -274,6 +305,47 @@ frappe.ui.form.PrintView = class PrintView extends frappe.ui.form.PrintView {
 					${__("Try the new Print Designer")}
 				</a>
 			`);
+	}
+	get_print_html(callback) {
+		let print_format = this.get_print_format();
+		let isPdRawPrint =  this.isPDRawPrintEnable(print_format)
+
+		if (print_format.raw_printing) {
+			callback({
+				html: this.get_no_preview_html(),
+			});
+			return;
+		}
+		if (this._req) {
+			this._req.abort();
+		}
+		this._req = frappe.call({
+			method: "frappe.www.printview.get_html_and_style",
+			args: {
+				doc: this.frm.doc,
+				print_format: this.selected_format(),
+				no_letterhead: !this.with_letterhead() ? 1 : 0,
+				letterhead: this.get_letterhead(),
+				settings: this.additional_settings,
+				_lang: this.lang_code,
+			},
+			callback: function (r) {
+				if (!r.exc) {
+					//Commenting this Code as of now....
+					// let breakTag = '<p>-------------------------------------</p>'
+					// let previewHtml = ""
+					// for(let element of r.message['html']){
+					// 	if( element.type == "html"){
+					// 		previewHtml += element.data
+					// 	} else{
+					// 		previewHtml += breakTag
+					// 	}
+					// }
+					// r.message['html'] = previewHtml
+					callback(r.message);
+				}
+			},
+		});
 	}
 	preview() {
 		let print_format = this.get_print_format();
