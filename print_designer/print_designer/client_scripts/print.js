@@ -331,17 +331,17 @@ frappe.ui.form.PrintView = class PrintView extends frappe.ui.form.PrintView {
 			},
 			callback: function (r) {
 				if (!r.exc) {
-					//Commenting this Code as of now....
-					// let breakTag = '<p>-------------------------------------</p>'
-					// let previewHtml = ""
-					// for(let element of r.message['html']){
-					// 	if( element.type == "html"){
-					// 		previewHtml += element.data
-					// 	} else{
-					// 		previewHtml += breakTag
-					// 	}
-					// }
-					// r.message['html'] = previewHtml
+					// Commenting this Code as of now....
+					let breakTag = '<p style="text-align:center;">-------------------------------------</p>'
+					let previewHtml = ""
+					for(let element of r.message['html']){
+						if( element.type == "html"){
+							previewHtml += element.data
+						} else{
+							previewHtml += breakTag
+						}
+					}
+					r.message['html'] = previewHtml
 					callback(r.message);
 				}
 			},

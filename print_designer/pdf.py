@@ -142,5 +142,4 @@ def raw_pd_render_template(print_format, jenv, args):
 			htmlBodyTemplateStr = template.render(args, filters={"len": len})
 			htmlRawCmdList.append({'type':'html','data':htmlBodyTemplateStr})
 			htmlRawCmdList.append({'type':'raw_cmd','data':rawCmdAfterEle})
-			htmlStr += htmlBodyTemplateStr 		# To in show print preview
-	return  htmlStr
+	return  htmlRawCmdList

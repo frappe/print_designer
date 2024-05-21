@@ -346,11 +346,7 @@ export const createPropertiesPanel = () => {
 						ref: ref,
 						fieldtype: "Data",
 						requiredData: [MainStore],
-						
-						onChangeCallback: (value = null) => {
-							MainStore.frappeControls[name].$input.blur();
-						},
-						reactiveObject: () => MainStore.page,
+						reactiveObject: () => MainStore.getCurrentElementsValues[0],
 						propertyName: "rawCmdBeforeEle",
 					});
 				},
@@ -365,12 +361,20 @@ export const createPropertiesPanel = () => {
 					makeFeild({
 						name: name,
 						ref: ref,
-						fieldtype: "Data",
-						requiredData: [MainStore],
+						fieldtype: "Select",
+						requiredData: [MainStore.getCurrentElementsValues[0]],
+						options: () => [
+							{ label: "Paper Cut", value: "paper_cut" },
+							{ label: "No", value: "No" },
+						],
 						onChangeCallback: (value = null) => {
-							MainStore.frappeControls[name].$input.blur();
+							if (value && MainStore.getCurrentElementsValues[0]) {
+								MainStore.getCurrentElementsValues[0]["rawCmdAfterEle"] =
+									value === "Yes";
+								MainStore.frappeControls[name].$input.blur();
+							}
 						},
-						reactiveObject: () => MainStore.page,
+						reactiveObject: () => MainStore.getCurrentElementsValues[0],
 						propertyName: "rawCmdAfterEle",
 					});
 				},
@@ -864,52 +868,7 @@ export const createPropertiesPanel = () => {
 			[colorStyleFrappeControl("Background", "rectangleBackgroundColor", "backgroundColor")],
 		],
 	});
-	MainStore.propertiesPanel.push({
-		title: "Enable Jinja Parsing",
-		sectionCondtional: () =>
-			MainStore.getCurrentElementsId.length === 1 &&
-			MainStore.getCurrentElementsValues[0].type === "text" &&
-			!MainStore.getCurrentElementsValues[0].isDynamic,
-		fields: [
-			[
-				{
-					label: "Render Jinja",
-					name: "parseJinja",
-					labelDirection: "column",
-					condtional: () =>
-						MainStore.getCurrentElementsId.length === 1 &&
-						MainStore.getCurrentElementsValues[0].type === "text" &&
-						!MainStore.getCurrentElementsValues[0].isDynamic,
-					frappeControl: (ref, name) => {
-						const MainStore = useMainStore();
-						makeFeild({
-							name: name,
-							ref: ref,
-							fieldtype: "Select",
-							requiredData: [MainStore.getCurrentElementsValues[0]],
-							options: () => [
-								{ label: "Yes", value: "Yes" },
-								{ label: "No", value: "No" },
-							],
-							formatValue: (object, property, isStyle) => {
-								if (!object) return;
-								return object[property] ? "Yes" : "No";
-							},
-							onChangeCallback: (value = null) => {
-								if (value && MainStore.getCurrentElementsValues[0]) {
-									MainStore.getCurrentElementsValues[0]["parseJinja"] =
-										value === "Yes";
-									MainStore.frappeControls[name].$input.blur();
-								}
-							},
-							reactiveObject: () => MainStore.getCurrentElementsValues[0],
-							propertyName: "parseJinja",
-						});
-					},
-				},
-			],
-		],
-	});
+	
 	MainStore.propertiesPanel.push({
 		title: "Text Tool",
 		sectionCondtional: () => MainStore.activeControl === "text",

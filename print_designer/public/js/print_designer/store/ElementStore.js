@@ -448,15 +448,19 @@ export const useElementStore = defineStore("ElementStore", {
 			const elements = this.Elements;
 			const MainStore = useMainStore();
 
-			const throwOverlappingError = (type) => {
+			const throwOverlappingError = (type, changelayout) => {
 				let message = __(`Please resolve overlapping elements `);
 				const messageType = Object.freeze({
 					header: "<b>" + __("in header") + "</b>",
 					footer: "<b>" + __("in footer") + "</b>",
 					auto: __("in table, auto layout failed"),
+					
 				});
-				message += messageType[type];
-				MainStore.mode = "pdfSetup";
+				changelayout = (changelayout == undefined)? true:false
+				if (changelayout) {
+					MainStore.mode = "pdfSetup";
+					message += messageType[type];
+				}
 				frappe.show_alert(
 					{
 						message: message,
@@ -468,7 +472,9 @@ export const useElementStore = defineStore("ElementStore", {
 			};
 
 			const tableElement = this.Elements.filter((el) => el.type == "table");
-
+			if(this.isParentElementOverlapping(elements)){
+				throwOverlappingError("element", false);
+			}
 			if (tableElement.length == 1 && MainStore.isHeaderFooterAuto) {
 				if (!this.autoCalculateHeaderFooter(tableElement[0])) {
 					throwOverlappingError("auto");
@@ -496,6 +502,43 @@ export const useElementStore = defineStore("ElementStore", {
 					}
 				});
 			}
+		},
+		isParentElementOverlapping(elements){
+			console.log("Overlapping....")
+			for(let index in elements){
+				let nextIndex = index + 1
+				let currEle = elements[index]
+				let firstEleObj = {}
+				let otherEleObj = {}
+				
+				for (let otherEleIndex in elements){
+					if( otherEleIndex <= nextIndex) { continue; }
+					let otherEle = elements[otherEleIndex];
+					if (currEle.startY > otherEle.startY){
+						firstEleObj = {
+							'startY': otherEle.startY,
+							'endY': otherEle.startY + otherEle.height,
+						}
+					
+						otherEleObj = {
+							'startY': currEle.startY,
+						}
+					} else {
+						firstEleObj = {
+							'startY': currEle.startY,
+							'endY': currEle.startY + currEle.height,
+						}
+					
+						otherEleObj = {
+							'startY': otherEle.startY,
+						}
+					}
+					if ( otherEleObj.startY >= firstEleObj.startY && otherEleObj.startY <= firstEleObj.endY ){
+						return true
+					}	
+				}
+			}
+			return false
 		},
 		autoCalculateHeaderFooter(tableEl) {
 			const MainStore = useMainStore();
