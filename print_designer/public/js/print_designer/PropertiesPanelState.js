@@ -308,32 +308,8 @@ export const createPropertiesPanel = () => {
 	MainStore.propertiesPanel.push({
 		title: "Raw Printing",
 		sectionCondtional: () =>
-            true,
+            MainStore.isRawPrintAllowed &&  MainStore.getCurrentElementsId.length == 1,
         fields: [
-			{
-				label: "Enable Raw Printing",
-				name: "isRawPrintEnable",
-				isLabelled: true,
-				condtional: () => !MainStore.getCurrentElementsId.length,
-				frappeControl: (ref, name) => {
-					const MainStore = useMainStore();
-					makeFeild({
-						name: name,
-						ref: ref,
-						fieldtype: "Select",
-						requiredData: [MainStore],
-						options: () => [
-							{ label: "Yes", value: true },
-							{ label: "No", value: false },
-						],
-						onChangeCallback: (value = null) => {
-							MainStore.frappeControls[name].$input.blur();
-						},
-						reactiveObject: () => MainStore.page,
-						propertyName: "isRawPrintEnable",
-					});
-				},
-			},
 			{
 				label: "Raw Cmd Before Element",
 				name: "rawCmdBeforeEle",
@@ -370,7 +346,7 @@ export const createPropertiesPanel = () => {
 						onChangeCallback: (value = null) => {
 							if (value && MainStore.getCurrentElementsValues[0]) {
 								MainStore.getCurrentElementsValues[0]["rawCmdAfterEle"] =
-									value === "Yes";
+									value === "paper_cut";
 								MainStore.frappeControls[name].$input.blur();
 							}
 						},
