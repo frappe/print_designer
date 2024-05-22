@@ -58,5 +58,15 @@ CUSTOM_FIELDS = {
 			"default": "print_designer",
 			"insert_after": "standard",
 		},
+	],
+	"Print Settings": [
+		{
+			"default": "0",
+			"fieldname": "enable_raw_cmd_print_designer",
+			"fieldtype": "Check",
+			"hidden": 0,
+			"label": "Enable Raw CMD for Print Designer",
+            "insert_after": "enable_raw_printing",
+		},
 	]
 }

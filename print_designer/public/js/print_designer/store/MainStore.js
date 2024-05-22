@@ -192,10 +192,8 @@ export const useMainStore = defineStore("MainStore", {
 			return Object.keys(this.currentElements);
 		},
 		isRawPrintAllowed(){
-			return frappe.db.get_single_value("Print Settings", "enable_raw_printing").then((response)=>{ 
-				 response
-			})
-			 
+			let printSettings = frappe.model.get_doc(":Print Settings", "Print Settings")
+			return (printSettings.enable_raw_cmd_print_designer == '1')? true:false
 		},
 		getLinkMetaFields: (state) => {
 			return (search_string = null, parentField) => {

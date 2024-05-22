@@ -308,13 +308,13 @@ export const createPropertiesPanel = () => {
 	MainStore.propertiesPanel.push({
 		title: "Raw Printing",
 		sectionCondtional: () =>
-            MainStore.isRawPrintAllowed &&  MainStore.getCurrentElementsId.length == 1,
+            MainStore.isRawPrintAllowed &&  MainStore.getCurrentElementsId.length == 1 && !MainStore.getCurrentElementsValues[0].isElementOverlapping,
         fields: [
 			{
 				label: "Raw Cmd Before Element",
 				name: "rawCmdBeforeEle",
 				isLabelled: true,
-				condtional: () => MainStore.isRawPrintAllowed && MainStore.getCurrentElementsId.length == 1,
+				condtional: () => MainStore.isRawPrintAllowed && MainStore.getCurrentElementsId.length == 1 && !MainStore.getCurrentElementsValues[0].isElementOverlapping,
 				frappeControl: (ref, name) => {
 					const MainStore = useMainStore();
 					makeFeild({
@@ -331,25 +331,14 @@ export const createPropertiesPanel = () => {
 				label: "Raw Cmd After Element",
 				name: "rawCmdAfterEle",
 				isLabelled: true,
-				condtional: () => MainStore.isRawPrintAllowed && MainStore.getCurrentElementsId.length == 1,
+				condtional: () => MainStore.isRawPrintAllowed && MainStore.getCurrentElementsId.length == 1 && !MainStore.getCurrentElementsValues[0].isElementOverlapping,
 				frappeControl: (ref, name) => {
 					const MainStore = useMainStore();
 					makeFeild({
 						name: name,
 						ref: ref,
-						fieldtype: "Select",
+						fieldtype: "Data",
 						requiredData: [MainStore.getCurrentElementsValues[0]],
-						options: () => [
-							{ label: "Paper Cut", value: "paper_cut" },
-							{ label: "No", value: "No" },
-						],
-						onChangeCallback: (value = null) => {
-							if (value && MainStore.getCurrentElementsValues[0]) {
-								MainStore.getCurrentElementsValues[0]["rawCmdAfterEle"] =
-									value === "paper_cut";
-								MainStore.frappeControls[name].$input.blur();
-							}
-						},
 						reactiveObject: () => MainStore.getCurrentElementsValues[0],
 						propertyName: "rawCmdAfterEle",
 					});
