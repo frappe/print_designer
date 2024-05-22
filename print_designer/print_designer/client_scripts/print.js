@@ -276,7 +276,7 @@ frappe.ui.form.PrintView = class PrintView extends frappe.ui.form.PrintView {
 							let data = ['^XA\n'];
 							let rawCmdArray = out.raw_commands
 							for(let rawElement of rawCmdArray){
-								if (rawElement.startsWith("^")) {
+								if (rawElement.type == "raw_cmd") {
 									data.push(rawElement)
 									continue
 								} else {
