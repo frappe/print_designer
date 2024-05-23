@@ -158,9 +158,9 @@ pd_standard_format_folder = "default_templates"
 # Overriding Methods
 # ------------------------------
 #
-# override_whitelisted_methods = {
-# 	"frappe.desk.doctype.event.event.get_events": "print_designer.event.get_events"
-# }
+override_whitelisted_methods = {
+	"frappe.www.printview.get_rendered_raw_commands": "print_designer.pdf.get_rendered_raw_commands"
+}
 #
 # each overriding function accepts a `data` argument;
 # generated from the base implementation of the doctype dashboard,

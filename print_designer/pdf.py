@@ -3,10 +3,12 @@ import html
 import json
 
 import frappe
+from frappe import _
 from frappe.monitor import add_data_to_monitor
 from frappe.utils.error import log_error
 from frappe.utils.jinja_globals import is_rtl
 from frappe.utils.pdf import pdf_body_html as fw_pdf_body_html
+from frappe.www.printview import get_print_format_doc, get_rendered_template
 
 
 def pdf_header_footer_html(soup, head, content, styles, html_id, css):
@@ -74,10 +76,16 @@ def pdf_body_html(print_format, jenv, args, template):
 			"<!-- user_generated_jinja_code -->", args["settings"].get("userProvidedJinja", "")
 		)
 		try:
-			if settings.get('page') is not None and settings.get('page').get('isRawPrintEnable') is not None:
-				if settings.get('page').get('isRawPrintEnable') == 'true':
-					return raw_pd_render_template(print_format, jenv, args)
+			# This is for Each Element....
+			# if settings.get('page') is not None and settings.get('page').get('isRawPrintEnable') is not None:
+			# 	if settings.get('page').get('isRawPrintEnable') == 'true':
+			# 		return raw_pd_render_template(print_format, jenv, args)
+			# fetch Based on PSettings 
+			raw_cmd = frappe.db.get_single_value("Print Settings", "enable_raw_cmd_print_designer")
+			if raw_cmd:
+				return raw_pd_render_template(print_format, jenv, args)
 
+			# Standarad Code
 			template = jenv.from_string(template_source)
 			return template.render(args, filters={"len": len})
 			
@@ -132,14 +140,54 @@ def raw_pd_render_template(print_format, jenv, args):
 			)[0]
 	template = jenv.from_string(template_source)
 	settings = json.loads(print_format.print_designer_settings)
-	rawCmdBeforeEle = settings.get('page').get('rawCmdBeforeEle', ' ')
-	rawCmdAfterEle = settings.get('page').get('rawCmdAfterEle', ' ')
 
 	for index, set_type in enumerate(elementList):
 		for element in elementList[set_type]:
+			rawCmdBeforeEle = element.get('childrens')[0].get('rawCmdBeforeEle', ' ')
+			rawCmdAfterEle = element.get('childrens')[0].get('rawCmdAfterEle', ' ')
+
 			args.update({"element": [element]})
 			htmlRawCmdList.append({'type':'raw_cmd','data':rawCmdBeforeEle})
 			htmlBodyTemplateStr = template.render(args, filters={"len": len})
 			htmlRawCmdList.append({'type':'html','data':htmlBodyTemplateStr})
 			htmlRawCmdList.append({'type':'raw_cmd','data':rawCmdAfterEle})
 	return  htmlRawCmdList
+
+
+@frappe.whitelist()
+def get_rendered_raw_commands(doc: str, name: str | None = None, print_format: str | None = None):
+	"""Returns Rendered Raw Commands of print format, used to send directly to printer"""
+	
+	if isinstance(name, str):
+		document = frappe.get_doc(doc, name)
+	else:
+		document = frappe.get_doc(json.loads(doc))
+
+	document.check_permission()
+
+	print_format = get_print_format_doc(print_format, meta=document.meta)
+
+	if not print_format or (print_format and not print_format.raw_printing):
+		# This code is for Checking each PF
+		# pdSettings = print_format.get('print_designer_settings')
+		# if pdSettings is not None:
+		# 	pdSettings = json.loads(pdSettings)
+		# 	if pdSettings.get('page').get('isRawPrintEnable') is not None:
+		# 		if pdSettings.get('page').get('isRawPrintEnable') == 'true':
+		# 			return {
+		# 				"raw_commands": get_rendered_template(doc=document, print_format=print_format, meta=document.meta)
+		# 			}
+
+		# Getting value from PSettings
+		raw_cmd = frappe.db.get_single_value("Print Settings", "enable_raw_cmd_print_designer")
+		if raw_cmd:
+			return {
+				"raw_commands": get_rendered_template(doc=document, print_format=print_format, meta=document.meta)
+			}
+		frappe.throw(
+			_("{0} This message is Different.").format(print_format), frappe.TemplateNotFoundError
+		)
+
+	return {
+		"raw_commands": get_rendered_template(doc=document, print_format=print_format, meta=document.meta)
+	}

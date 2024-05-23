@@ -265,28 +265,26 @@ frappe.ui.form.PrintView = class PrintView extends frappe.ui.form.PrintView {
 			});
 			return;
 		}
-		if (me.is_raw_printing()) {
-				
+		if (me.is_raw_printing() || pdState) {
+			(me.get_mapped_printer().length == 1)
+			if 	(me.get_mapped_printer().length == 1){
 				me.get_raw_commands(function (out) {
 					frappe.ui.form
 						.qz_connect()
 						.then(function () {
 							let printer_map = me.get_mapped_printer()[0];
 
-							let data = ['^XA\n'];
+							let data = [];
 							let rawCmdArray = out.raw_commands
 							for(let rawElement of rawCmdArray){
 								if (rawElement.type == "raw_cmd") {
-									data.push(rawElement)
-									continue
+									data.push(rawElement.data)
 								} else {
-									let htmlObj = { type: 'raw', format: 'html', flavor: 'plain', data: rawElement, options: {language: 'ESCPOS'} }
+									let htmlObj = { type: 'raw', format: 'html', flavor: 'plain', data: rawElement.data, options: {language: 'ESCPOS'} }
 									data.push(htmlObj)
-									continue
 									
 								}
 							}
-							data.push('^XZ\n')
 							let config = qz.configs.create(printer_map.printer);
 							return qz.print(config, data);
 						})
@@ -295,7 +293,22 @@ frappe.ui.form.PrintView = class PrintView extends frappe.ui.form.PrintView {
 							frappe.ui.form.qz_fail(err);
 						});
 				});
-			} 
+				return
+			} else {
+				frappe.show_alert(
+					{
+						message: __("Printer mapping not set."),
+						subtitle: __(
+							"Please set a printer mapping for this print format in the Printer Settings"
+						),
+						indicator: "warning",
+					},
+					14
+				);
+				me.printer_setting_dialog();
+				return
+			}
+		} 
 		super.printit();
 	}
 	show(frm) {
@@ -305,6 +318,22 @@ frappe.ui.form.PrintView = class PrintView extends frappe.ui.form.PrintView {
 					${__("Try the new Print Designer")}
 				</a>
 			`);
+	}
+
+	isPDRawPrintEnable(pDesignerSetting){
+		// This code is checking Raw Print is available for selected PF
+		// if (pDesignerSetting.print_designer_settings != undefined){
+		// 	pDesignerSetting =  JSON.parse(pDesignerSetting.print_designer_settings)
+		// 	if (pDesignerSetting.page.isRawPrintEnable != undefined){
+		// 		return(pDesignerSetting.page.isRawPrintEnable == "true")? true:false
+		// 	}
+		// }
+		// return false
+
+		// This WIll fetch from PSettings
+	   let printSettings = frappe.model.get_doc(":Print Settings", "Print Settings")
+		return (printSettings.enable_raw_cmd_print_designer == 1)? true:false
+
 	}
 	get_print_html(callback) {
 		let print_format = this.get_print_format();
