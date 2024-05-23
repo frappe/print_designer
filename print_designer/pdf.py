@@ -147,10 +147,10 @@ def raw_pd_render_template(print_format, jenv, args):
 			rawCmdAfterEle = element.get('childrens')[0].get('rawCmdAfterEle', ' ')
 
 			args.update({"element": [element]})
-			htmlRawCmdList.append({'type':'raw_cmd','data':rawCmdBeforeEle})
+			htmlRawCmdList.append({'type':'raw_cmd','data':fr'{rawCmdBeforeEle}'})
 			htmlBodyTemplateStr = template.render(args, filters={"len": len})
 			htmlRawCmdList.append({'type':'html','data':htmlBodyTemplateStr})
-			htmlRawCmdList.append({'type':'raw_cmd','data':rawCmdAfterEle})
+			htmlRawCmdList.append({'type':'raw_cmd','data':fr'{rawCmdAfterEle}'})
 	return  htmlRawCmdList
 
 
