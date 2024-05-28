@@ -273,6 +273,30 @@ frappe.ui.form.PrintView = class PrintView extends frappe.ui.form.PrintView {
 						.qz_connect()
 						.then(function () {
 							let printer_map = me.get_mapped_printer()[0];
+							let print_designer_settings = me.get_print_format().print_designer_settings
+							let options = {}
+
+							if (print_designer_settings == undefined){
+								frappe.show_alert(
+									{
+										message: __("Print Format"),
+										subtitle: __(
+											"Please select the correct print format."
+										),
+										indicator: "warning",
+									},
+									14
+								);
+							}
+							print_designer_settings = JSON.parse(print_designer_settings)
+							options = {
+									language: 'ESCPOS',
+									x: print_designer_settings.page.marginTop,
+									y: print_designer_settings.page.marginLeft,
+									dotDensity: "double",
+									pageWidth: print_designer_settings.page.width,
+									pageHeight: print_designer_settings.page.height
+							}
 
 							let data = [];
 							let rawCmdArray = out.raw_commands
@@ -280,7 +304,7 @@ frappe.ui.form.PrintView = class PrintView extends frappe.ui.form.PrintView {
 								if (rawElement.type == "raw_cmd") {
 									data.push(rawElement.data)
 								} else {
-									let htmlObj = { type: 'raw', format: 'html', flavor: 'plain', data: rawElement.data, options: {language: 'ESCPOS'} }
+									let htmlObj = { type: 'raw', format: 'html', flavor: 'plain', data: rawElement.data, options: options }
 									data.push(htmlObj)
 									
 								}
