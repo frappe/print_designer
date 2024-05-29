@@ -302,7 +302,7 @@ frappe.ui.form.PrintView = class PrintView extends frappe.ui.form.PrintView {
 							let rawCmdArray = out.raw_commands
 							for(let rawElement of rawCmdArray){
 								if (rawElement.type == "raw_cmd") {
-									data.push(rawElement.data)
+									data.push({type: 'raw', format: 'command', flavor: 'plain', data: rawElement.data})
 								} else {
 									let htmlObj = { type: 'raw', format: 'html', flavor: 'plain', data: rawElement.data, options: options }
 									data.push(htmlObj)
