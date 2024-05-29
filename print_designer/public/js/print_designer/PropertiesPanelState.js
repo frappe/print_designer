@@ -306,6 +306,81 @@ export const createPropertiesPanel = () => {
 			],
 		],
 	});
+
+	MainStore.propertiesPanel.push({
+		title: "Raw Printing",
+		sectionCondtional: () =>
+            true,
+        fields: [
+			{
+				label: "Enable Raw Printing",
+				name: "isRawPrintEnable",
+				isLabelled: true,
+				condtional: () => MainStore.getCurrentElementsId.length < 1,
+				frappeControl: (ref, name) => {
+					const MainStore = useMainStore();
+					makeFeild({
+						name: name,
+						ref: ref,
+						fieldtype: "Select",
+						requiredData: [MainStore],
+						options: () => [
+							{ label: "Yes", value: true },
+							{ label: "No", value: false },
+						],
+						onChangeCallback: (value = null) => {
+							MainStore.frappeControls[name].$input.blur();
+						},
+						reactiveObject: () => MainStore.page,
+						propertyName: "isRawPrintEnable",
+					});
+				},
+			},
+			{
+				label: "Raw Cmd Before Element",
+				name: "rawCmdBeforeEle",
+				isLabelled: true,
+				condtional: () => MainStore.getCurrentElementsId.length == 1,
+				frappeControl: (ref, name) => {
+					const MainStore = useMainStore();
+					makeFeild({
+						name: name,
+						ref: ref,
+						fieldtype: "Select",
+						requiredData: [MainStore.getCurrentElementsValues[0]],
+						options: () => [
+							{ label: "Paper Cut", value: "paper_cut" },
+							{ label: "Partial Paper Cut", value: "partial_paper_cut" },
+						],
+						reactiveObject: () => MainStore.getCurrentElementsValues[0],
+						propertyName: "rawCmdBeforeEle",
+					});
+				},
+			},
+			{
+				label: "Raw Cmd After Element",
+				name: "rawCmdAfterEle",
+				isLabelled: true,
+				condtional: () => MainStore.getCurrentElementsId.length == 1,
+				frappeControl: (ref, name) => {
+					const MainStore = useMainStore();
+					makeFeild({
+						name: name,
+						ref: ref,
+						fieldtype: "Select",
+						requiredData: [MainStore.getCurrentElementsValues[0]],
+						options: () => [
+							{ label: "Paper Cut", value: "paper_cut" },
+							{ label: "Partial Paper Cut", value: "partial_paper_cut" },
+						],
+						reactiveObject: () => MainStore.getCurrentElementsValues[0],
+						propertyName: "rawCmdAfterEle",
+					});
+				},
+			},
+		],
+	});
+
 	MainStore.propertiesPanel.push({
 		title: "Page Settings",
 		sectionCondtional: () =>
