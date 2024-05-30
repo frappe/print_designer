@@ -323,7 +323,7 @@ export const createPropertiesPanel = () => {
 						name: name,
 						ref: ref,
 						fieldtype: "Select",
-						requiredData: [MainStore],
+						requiredData: [MainStore.page],
 						options: () => [
 							{ label: "Yes", value: true },
 							{ label: "No", value: false },
@@ -333,6 +333,31 @@ export const createPropertiesPanel = () => {
 						},
 						reactiveObject: () => MainStore.page,
 						propertyName: "isRawPrintEnable",
+					});
+				},
+			},
+			{
+				label: "Raw Cmd Language",
+				name: "rawCmdLang",
+				isLabelled: true,
+				condtional: () => MainStore.getCurrentElementsId.length < 1,
+				frappeControl: (ref, name) => {
+					const MainStore = useMainStore();
+					makeFeild({
+						name: name,
+						ref: ref,
+						fieldtype: "Select",
+						requiredData: [MainStore],
+						options: () => [
+							{ label: "ESC/POS", value: "ESCPOS" },
+							{ label: "ZPL", value: "ZPL" },
+							{ label: "EPL", value: "EPL" },
+							{ label: "Evolis", value: "EVOLIS" },
+							{ label: "SBPL", value: "SBPL" },
+							{ label: "ZPL", value: "ZPL" },
+						],
+						reactiveObject: () => MainStore.page,
+						propertyName: "rawCmdLang",
 					});
 				},
 			},
@@ -358,6 +383,23 @@ export const createPropertiesPanel = () => {
 				},
 			},
 			{
+				label: "Custom Raw Cmd Before Element",
+				name: "customRawCmdBeforeEle",
+				isLabelled: true,
+				condtional: () => MainStore.getCurrentElementsId.length == 1,
+				frappeControl: (ref, name) => {
+					const MainStore = useMainStore();
+					makeFeild({
+						name: name,
+						ref: ref,
+						fieldtype: "Data",
+						requiredData: [MainStore.getCurrentElementsValues[0]],
+						reactiveObject: () => MainStore.getCurrentElementsValues[0],
+						propertyName: "customRawCmdBeforeEle",
+					});
+				},
+			},
+			{
 				label: "Raw Cmd After Element",
 				name: "rawCmdAfterEle",
 				isLabelled: true,
@@ -378,6 +420,24 @@ export const createPropertiesPanel = () => {
 					});
 				},
 			},
+			{
+				label: "Custom Raw Cmd After Element",
+				name: "customRawCmdAfterEle",
+				isLabelled: true,
+				condtional: () => MainStore.getCurrentElementsId.length == 1,
+				frappeControl: (ref, name) => {
+					const MainStore = useMainStore();
+					makeFeild({
+						name: name,
+						ref: ref,
+						fieldtype: "Data",
+						requiredData: [MainStore.getCurrentElementsValues[0]],
+						
+						reactiveObject: () => MainStore.getCurrentElementsValues[0],
+						propertyName: "customRawCmdAfterEle",
+					});
+				},
+			}
 		],
 	});
 
