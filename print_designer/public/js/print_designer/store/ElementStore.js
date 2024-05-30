@@ -502,7 +502,7 @@ export const useElementStore = defineStore("ElementStore", {
 			};
 
 			const tableElement = this.Elements.filter((el) => el.type == "table");
-
+			this.isParentElementOverlapping(elements)
 			if (tableElement.length == 1 && MainStore.isHeaderFooterAuto) {
 				if (!this.autoCalculateHeaderFooter(tableElement[0])) {
 					throwOverlappingError("auto");
@@ -530,6 +530,44 @@ export const useElementStore = defineStore("ElementStore", {
 					}
 				});
 			}
+		},
+		isParentElementOverlapping(elements){
+			console.log("Overlapping....")
+			for(let index in elements){
+				let nextIndex = parseInt(index) + 1
+				let currEle = elements[index]
+				let firstEleObj = {}
+				let otherEleObj = {}
+				
+				for (let otherEleIndex in elements){
+					otherEleIndex = parseInt(otherEleIndex)
+					if( otherEleIndex < nextIndex) { continue; }
+					let otherEle = elements[otherEleIndex];
+					if (currEle.startY > otherEle.startY){
+						firstEleObj = {
+							'startY': otherEle.startY,
+							'endY': otherEle.startY + otherEle.height,
+						}
+					
+						otherEleObj = {
+							'startY': currEle.startY,
+						}
+					} else {
+						firstEleObj = {
+							'startY': currEle.startY,
+							'endY': currEle.startY + currEle.height,
+						}
+					
+						otherEleObj = {
+							'startY': otherEle.startY,
+						}
+					}
+					if ( otherEleObj.startY >= firstEleObj.startY && otherEleObj.startY <= firstEleObj.endY ){
+						return true
+					}	
+				}
+			}
+			return false
 		},
 		autoCalculateHeaderFooter(tableEl) {
 			const MainStore = useMainStore();
