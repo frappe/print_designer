@@ -1,0 +1,81 @@
+{
+ "actions": [],
+ "autoname": "field:title",
+ "creation": "2024-06-02 13:05:19.762196",
+ "doctype": "DocType",
+ "engine": "InnoDB",
+ "field_order": [
+  "section_break_otix",
+  "title",
+  "column_break_lcet",
+  "print_format",
+  "section_break_codz",
+  "header",
+  "footer"
+ ],
+ "fields": [
+  {
+   "fieldname": "header",
+   "fieldtype": "JSON",
+   "label": "Header"
+  },
+  {
+   "fieldname": "footer",
+   "fieldtype": "JSON",
+   "label": "Footer"
+  },
+  {
+   "fieldname": "section_break_otix",
+   "fieldtype": "Section Break",
+   "options": "Print Format"
+  },
+  {
+   "fieldname": "column_break_lcet",
+   "fieldtype": "Column Break"
+  },
+  {
+   "fieldname": "print_format",
+   "fieldtype": "Link",
+   "label": "Print Format",
+   "link_filters": "[[\"Print Format\",\"print_designer\",\"=\",1]]",
+   "options": "Print Format",
+   "read_only": 1
+  },
+  {
+   "fieldname": "section_break_codz",
+   "fieldtype": "Section Break"
+  },
+  {
+   "fieldname": "title",
+   "fieldtype": "Data",
+   "label": "Title",
+   "length": 100,
+   "unique": 1
+  }
+ ],
+ "index_web_pages_for_search": 1,
+ "links": [],
+ "modified": "2024-06-02 13:16:05.140853",
+ "modified_by": "Administrator",
+ "module": "Print Designer",
+ "name": "PD Header Footer",
+ "naming_rule": "By fieldname",
+ "owner": "Administrator",
+ "permissions": [
+  {
+   "create": 1,
+   "delete": 1,
+   "email": 1,
+   "export": 1,
+   "print": 1,
+   "read": 1,
+   "report": 1,
+   "role": "System Manager",
+   "share": 1,
+   "write": 1
+  }
+ ],
+ "sort_field": "creation",
+ "sort_order": "DESC",
+ "states": []
+}
