@@ -7,23 +7,15 @@
  "field_order": [
   "section_break_otix",
   "title",
+  "export_template_app",
   "column_break_lcet",
   "print_format",
+  "type",
   "section_break_codz",
-  "header",
-  "footer"
+  "data",
+  "settings"
  ],
  "fields": [
-  {
-   "fieldname": "header",
-   "fieldtype": "JSON",
-   "label": "Header"
-  },
-  {
-   "fieldname": "footer",
-   "fieldtype": "JSON",
-   "label": "Footer"
-  },
   {
    "fieldname": "section_break_otix",
    "fieldtype": "Section Break",
@@ -51,11 +43,32 @@
    "label": "Title",
    "length": 100,
    "unique": 1
+  },
+  {
+   "fieldname": "type",
+   "fieldtype": "Select",
+   "label": "Type",
+   "options": "Header\nFooter"
+  },
+  {
+   "fieldname": "export_template_app",
+   "fieldtype": "Select",
+   "label": "Export Template App"
+  },
+  {
+   "fieldname": "data",
+   "fieldtype": "JSON",
+   "label": "Data"
+  },
+  {
+   "fieldname": "settings",
+   "fieldtype": "JSON",
+   "label": "Settings"
   }
  ],
  "index_web_pages_for_search": 1,
  "links": [],
- "modified": "2024-06-02 13:16:05.140853",
+ "modified": "2024-06-02 13:41:44.173915",
  "modified_by": "Administrator",
  "module": "Print Designer",
  "name": "PD Header Footer",
