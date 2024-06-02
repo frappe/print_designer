@@ -1,6 +1,9 @@
 <template>
 	<div
-		:style="[postionalStyles(startX, startY, width, height)]"
+		:style="[
+			postionalStyles(startX, startY, width, height),
+			style.zIndex && { zIndex: style.zIndex },
+		]"
 		:ref="setElements(object, index)"
 		:class="[MainStore.getCurrentElementsId.includes(id) && 'active-elements']"
 		@mousedown.left="handleMouseDown($event, object)"

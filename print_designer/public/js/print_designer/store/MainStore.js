@@ -415,6 +415,14 @@ export const useMainStore = defineStore("MainStore", {
 						object.selectedColumn?.["style"] ||
 						object[styleEditMode];
 		},
+		isValidValue: (state) => (value) => {
+			if (typeof value == "string") {
+				return value.length != 0;
+			} else if (typeof value == "number") {
+				return true;
+			}
+			return false;
+		},
 		getCurrentStyle: (state) => (propertyName) => {
 			let object = state.getCurrentElementsValues[0];
 			if (!object) return state.getGlobalStyleObject?.[propertyName];
@@ -426,12 +434,20 @@ export const useMainStore = defineStore("MainStore", {
 			});
 			let styleEditMode = mapper[object.styleEditMode];
 			if (propertyName != "backgroundColor") {
-				return (
-					object.selectedDynamicText?.[styleEditMode][propertyName] ||
-					object.selectedColumn?.["style"][propertyName] ||
-					object[styleEditMode][propertyName] ||
-					state.getGlobalStyleObject[propertyName]
-				);
+				if (
+					state.isValidValue(object.selectedDynamicText?.[styleEditMode][propertyName])
+				) {
+					return object.selectedDynamicText?.[styleEditMode][propertyName];
+				}
+				if (state.isValidValue(object.selectedColumn?.["style"][propertyName])) {
+					return object.selectedColumn?.["style"][propertyName];
+				}
+				if (state.isValidValue(object[styleEditMode][propertyName])) {
+					return object[styleEditMode][propertyName];
+				}
+				if (state.isValidValue(state.getGlobalStyleObject[propertyName])) {
+					return state.getGlobalStyleObject[propertyName];
+				}
 			} else {
 				// we need to check if empty string incase it is background color and set as transparent
 				if (typeof object.selectedDynamicText?.[styleEditMode][propertyName] == "string") {

@@ -1,3 +1,8 @@
+[pre_model_sync]
+print_designer.patches.introduce_dynamic_containers
+execute:from print_designer.patches.create_custom_fields import custom_field_patch; custom_field_patch() #208
+
+[post_model_sync]
 print_designer.patches.update_white_space_property
 print_designer.patches.introduce_barcode
 print_designer.patches.introduce_jinja
@@ -6,8 +11,7 @@ print_designer.patches.rerun_introduce_jinja
 print_designer.patches.introduce_table_alt_row_styles
 print_designer.patches.introduce_column_style
 print_designer.patches.introduce_suffix_dynamic_content
-print_designer.patches.introduce_dynamic_containers
 print_designer.patches.introduce_dynamic_height
 print_designer.patches.remove_unused_rectangle_gs_properties
-execute:from print_designer.patches.create_custom_fields import custom_field_patch; custom_field_patch()
 print_designer.patches.change_dynamic_height_variable
+print_designer.patches.introduce_z_index
