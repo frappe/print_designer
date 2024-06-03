@@ -129,7 +129,8 @@ def get_raw_cmd_render_pd(doc: str, name: str | None = None, print_format: str |
 		document = frappe.get_doc(json.loads(doc))
 	document.check_permission()
 	print_format = get_print_format_doc(print_format, meta=document.meta)
-	return { 'raw_commands' : get_rendered_template_pd(doc=document, print_format=print_format)}
+	
+	return get_rendered_template_pd(doc=document, print_format=print_format)
 
 
 def get_rendered_template_pd(
@@ -172,7 +173,7 @@ def get_rendered_template_pd(
 	
 	raw_cmd_lang = settings.get('page').get('rawCmdLang')
 	if raw_cmd_lang is None:
-		return f"<h1><b>Please select the Raw Command language from Print Designer.</b>"
+		return {'status' : False, 'msg' : 'Language is not selected from Print Designer'}
 	
 	for set_type in element_List:
 		for element in element_List[set_type]:
@@ -180,11 +181,15 @@ def get_rendered_template_pd(
 				rawCmdBeforeEle = element.get('childrens')[0].get('rawCmdBeforeEle', ' ').strip()
 				rawCmdAfterEle = element.get('childrens')[0].get('rawCmdAfterEle', ' ').strip()
 				
-				if rawCmdBeforeEle != "":
+				if rawCmdBeforeEle != "" and rawCmdBeforeEle != 'custom':
 					rawCmdBeforeEle = convert_str_raw_cmd(rawCmdBeforeEle, raw_cmd_lang)
-				
-				if rawCmdAfterEle != "":
+				elif rawCmdBeforeEle == 'custom':
+					rawCmdBeforeEle = element.get('childrens')[0].get('customRawCmdBeforeEle', ' ').strip()
+
+				if rawCmdAfterEle != "" and rawCmdAfterEle != 'custom':
 					rawCmdAfterEle = convert_str_raw_cmd(rawCmdAfterEle, raw_cmd_lang)
+				elif rawCmdAfterEle == 'custom':
+					rawCmdAfterEle = element.get('childrens')[0].get('customRawCmdAfterEle', ' ').strip()
 
 				args.update({"element": [element]})
 				#Need to change options value to raw_cmd
@@ -196,11 +201,11 @@ def get_rendered_template_pd(
 			except Exception as e :
 				error = log_error(title=e, reference_doctype="Print Format", reference_name=print_format.name)
 				if frappe.conf.developer_mode:
-					return f"<h1><b>Something went wrong while rendering the print format.</b> <hr/> If you don't know what just happened, and wish to file a ticket or issue on Github <hr /> Please copy the error from <code>Error Log {error.name}</code> or ask Administrator.<hr /><h3>Error rendering print format: {error.reference_name}</h3><h4>{error.method}</h4><pre>{html.escape(error.error)}</pre>"
+					return { 'status' : False, 'msg' : f"<h1><b>Something went wrong while rendering the print format.</b> <hr/> If you don't know what just happened, and wish to file a ticket or issue on Github <hr /> Please copy the error from <code>Error Log {error.name}</code> or ask Administrator.<hr /><h3>Error rendering print format: {error.reference_name}</h3><h4>{error.method}</h4><pre>{html.escape(error.error)}</pre>"}
 				else:
-					return f"<h1><b>Something went wrong while rendering the print format.</b> <hr/> If you don't know what just happened, and wish to file a ticket or issue on Github <hr /> Please copy the error from <code>Error Log {error.name}</code> or ask Administrator.</h1>"
+					return { 'status' : False, 'msg' : f"<h1><b>Something went wrong while rendering the print format.</b> <hr/> If you don't know what just happened, and wish to file a ticket or issue on Github <hr /> Please copy the error from <code>Error Log {error.name}</code> or ask Administrator.</h1>"}
 
-	return html_with_raw_cmd_list
+	return {'status' : True, 'raw_commands' : html_with_raw_cmd_list}
 
 def convert_str_raw_cmd(raw_string, printer_lang):
 	str_cmd_dict = {

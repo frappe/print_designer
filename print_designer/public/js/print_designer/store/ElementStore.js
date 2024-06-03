@@ -503,6 +503,15 @@ export const useElementStore = defineStore("ElementStore", {
 					});
 					throw new Error(message);
 			}
+			if (MainStore.frappeControls['rawCmdLang'].value == null){
+				frappe.show_alert(
+					{
+						message: "Please select the language for raw cmd",
+						indicator: "red",
+				});
+				throw new Error('Please select the language for raw cmd');
+			}
+
 			const tableElement = this.Elements.filter((el) => el.type == "table");
 			if(this.isParentElementOverlapping(elements)){
 				throwOverlappingError("element", false);
