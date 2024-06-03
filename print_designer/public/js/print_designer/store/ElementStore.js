@@ -483,26 +483,30 @@ export const useElementStore = defineStore("ElementStore", {
 			const elements = this.Elements;
 			const MainStore = useMainStore();
 
-			const throwOverlappingError = (type) => {
+			const throwOverlappingError = (type, changelayout) => {
 				let message = __(`Please resolve overlapping elements `);
 				const messageType = Object.freeze({
 					header: "<b>" + __("in header") + "</b>",
 					footer: "<b>" + __("in footer") + "</b>",
 					auto: __("in table, auto layout failed"),
-				});
-				message += messageType[type];
-				frappe.show_alert(
-					{
-						message: message,
-						indicator: "red",
-					},
-					6
-				);
-				throw new Error(message);
-			};
 
+					});
+					changelayout = (changelayout == undefined)? true:false
+					if (changelayout) {
+						MainStore.mode = "pdfSetup";
+						message += messageType[type];
+					}
+					frappe.show_alert(
+						{
+							message: message,
+							indicator: "red",
+					});
+					throw new Error(message);
+			}
 			const tableElement = this.Elements.filter((el) => el.type == "table");
-			this.isParentElementOverlapping(elements)
+			if(this.isParentElementOverlapping(elements)){
+				throwOverlappingError("element", false);
+			}
 			if (tableElement.length == 1 && MainStore.isHeaderFooterAuto) {
 				if (!this.autoCalculateHeaderFooter(tableElement[0])) {
 					throwOverlappingError("auto");
