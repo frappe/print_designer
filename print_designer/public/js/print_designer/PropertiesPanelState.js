@@ -354,7 +354,6 @@ export const createPropertiesPanel = () => {
 							{ label: "EPL", value: "EPL" },
 							{ label: "Evolis", value: "EVOLIS" },
 							{ label: "SBPL", value: "SBPL" },
-							{ label: "ZPL", value: "ZPL" },
 						],
 						reactiveObject: () => MainStore.page,
 						propertyName: "rawCmdLang",
