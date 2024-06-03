@@ -280,6 +280,10 @@ frappe.ui.form.PrintView = class PrintView extends frappe.ui.form.PrintView {
 					frappe.ui.form
 						.qz_connect()
 						.then(function () {
+							if(!out.status){
+								frappe.throw(out.msg)
+							}
+							
 							let printer_map = me.get_mapped_printer()[0];
 							let config = qz.configs.create(printer_map.printer);
 							return qz.print(config, out.raw_commands);
