@@ -273,41 +273,42 @@ frappe.ui.form.PrintView = class PrintView extends frappe.ui.form.PrintView {
 				setTimeout(() => URL.revokeObjectURL(fileUrl), 7000);
 			});
 			return;
-		} else if (me.get_mapped_printer().length === 1) {
-			// printer is already mapped in localstorage (applies for both raw and pdf )
-			if ( pdRawStatus ) {
-				me.get_pd_raw_commands(function (out) {
-					frappe.ui.form
-						.qz_connect()
-						.then(function () {
-							if(!out.status){
-								frappe.throw(out.msg)
-							}
-							
-							let printer_map = me.get_mapped_printer()[0];
-							let config = qz.configs.create(printer_map.printer);
-							return qz.print(config, out.raw_commands);
-						})
-						.then(frappe.ui.form.qz_success)
-						.catch((err) => {
-							frappe.ui.form.qz_fail(err);
-						});
-				});
-			} else {
-				frappe.show_alert(
-					{
-						message: __('PDF printing via "Raw Print" is not supported.'),
-						subtitle: __(
-							"Please remove the printer mapping in Printer Settings and try again."
-						),
-						indicator: "info",
-					},
-					14
-				);
-				//Note: need to solve "Error: Cannot parse (FILE)<URL> as a PDF file" to enable qz pdf printing.
-			}
-			return
 		} else if (pdRawStatus) {
+			if (me.get_mapped_printer().length === 1) {
+				// printer is already mapped in localstorage (applies for both raw and pdf )
+				if ( pdRawStatus ) {
+					me.get_pd_raw_commands(function (out) {
+						frappe.ui.form
+							.qz_connect()
+							.then(function () {
+								if(!out.status){
+									frappe.throw(out.msg)
+								}
+								
+								let printer_map = me.get_mapped_printer()[0];
+								let config = qz.configs.create(printer_map.printer);
+								return qz.print(config, out.raw_commands);
+							})
+							.then(frappe.ui.form.qz_success)
+							.catch((err) => {
+								frappe.ui.form.qz_fail(err);
+							});
+					});
+				} else {
+					frappe.show_alert(
+						{
+							message: __('PDF printing via "Raw Print" is not supported.'),
+							subtitle: __(
+								"Please remove the printer mapping in Printer Settings and try again."
+							),
+							indicator: "info",
+						},
+						14
+					);
+					//Note: need to solve "Error: Cannot parse (FILE)<URL> as a PDF file" to enable qz pdf printing.
+				}
+				return
+			} else {
 			// printer not mapped in localstorage and the current print format is raw printing
 			frappe.show_alert(
 				{
@@ -321,6 +322,7 @@ frappe.ui.form.PrintView = class PrintView extends frappe.ui.form.PrintView {
 			);
 			me.printer_setting_dialog();
 			return
+			}
 		} 
 		super.printit();
 	}
