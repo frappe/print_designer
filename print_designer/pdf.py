@@ -147,7 +147,6 @@ def get_rendered_template_pd(
 	doc.run_method("before_print", print_settings)
 
 	jenv = frappe.get_jenv()
-	format_data, format_data_map = [], {}
 	args = {}
 	settings = json.loads(print_format.print_designer_settings)
 	args.update(
@@ -168,7 +167,6 @@ def get_rendered_template_pd(
 				"y": settings.get('page').get('marginLeft'),
 				"dotDensity": "double",
 				"pageWidth": settings.get('page').get('width'),
-				"pageHeight": settings.get('page').get('height')
 			}
 	
 	raw_cmd_lang = settings.get('page').get('rawCmdLang')
