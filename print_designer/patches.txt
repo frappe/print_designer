@@ -15,3 +15,4 @@ print_designer.patches.introduce_dynamic_height
 print_designer.patches.remove_unused_rectangle_gs_properties
 print_designer.patches.change_dynamic_height_variable
 print_designer.patches.introduce_z_index
+print_designer.patches.move_header_footers_to_new_schema

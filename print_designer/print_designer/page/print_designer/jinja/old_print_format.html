@@ -205,9 +205,9 @@ background-image: url('{{frappe.get_url()}}{{value}}');
 <!-- user_generated_jinja_code -->
 <!-- end of user generated code -->
 
-    {% set renderHeader = render_element(headerElement, send_to_jinja) %}
-    {% set renderBody =  render_element(bodyElement, send_to_jinja) %}
-    {% set renderFooter = render_element(footerElement, send_to_jinja) %}
+    {% set renderHeader = render_element(headerElement[0].childrens, send_to_jinja) %}
+    {% set renderBody =  render_element(bodyElement[0].childrens, send_to_jinja) %}
+    {% set renderFooter = render_element(footerElement[0].childrens, send_to_jinja) %}
     <link rel="preconnect" href="https://fonts.gstatic.com" />
         {% if settings.printHeaderFonts %}
     {% set printHeaderFonts = getFontStyles(settings.printHeaderFonts) %}

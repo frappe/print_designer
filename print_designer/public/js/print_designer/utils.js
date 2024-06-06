@@ -38,8 +38,12 @@ import { useDraggable } from "./composables/Draggable";
 import { useResizable } from "./composables/Resizable";
 import { useDropZone } from "./composables/DropZone";
 import { isRef, nextTick } from "vue";
+import { getValue } from "./store/fetchMetaAndData";
 
 export const changeDraggable = (element) => {
+	if (element.relativeContainer || element.DOMRef == null) {
+		return;
+	}
 	if (
 		!element.isDraggable &&
 		interact.isSet(element.DOMRef) &&
@@ -53,7 +57,7 @@ export const changeDraggable = (element) => {
 	) {
 		interact(element.DOMRef).draggable().enabled = true;
 	} else if (element.isDraggable && !interact.isSet(element.DOMRef)) {
-		useDraggable(element.id);
+		useDraggable({ element });
 	}
 };
 
@@ -88,7 +92,7 @@ export const changeDropZone = (element) => {
 	) {
 		interact(element.DOMRef).dropzone().enabled = true;
 	} else if (element.isDropZone && !interact.isSet(element.DOMRef)) {
-		useDropZone(element.id);
+		useDropZone({ element });
 	}
 };
 
@@ -106,7 +110,7 @@ export const changeResizable = (element) => {
 	) {
 		interact(element.DOMRef).resizable().enabled = true;
 	} else if (element.isResizable && !interact.isSet(element.DOMRef)) {
-		useResizable(element.id);
+		useResizable({ element });
 	}
 };
 
@@ -203,17 +207,9 @@ const childrensCleanUp = (parentElement, element, isClone, isMainElement) => {
 		}
 	}
 	if (isMainElement && isClone) {
-		if (Array.isArray(parentElement.parent)) {
-			parentElement.parent.push(element);
-		} else {
-			parentElement.parent.childrens.push(element);
-		}
+		parentElement.parent.childrens.push(element);
 	} else if (!isMainElement) {
-		if (Array.isArray(parentElement)) {
-			parentElement.push(element);
-		} else {
-			parentElement.childrens.push(element);
-		}
+		parentElement.childrens.push(element);
 		recursiveChildrens({ element, isClone, isMainElement: false });
 	}
 };
@@ -222,7 +218,10 @@ export const recursiveChildrens = ({ element, isClone = false, isMainElement = t
 	const childrensArray = parentElement.childrens;
 	isMainElement && childrensCleanUp(parentElement, element, isClone, isMainElement);
 	parentElement.childrens = [];
-	if (parentElement.type == "rectangle" && childrensArray.length > 0) {
+	if (
+		parentElement.type == "rectangle" ||
+		(element.type == "page" && childrensArray.length > 0)
+	) {
 		childrensArray.forEach((element) => {
 			childrensCleanUp(parentElement, element, isClone, false);
 		});
@@ -280,9 +279,45 @@ export const updateElementParameters = (e) => {
 	}
 };
 
+export const createHeaderFooterElement = (childrens, elementType) => {
+	const MainStore = useMainStore();
+	const ElementStore = useElementStore();
+	let id = frappe.utils.get_random(10);
+	const pageHeader = {
+		type: "rectangle",
+		childrens: [],
+		DOMRef: null,
+		id: id,
+		isDraggable: false,
+		isResizable: false,
+		isDropZone: true,
+		relativeContainer: true,
+		elementType: elementType,
+		startX: 0,
+		startY:
+			elementType == "header"
+				? 0
+				: MainStore.page.height -
+				  MainStore.page.footerHeight -
+				  MainStore.page.marginTop -
+				  MainStore.page.marginBottom,
+		pageX: 0,
+		pageY: 0,
+		width: MainStore.page.width - MainStore.page.marginLeft - MainStore.page.marginRight,
+		height:
+			elementType == "header" ? MainStore.page.headerHeight : MainStore.page.footerHeight,
+		styleEditMode: "main",
+		style: { border: "none" },
+		classes: [],
+	};
+	pageHeader.childrens = childrens.map((el) => ElementStore.childrensSave(el));
+	ElementStore.setElementProperties(pageHeader);
+	return { ...pageHeader };
+};
+
 export const deleteSnapObjects = (element, recursive = false) => {
 	const MainStore = useMainStore();
-	if (!element) {
+	if (!element || !element.snapPoints || !element.snapEdges) {
 		return;
 	}
 	element.snapPoints.forEach((point) => {
@@ -291,7 +326,10 @@ export const deleteSnapObjects = (element, recursive = false) => {
 	element.snapEdges.forEach((point) => {
 		MainStore.snapEdges.splice(MainStore.snapEdges.indexOf(point), 1);
 	});
-	if (recursive && element.type == "rectangle" && element.childrens.length > 0) {
+	if (
+		(recursive && element.type == "rectangle") ||
+		(element.type == "page" && element.childrens.length > 0)
+	) {
 		element.childrens.forEach((el) => {
 			deleteSnapObjects(el, recursive);
 		});
@@ -312,34 +350,71 @@ const deleteDynamicReferance = (curobj) => {
 		});
 	}
 };
-
+export const updateDynamicData = async () => {
+	const MainStore = useMainStore();
+	if (!Object.keys(MainStore.docData).length) return;
+	MainStore.dynamicData.forEach(async (el) => {
+		if (el.is_static) return;
+		let value = el.parentField
+			? await getValue(el.doctype, MainStore.docData[el.parentField], el.fieldname)
+			: el.tableName
+			? MainStore.docData[el.tableName][0] &&
+			  frappe.format(
+					MainStore.docData[el.tableName][0][el.fieldname],
+					{ fieldtype: el.fieldtype, options: el.options },
+					{ inline: true },
+					MainStore.docData
+			  )
+			: frappe.format(
+					MainStore.docData[el.fieldname],
+					{ fieldtype: el.fieldtype, options: el.options },
+					{ inline: true },
+					MainStore.docData
+			  );
+		if (typeof value == "string" && value.startsWith("<svg")) {
+			value.match(new RegExp(`data-barcode-value="(.*?)">`));
+			value = result[1];
+		}
+		if (!value) {
+			if (["Image, Attach Image"].indexOf(el.fieldtype) != -1) {
+				value = null;
+			} else {
+				switch (el.fieldname) {
+					case "page":
+						value = "0";
+						break;
+					case "topage":
+						value = "999";
+						break;
+					case "date":
+						value = frappe.datetime.now_date();
+						break;
+					case "time":
+						value = frappe.datetime.now_time();
+						break;
+					default:
+						value = `{{ ${el.parentField ? el.parentField + "." : ""}${
+							el.fieldname
+						} }}`;
+				}
+			}
+		}
+		el.value = value;
+	});
+};
 export const deleteCurrentElements = () => {
 	const MainStore = useMainStore();
 	const ElementStore = useElementStore();
 	if (MainStore.getCurrentElementsValues.length === 1) {
 		let curobj = MainStore.getCurrentElementsValues[0];
 		deleteDynamicReferance(curobj);
-		if (Array.isArray(curobj.parent)) {
-			deleteSnapObjects(curobj.parent.splice(curobj.index, 1)[0], true);
-		} else {
-			deleteSnapObjects(curobj.parent.childrens.splice(curobj.index, 1)[0], true);
-		}
+		deleteSnapObjects(curobj.parent.childrens.splice(curobj.index, 1)[0], true);
 	} else {
 		MainStore.getCurrentElementsValues.forEach((element) => {
-			if (Array.isArray(element.parent)) {
-				deleteSnapObjects(
-					element.parent.splice(element.parent.indexOf(element), 1)[0],
-					true
-				);
-			} else {
-				deleteSnapObjects(
-					element.parent.childrens.splice(
-						element.parent.childrens.indexOf(element),
-						1
-					)[0],
-					true
-				);
-			}
+			deleteSnapObjects(
+				element.parent.childrens.splice(element.parent.childrens.indexOf(element), 1)[0],
+				true
+			);
 		});
 	}
 	MainStore.lastCreatedElement = null;
@@ -448,12 +523,11 @@ export const getSnapPointsAndEdges = (element) => {
 
 export const handleAlignIconClick = (value) => {
 	const MainStore = useMainStore();
-	const ElementStore = useElementStore();
 	let currentElements = MainStore.getCurrentElementsValues;
 	let parent;
 	MainStore.getCurrentElementsValues.forEach((element) => {
 		if (parent == null) {
-			if (Array.isArray(element.parent)) {
+			if (element.parent.type == "page") {
 				parent = false;
 				return;
 			}
@@ -531,7 +605,9 @@ export const handleAlignIconClick = (value) => {
 				break;
 		}
 	} else if (currentElements.length > 1) {
-		let parentRect = MainStore.mainContainer.getBoundingClientRect();
+		let parentRect = getParentPage(
+			MainStore.getCurrentElementsValues[0].parent
+		).DOMRef.getBoundingClientRect();
 		if (parent) {
 			parentRect = parent.DOMRef.getBoundingClientRect();
 		}
@@ -614,6 +690,28 @@ export const handleBorderIconClick = (element, icon) => {
 		} else {
 			delete element[icon];
 		}
+	}
+};
+
+export const getParentPage = (element) => {
+	if (!element) return;
+	if (element.type == "page") {
+		return element;
+	} else {
+		if (element.parent) {
+			return getParentPage(element.parent);
+		}
+		return;
+	}
+};
+
+export const isInHeaderFooter = (element) => {
+	if (!element) return false;
+	if (!element.parent) return false;
+	if (element.elementType == "header") {
+		return true;
+	} else {
+		return isInHeaderFooter(element.parent);
 	}
 };
 
@@ -812,9 +910,9 @@ export const checkUpdateElementOverlapping = (element = null) => {
 	const MainStore = useMainStore();
 	const ElementStore = useElementStore();
 	nextTick(() => {
-		if (element && !Array.isArray(element.parent)) return;
+		if (!element || element.parent.type != "page") return;
 		isOlderSchema = MainStore.isOlderSchema("1.1.0");
-		element.parent.forEach((el) => {
+		element.parent.childrens.forEach((el) => {
 			const isElementOverlapping = ElementStore.isElementOverlapping(el);
 			if (el.isElementOverlapping != isElementOverlapping) {
 				el.isElementOverlapping = isElementOverlapping;

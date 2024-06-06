@@ -389,8 +389,36 @@ export const createPropertiesPanel = () => {
 				},
 			},
 			[
-				pageInput("Height", "page_height", "height", { parentBorderTop: true }),
-				pageInput("Width", "page_width", "width"),
+				pageInput("Height", "page_height", "height", {
+					parentBorderTop: true,
+					condtional: () => MainStore.mode == "editing",
+				}),
+				pageInput("Width", "page_width", "width", {
+					condtional: () => MainStore.mode == "editing",
+				}),
+			],
+			[
+				{
+					label: "Delete Page",
+					name: "deletePage",
+					isLabelled: true,
+					flex: "auto",
+					condtional: () => MainStore.activePage,
+					reactiveObject: () => MainStore.activePage,
+					button: {
+						label: "Delete Page",
+						size: "sm",
+						style: "secondary",
+						margin: 15,
+						onClick: (e, field) => {
+							ElementStore.Elements.splice(
+								ElementStore.Elements.indexOf(MainStore.activePage),
+								1
+							);
+							e.target.blur();
+						},
+					},
+				},
 			],
 		],
 	});
@@ -410,11 +438,9 @@ export const createPropertiesPanel = () => {
 		],
 	});
 	MainStore.propertiesPanel.push({
-		title: "PDF Settings",
+		title: "Header / Footer",
 		sectionCondtional: () =>
-			MainStore.mode == "pdfSetup" &&
-			!MainStore.getCurrentElementsId.length &&
-			MainStore.activeControl === "mouse-pointer",
+			!MainStore.getCurrentElementsId.length && MainStore.activeControl === "mouse-pointer",
 		fields: [
 			[
 				pageInput("Header", "page_header", "headerHeight"),
@@ -422,6 +448,112 @@ export const createPropertiesPanel = () => {
 			],
 		],
 	});
+
+	MainStore.propertiesPanel.push({
+		title: "Select Pages",
+		sectionCondtional: () =>
+			MainStore.mode != "editing" &&
+			MainStore.activePage &&
+			!MainStore.getCurrentElementsId.length &&
+			MainStore.activeControl === "mouse-pointer",
+		fields: [
+			[
+				{
+					label: "First",
+					name: "firstPage",
+					isLabelled: true,
+					condtional: () => MainStore.activePage,
+					reactiveObject: () => MainStore.activePage,
+					button: {
+						label: "First",
+						size: "sm",
+						style: () => (MainStore.activePage.firstPage ? "primary" : "secondary"),
+						margin: 15,
+						onClick: (e, field) => {
+							MainStore.activePage.firstPage = !MainStore.activePage.firstPage;
+							if (MainStore.activePage.firstPage) {
+								ElementStore.Elements.forEach((element) => {
+									if (element == MainStore.activePage) return;
+									element.firstPage = false;
+								});
+							}
+							e.target.blur();
+						},
+					},
+				},
+				{
+					label: "Odd",
+					name: "oddPages",
+					isLabelled: true,
+					condtional: () => MainStore.activePage,
+					reactiveObject: () => MainStore.activePage,
+					button: {
+						label: "Odd",
+						style: () => (MainStore.activePage.oddPage ? "primary" : "secondary"),
+						margin: 15,
+						size: "sm",
+						onClick: (e, field) => {
+							MainStore.activePage.oddPage = !MainStore.activePage.oddPage;
+							if (MainStore.activePage.oddPage) {
+								ElementStore.Elements.forEach((element) => {
+									if (element == MainStore.activePage) return;
+									element.oddPage = false;
+								});
+							}
+							e.target.blur();
+						},
+					},
+				},
+				{
+					label: "Even",
+					name: "evenPages",
+					isLabelled: true,
+					condtional: () => MainStore.activePage,
+					reactiveObject: () => MainStore.activePage,
+					button: {
+						label: "Even",
+						style: () => (MainStore.activePage.evenPage ? "primary" : "secondary"),
+						margin: 15,
+						size: "sm",
+						onClick: (e, field) => {
+							MainStore.activePage.evenPage = !MainStore.activePage.evenPage;
+							if (MainStore.activePage.evenPage) {
+								ElementStore.Elements.forEach((element) => {
+									if (element == MainStore.activePage) return;
+									element.evenPage = false;
+								});
+							}
+							e.target.blur();
+						},
+					},
+				},
+				{
+					label: "Last",
+					name: "lastPages",
+					isLabelled: true,
+					condtional: () => MainStore.activePage,
+					reactiveObject: () => MainStore.activePage,
+					button: {
+						label: "Last",
+						style: () => (MainStore.activePage.lastPage ? "primary" : "secondary"),
+						margin: 15,
+						size: "sm",
+						onClick: (e, field) => {
+							MainStore.activePage.lastPage = !MainStore.activePage.lastPage;
+							if (MainStore.activePage.lastPage) {
+								ElementStore.Elements.forEach((element) => {
+									if (element == MainStore.activePage) return;
+									element.lastPage = false;
+								});
+							}
+							e.target.blur();
+						},
+					},
+				},
+			],
+		],
+	});
+
 	MainStore.propertiesPanel.push({
 		title: "Transform",
 		sectionCondtional: () => MainStore.getCurrentElementsId.length === 1,
@@ -442,6 +574,9 @@ export const createPropertiesPanel = () => {
 					labelDirection: "column",
 					condtional: () => {
 						const currentEl = MainStore.getCurrentElementsValues[0];
+						if (currentEl.isElementOverlapping) {
+							return false;
+						}
 						if (
 							currentEl?.type === "table" ||
 							(currentEl.type === "text" &&

@@ -8,13 +8,20 @@ import {
 	createTable,
 	createBarcode,
 } from "../defaultObjects";
-import { handlePrintFonts, setCurrentElement } from "../utils";
+import {
+	handlePrintFonts,
+	setCurrentElement,
+	createHeaderFooterElement,
+	getParentPage,
+} from "../utils";
 
 import html2canvas from "html2canvas";
 
 export const useElementStore = defineStore("ElementStore", {
 	state: () => ({
 		Elements: new Array(),
+		Headers: new Array(),
+		Footers: new Array(),
 	}),
 	actions: {
 		createNewObject(event, element) {
@@ -53,22 +60,50 @@ export const useElementStore = defineStore("ElementStore", {
 				body: [],
 				footer: [],
 			};
-			// {childrens: []} is passed because we update parent in createRectangle function.
 			let headerElements = [];
 			let bodyElements = [];
 			let footerElements = [];
-			// WARNING: 2 lines below are for debugging purpose only.
-			// this.Elements.length = 0;
-			// headerElements = bodyElements = footerElements = this.Elements;
 			if (header) {
-				layout.header = this.computeRowLayout(header, headerElements, "header");
+				const headerArray = header.map((h) => {
+					h.childrens = this.computeRowLayout(h.childrens, headerElements, "header");
+					return h;
+				});
+				layout.header = {
+					firstPage: headerArray.find((h) => h.firstPage).childrens,
+					oddPage: headerArray.find((h) => h.oddPage).childrens,
+					evenPage: headerArray.find((h) => h.evenPage).childrens,
+					lastPage: headerArray.find((h) => h.lastPage).childrens,
+				};
 			}
 			// it will throw error if body is empty so no need to check here
-			layout.body = this.computeRowLayout(body, bodyElements, "body");
+			layout.body = body.map((b) => {
+				b.childrens = this.computeRowLayout(b.childrens, bodyElements, "body");
+				return b;
+			});
 			if (footer) {
-				layout.footer = this.computeRowLayout(footer, footerElements, "footer");
+				const footerArray = footer.map((f) => {
+					f.childrens = this.computeRowLayout(f.childrens, footerElements, "footer");
+					return f;
+				});
+				layout.footer = {
+					firstPage: footerArray.find((h) => h.firstPage).childrens,
+					oddPage: footerArray.find((h) => h.oddPage).childrens,
+					evenPage: footerArray.find((h) => h.evenPage).childrens,
+					lastPage: footerArray.find((h) => h.lastPage).childrens,
+				};
 			}
-
+			// WARNING: lines below are for debugging purpose only.
+			// this.Elements.length = 0;
+			// this.Headers.length = 0;
+			// this.Footers.length = 0;
+			// this.Headers.push(...layout.header);
+			// this.Elements.push(...layout.body);
+			// this.Footers.push(...layout.footer);
+			// this.Elements.forEach((page, index) => {
+			// 	page.header = [createHeaderFooterElement(this.getHeaderObject(index).childrens, "header")];
+			// 	page.footer = [createHeaderFooterElement(this.getFooterObject(index).childrens, "footer")]
+			// });
+			// End of debugging code
 			objectToSave.print_designer_print_format = JSON.stringify(layout);
 
 			// update fonts in store
@@ -180,7 +215,6 @@ export const useElementStore = defineStore("ElementStore", {
 		async saveElements() {
 			const MainStore = useMainStore();
 			if (this.checkIfAnyTableIsEmpty()) return;
-			if (MainStore.mode == "preview") return;
 			let is_standard = await frappe.db.get_value(
 				"Print Format",
 				MainStore.printDesignName,
@@ -254,33 +288,34 @@ export const useElementStore = defineStore("ElementStore", {
 			return false;
 		},
 		computeMainLayout() {
-			const MainStore = useMainStore();
-			elements = [...this.Elements];
-			elements.sort((a, b) => {
-				return a.startY < b.startY ? -1 : 1;
+			let header = [];
+			let body = [];
+			let footer = [];
+			const pages = [...this.Elements];
+			const headerArray = [...this.Headers];
+			const footerArray = [...this.Footers];
+			headerArray.forEach((h) => {
+				const headerCopy = { ...h };
+				h.childrens = this.cleanUpElementsForSave(h.childrens, "header") || [];
+				header.push(headerCopy);
 			});
-			const findLastHeaderEl = (el) => {
-				return el.startY >= MainStore.page.headerHeight;
-			};
-			const findFirstFooterEl = (el) => {
-				return (
-					el.startY >=
-					MainStore.page.height -
-						MainStore.page.footerHeight -
-						MainStore.page.marginTop -
-						MainStore.page.marginBottom
-				);
-			};
-			let headerIndex = elements.findIndex((el) => findLastHeaderEl(el));
-			headerIndex == -1 && (headerIndex = elements.length);
-			const header = this.cleanUpElementsForSave(elements.splice(0, headerIndex), "header");
-			let footerIndex = elements.findIndex((el) => findFirstFooterEl(el));
-			footerIndex == -1 && (footerIndex = elements.length);
-			const footer = this.cleanUpElementsForSave(
-				elements.splice(footerIndex, elements.length - footerIndex),
-				"footer"
-			);
-			const body = this.cleanUpElementsForSave(elements, "body");
+			pages.forEach((page) => {
+				const pageCopy = { ...page };
+				delete pageCopy.DOMRef;
+				delete pageCopy.parent;
+				delete pageCopy.header;
+				delete pageCopy.footer;
+				pageCopy.childrens.sort((a, b) => {
+					return a.startY < b.startY ? -1 : 1;
+				});
+				pageCopy.childrens = this.cleanUpElementsForSave(pageCopy.childrens, "body");
+				body.push(pageCopy);
+			});
+			footerArray.forEach((f) => {
+				const footerCopy = { ...f };
+				footerCopy.childrens = this.cleanUpElementsForSave(f.childrens, "footer") || [];
+				footer.push(footerCopy);
+			});
 			return { header, body, footer };
 		},
 		// TODO: Refactor this function
@@ -345,11 +380,11 @@ export const useElementStore = defineStore("ElementStore", {
 				rowElements.push(wrapper);
 			}
 			rowElements.sort((a, b) => (a.startY < b.startY ? -1 : 1));
-			if (type == "header") {
+			if (type == "header" && rowElements.length) {
 				const lastHeaderRow = rowElements[rowElements.length - 1];
 				lastHeaderRow.height =
 					MainStore.page.headerHeight - MainStore.page.marginTop - lastHeaderRow.startY;
-			} else if (type == "footer") {
+			} else if (type == "footer" && rowElements.length) {
 				const lastHeaderRow = rowElements[rowElements.length - 1];
 				lastHeaderRow.height =
 					MainStore.page.height -
@@ -456,7 +491,6 @@ export const useElementStore = defineStore("ElementStore", {
 					auto: __("in table, auto layout failed"),
 				});
 				message += messageType[type];
-				MainStore.mode = "pdfSetup";
 				frappe.show_alert(
 					{
 						message: message,
@@ -656,19 +690,19 @@ export const useElementStore = defineStore("ElementStore", {
 		childrensSave(element, printFonts = null) {
 			let saveEl = { ...element };
 			delete saveEl.DOMRef;
-			delete saveEl.index;
 			delete saveEl.snapPoints;
 			delete saveEl.snapEdges;
 			delete saveEl.parent;
 			this.cleanUpDynamicContent(saveEl);
 			if (saveEl.type == "table") {
+				saveEl.table = { ...saveEl.table };
 				delete saveEl.table.childfields;
 				delete saveEl.table.default_layout;
 			}
 			if (printFonts && ["text", "table"].indexOf(saveEl.type) != -1) {
 				handlePrintFonts(saveEl, printFonts);
 			}
-			if (saveEl.type == "rectangle") {
+			if (saveEl.type == "rectangle" || saveEl.type == "page") {
 				const childrensArray = saveEl.childrens;
 				saveEl.childrens = [];
 				childrensArray.forEach((el) => {
@@ -731,7 +765,7 @@ export const useElementStore = defineStore("ElementStore", {
 		createWrapperElement(dimensions, parent) {
 			const MainStore = useMainStore();
 			const coordinates = {};
-			if (Array.isArray(parent)) {
+			if (parent.type == "page") {
 				coordinates["startY"] = dimensions.top;
 				coordinates["pageY"] = dimensions.top;
 				coordinates["startX"] = 0;
@@ -778,7 +812,7 @@ export const useElementStore = defineStore("ElementStore", {
 			return;
 		},
 		updateRowChildrenDimensions(wrapper, children, parent) {
-			if (Array.isArray(parent)) {
+			if (parent.type == "page") {
 				children.forEach((el) => {
 					el.startY -= wrapper.startY;
 				});
@@ -822,7 +856,7 @@ export const useElementStore = defineStore("ElementStore", {
 		createRowWrapperElement(dimension, currentRow, parent) {
 			const MainStore = useMainStore();
 			const coordinates = {};
-			if (Array.isArray(parent)) {
+			if (parent.type == "page") {
 				coordinates["startY"] = dimension.top;
 				coordinates["pageY"] = dimension.top;
 				coordinates["startX"] = 0;
@@ -1054,7 +1088,7 @@ export const useElementStore = defineStore("ElementStore", {
 			element.isDraggable = true;
 			element.isResizable = true;
 			this.handleDynamicContent(element);
-			if (element.type == "rectangle") {
+			if (element.type == "rectangle" || element.type == "page") {
 				element.isDropZone = true;
 				const childrensArray = element.childrens;
 				element.childrens = [];
@@ -1091,35 +1125,37 @@ export const useElementStore = defineStore("ElementStore", {
 			});
 			return;
 		},
-		async loadElements(printDesignName) {
-			frappe.dom.freeze(__("Loading Print Format"));
-			const printFormat = await frappe.db.get_value("Print Format", printDesignName, [
-				"print_designer_header",
-				"print_designer_body",
-				"print_designer_after_table",
-				"print_designer_footer",
-				"print_designer_settings",
-			]);
-			let ElementsHeader = JSON.parse(printFormat.message.print_designer_header);
-			let ElementsBody = JSON.parse(printFormat.message.print_designer_body);
-			let ElementsAfterTable = JSON.parse(printFormat.message.print_designer_after_table);
-			let ElementsFooter = JSON.parse(printFormat.message.print_designer_footer);
-			let settings = JSON.parse(printFormat.message.print_designer_settings);
-			this.loadSettings(settings);
-			this.Elements = [
-				...(ElementsHeader || []),
-				...(ElementsBody || []),
-				...(ElementsAfterTable || []),
-				...(ElementsFooter || []),
-			];
-			this.Elements.map((element) => {
+		getHeaderObject(index) {
+			if (index == 0) {
+				return this.Headers.find((header) => header.firstPage == true);
+			} else if (index == this.Elements.length - 1) {
+				return this.Headers.find((header) => header.lastPage == true);
+			} else if (index % 2 != 0) {
+				return this.Headers.find((header) => header.oddPage == true);
+			} else {
+				return this.Headers.find((header) => header.evenPage == true);
+			}
+		},
+		getFooterObject(index) {
+			if (index == 0) {
+				return this.Footers.find((footer) => footer.firstPage == true);
+			} else if (index == this.Elements.length - 1) {
+				return this.Footers.find((footer) => footer.lastPage == true);
+			} else if (index % 2 != 0) {
+				return this.Footers.find((footer) => footer.oddPage == true);
+			} else {
+				return this.Footers.find((footer) => footer.evenPage == true);
+			}
+		},
+		setElementProperties(parent) {
+			parent.childrens.map((element) => {
 				element.DOMRef = null;
-				element.parent = this.Elements;
+				element.parent = parent;
 				delete element.printY;
 				element.isDraggable = true;
 				element.isResizable = true;
 				this.handleDynamicContent(element);
-				if (element.type == "rectangle") {
+				if (element.type == "rectangle" || element.type == "page") {
 					element.isDropZone = true;
 					if (element.childrens.length) {
 						let childrensArray = element.childrens;
@@ -1133,6 +1169,55 @@ export const useElementStore = defineStore("ElementStore", {
 				}
 				return element;
 			});
+		},
+		createPageElement(element, type) {
+			return {
+				type: "page",
+				childrens: [...element],
+				firstPage: true,
+				oddPage: true,
+				evenPage: true,
+				lastPage: true,
+				DOMRef: null,
+			};
+		},
+		async loadElements(printDesignName) {
+			frappe.dom.freeze(__("Loading Print Format"));
+			const printFormat = await frappe.db.get_value("Print Format", printDesignName, [
+				"print_designer_header",
+				"print_designer_body",
+				"print_designer_after_table",
+				"print_designer_footer",
+				"print_designer_settings",
+			]);
+			let settings = JSON.parse(printFormat.message.print_designer_settings);
+			this.loadSettings(settings);
+
+			let ElementsBody = JSON.parse(printFormat.message.print_designer_body);
+			let ElementsAfterTable = JSON.parse(printFormat.message.print_designer_after_table);
+			const headers = JSON.parse(printFormat.message.print_designer_header);
+			const footers = JSON.parse(printFormat.message.print_designer_footer);
+			headers.forEach((header) => {
+				this.Headers.push(header);
+			});
+			footers.forEach((footer) => {
+				this.Footers.push(footer);
+			});
+			// backwards compatibility :(
+			if (ElementsAfterTable && ElementsAfterTable.length) {
+				ElementsBody[0].childrens.push(...ElementsAfterTable);
+			}
+			this.Elements.length = 0;
+			this.Elements.push(...ElementsBody);
+			ElementsBody.forEach((page, index) => {
+				page.header = [
+					createHeaderFooterElement(this.getHeaderObject(index).childrens, "header"),
+				];
+				page.footer = [
+					createHeaderFooterElement(this.getFooterObject(index).childrens, "footer"),
+				];
+			});
+			this.Elements.forEach((page) => this.setElementProperties(page));
 			frappe.dom.unfreeze();
 		},
 		setPrimaryTable(tableEl, value) {
@@ -1147,9 +1232,13 @@ export const useElementStore = defineStore("ElementStore", {
 		},
 		// This is called to check if the element is overlapping with any other element (row only)
 		// TODO: add column calculations
-		isElementOverlapping(currentEl, elements = this.Elements) {
-			const currentElIndex =
-				currentEl.index || this.Elements.findIndex((el) => el === currentEl);
+		isElementOverlapping(currentEl, elements = null) {
+			const MainStore = useMainStore();
+			MainStore.activePage = getParentPage(currentEl.parent);
+			if (!elements) {
+				elements = MainStore.activePage.childrens;
+			}
+			const currentElIndex = currentEl.index || elements.findIndex((el) => el === currentEl);
 			const currentStartY = parseInt(currentEl.startY);
 			const currentEndY = parseInt(currentEl.startY + currentEl.height);
 
