@@ -296,6 +296,8 @@ export const useElementStore = defineStore("ElementStore", {
 			const footerArray = [...this.Footers];
 			headerArray.forEach((h) => {
 				const headerCopy = { ...h };
+				delete headerCopy.DOMRef;
+				delete headerCopy.parent;
 				h.childrens = this.cleanUpElementsForSave(h.childrens, "header") || [];
 				header.push(headerCopy);
 			});
@@ -313,6 +315,8 @@ export const useElementStore = defineStore("ElementStore", {
 			});
 			footerArray.forEach((f) => {
 				const footerCopy = { ...f };
+				delete footerCopy.DOMRef;
+				delete footerCopy.parent;
 				footerCopy.childrens = this.cleanUpElementsForSave(f.childrens, "footer") || [];
 				footer.push(footerCopy);
 			});
