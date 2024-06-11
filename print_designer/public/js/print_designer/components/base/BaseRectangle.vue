@@ -1,9 +1,18 @@
 <template>
 	<div
+		class="header-footer-overlay"
+		:style="[postionalStyles(startX, startY, width, height), 'width: 100%']"
+		v-if="elementType && ['header', 'footer'].includes(elementType)"
+		@dblclick="(e) => editHeaderFooter(e, elementType)"
+	>
+		<p>{{ `Double Click to edit ${elementType}` }}</p>
+	</div>
+	<div
 		:style="[
 			style,
 			style.backgroundColor == '' && { backgroundColor: 'transparent' },
 			postionalStyles(startX, startY, width, height),
+			elementType && ['header', 'footer'].includes(elementType) && 'width: 100%',
 		]"
 		:class="[
 			'rectangle',
@@ -52,6 +61,7 @@ import {
 	deleteCurrentElements,
 	lockAxis,
 	postionalStyles,
+	updateDynamicData,
 } from "../../utils";
 
 const props = defineProps({
@@ -74,7 +84,7 @@ const isComponent = Object.freeze({
 	table: BaseTable,
 	barcode: BaseBarcode,
 });
-const { id, startX, startY, width, height, style, classes } = toRefs(props.object);
+const { id, startX, startY, width, height, style, classes, elementType } = toRefs(props.object);
 const ElementStore = useElementStore();
 const MainStore = useMainStore();
 
@@ -200,6 +210,30 @@ const handleMouseUp = (e, element = null, index) => {
 	MainStore.isMoved = MainStore.isMoveStart = false;
 	MainStore.lastCloned = null;
 };
+
+const editHeaderFooter = (e, mode) => {
+	MainStore.mode = mode;
+	let RawObject = [];
+	let object;
+	if (mode == "header") {
+		ElementStore.HeadersRawObject = RawObject;
+		object = [...ElementStore.Headers];
+	} else {
+		ElementStore.FootersRawObject = RawObject;
+		object = [...ElementStore.Footers];
+	}
+	ElementStore.Elements.map((el) => delete el.header);
+	ElementStore.Elements.map((el) => delete el.footer);
+	ElementStore.ElementsRawObject = [
+		...ElementStore.Elements.map((el) => ElementStore.childrensSave(el)),
+	];
+	RawObject.push(...object.map((el) => ElementStore.childrensSave(el)));
+	ElementStore.Elements.length = 0;
+	ElementStore.Elements.push(
+		...object.map((el) => ElementStore.childrensLoad(el, ElementStore.Elements))
+	);
+	updateDynamicData();
+};
 </script>
 
 <script>
@@ -208,4 +242,26 @@ export default {
 };
 </script>
 
-<style lang="scss" scoped></style>
+<style lang="scss" scoped>
+.header-footer-overlay {
+	position: absolute;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	background-color: transparent;
+	z-index: 1000;
+
+	p {
+		display: none;
+	}
+}
+.header-footer-overlay:hover {
+	background-color: var(--subtle-accent);
+	opacity: 0.85;
+	cursor: pointer;
+	p {
+		display: block;
+	}
+	outline: 1px solid var(--primary) !important;
+}
+</style>

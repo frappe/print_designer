@@ -51,7 +51,70 @@
 						y[j].textContent = vars[x[i]];
 					}
 				}
-			}
+
+				const headers = {
+					firstPage : document.getElementById("firstPageHeader"),
+					oddPage : document.getElementById("oddPageHeader"),
+					evenPage : document.getElementById("evenPageHeader"),
+					lastPage : document.getElementById("lastPageHeader"),
+				}
+				const footers = {
+					firstPage : document.getElementById("firstPageFooter"),
+					oddPage : document.getElementById("oddPageFooter"),
+					evenPage : document.getElementById("evenPageFooter"),
+					lastPage : document.getElementById("lastPageFooter"),
+				}
+				function displayHeaderFooter(elements, selectedElements) {
+					for (var key in elements) {
+						if (elements[key]) {
+							if (elements[key] === selectedElements) {
+								elements[key].style.display = "block";
+							} else {
+								elements[key].style.display = "none";
+							}
+						}
+					}
+				}
+				var page_no = parseInt(vars["page"]);
+				var total_page_no = parseInt(vars["topage"]);
+				if (page_no == 1) {
+					if (headers.firstPage) {
+						displayHeaderFooter(headers, headers.firstPage);
+					} else {
+						displayHeaderFooter(headers, headers.oddPage);
+					}
+					if (footers.firstPage) {
+						displayHeaderFooter(footers, footers.firstPage);
+					} else {
+						displayHeaderFooter(footers, footers.oddPage);
+					}
+				} else if (page_no == total_page_no) {
+					if (headers.lastPage) {
+						displayHeaderFooter(headers, headers.lastPage);
+					} else {
+						if (total_page_no % 2 == 0) {
+							displayHeaderFooter(headers, headers.evenPage);
+						} else {
+							displayHeaderFooter(headers, headers.oddPage);
+						}
+					}
+					if (footers.lastPage) {
+						displayHeaderFooter(footers, footers.lastPage);
+					} else {
+						if (total_page_no % 2 == 0) {
+							displayHeaderFooter(footers, footers.evenPage);
+						} else {
+							displayHeaderFooter(footers, footers.oddPage);
+						}
+					}
+				} else if (page_no % 2 == 0) {
+					displayHeaderFooter(headers, headers.evenPage);
+					displayHeaderFooter(footers, footers.evenPage);
+				} else {
+					displayHeaderFooter(headers, headers.oddPage);
+					displayHeaderFooter(footers, footers.oddPage);
+				}
+		}
 		</script>
 
 		{% for tag in styles -%}

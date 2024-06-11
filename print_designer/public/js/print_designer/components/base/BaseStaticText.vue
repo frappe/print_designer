@@ -195,14 +195,14 @@ const handleDblClick = (e, element, index) => {
 };
 
 onMounted(() => {
-	if (!!DOMRef.value.firstElementChild.innerText) return;
+	if (!DOMRef || !!DOMRef.value.firstElementChild.innerText) return;
 	setTimeout(function () {
 		DOMRef.value.firstElementChild.focus();
 		DOMRef.value.firstElementChild.dataset.placeholder = "Type Something...";
 	}, 0);
 });
 onUpdated(() => {
-	if (!isFixedSize.value) {
+	if (!isFixedSize.value && DOMRef) {
 		let targetRect = DOMRef.value.getBoundingClientRect();
 		width.value = targetRect.width + 2;
 		height.value = targetRect.height + 2;

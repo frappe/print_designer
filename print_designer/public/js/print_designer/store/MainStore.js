@@ -15,10 +15,12 @@ export const useMainStore = defineStore("MainStore", {
 		 */
 		textControlType: "dynamic",
 		/**
-		 * @type {'editing'|'pdfSetup'|'preview'} mode
+		 * @type {'editing'|'footer'|'header'} mode
 		 */
-		schema_version: "1.2.0",
+		schema_version: "1.3.0",
 		mode: "editing",
+		activePage: null,
+		visiblePages: [],
 		cursor: "url('/assets/print_designer/images/mouse-pointer.svg'), default !important",
 		isMarqueeActive: false,
 		isDrawing: false,
@@ -41,7 +43,6 @@ export const useMainStore = defineStore("MainStore", {
 		imageDocFields: [],
 		snapPoints: [],
 		snapEdges: [],
-		mainContainer: new Object(),
 		propertiesContainer: new Object(),
 		openModal: false,
 		openDynamicModal: null,
@@ -172,6 +173,16 @@ export const useMainStore = defineStore("MainStore", {
 				return parseFloat(convertedUnit.value.toFixed(3));
 			};
 		},
+		getPageStyle() {
+			switch (this.mode) {
+				case "editing":
+					return this.getPageSettings;
+				case "header":
+					return this.getHeaderSettings;
+				case "footer":
+					return this.getFooterSettings;
+			}
+		},
 		getPageSettings() {
 			return {
 				height:
@@ -181,6 +192,24 @@ export const useMainStore = defineStore("MainStore", {
 				width:
 					this.convertToPageUOM(
 						this.page.width - (this.page.marginLeft + this.page.marginRight)
+					) + this.page.UOM,
+			};
+		},
+		getHeaderSettings() {
+			return {
+				height: this.convertToPageUOM(this.page.headerHeight) + this.page.UOM,
+				width:
+					this.convertToPageUOM(
+						this.page.width - this.page.marginLeft - this.page.marginRight
+					) + this.page.UOM,
+			};
+		},
+		getFooterSettings() {
+			return {
+				height: this.convertToPageUOM(this.page.footerHeight) + this.page.UOM,
+				width:
+					this.convertToPageUOM(
+						this.page.width - this.page.marginLeft - this.page.marginRight
 					) + this.page.UOM,
 			};
 		},

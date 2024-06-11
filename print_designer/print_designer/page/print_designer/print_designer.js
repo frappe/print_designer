@@ -76,6 +76,37 @@ const printDesignerDialog = () => {
 						name: print_format_name,
 						doc_type: doctype,
 						print_designer: 1,
+						print_designer_header: JSON.stringify([
+							{
+								type: "page",
+								childrens: [],
+								firstPage: true,
+								oddPage: true,
+								evenPage: true,
+								lastPage: true,
+								DOMRef: null,
+							},
+						]),
+						print_designer_body: JSON.stringify([
+							{
+								type: "page",
+								index: 0,
+								DOMRef: null,
+								isDropZone: true,
+								childrens: [],
+							},
+						]),
+						print_designer_footer: JSON.stringify([
+							{
+								type: "page",
+								childrens: [],
+								firstPage: true,
+								oddPage: true,
+								evenPage: true,
+								lastPage: true,
+								DOMRef: null,
+							},
+						]),
 					})
 					.then((doc) => {
 						// Incase Route is Same, set_route() is needed to refresh.
