@@ -257,7 +257,7 @@ export const useElementStore = defineStore("ElementStore", {
 			objectToSave.print_designer_settings = JSON.stringify(settingsForSave);
 			objectToSave.print_designer_after_table = null;
 			objectToSave.css = css;
-			if (MainStore.isOlderSchema("1.1.0")) {
+			if (MainStore.isOlderSchema("1.3.0")) {
 				await this.printFormatCopyOnOlderSchema(objectToSave);
 			} else {
 				await frappe.db.set_value("Print Format", MainStore.printDesignName, objectToSave);

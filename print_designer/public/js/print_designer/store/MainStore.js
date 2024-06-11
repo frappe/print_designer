@@ -17,7 +17,7 @@ export const useMainStore = defineStore("MainStore", {
 		/**
 		 * @type {'editing'|'footer'|'header'} mode
 		 */
-		schema_version: "1.2.0",
+		schema_version: "1.3.0",
 		mode: "editing",
 		activePage: null,
 		visiblePages: [],
