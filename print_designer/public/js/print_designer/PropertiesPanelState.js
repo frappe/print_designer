@@ -7,6 +7,7 @@ import {
 	handleAlignIconClick,
 	handleBorderIconClick,
 	getConditonalObject,
+	getParentPage,
 } from "./utils";
 export const createPropertiesPanel = () => {
 	const MainStore = useMainStore();
@@ -574,7 +575,12 @@ export const createPropertiesPanel = () => {
 					labelDirection: "column",
 					condtional: () => {
 						const currentEl = MainStore.getCurrentElementsValues[0];
-						if (currentEl.isElementOverlapping) {
+						if (
+							ElementStore.isElementOverlapping(
+								currentEl,
+								getParentPage(currentEl).childrens
+							)
+						) {
 							return false;
 						}
 						if (
