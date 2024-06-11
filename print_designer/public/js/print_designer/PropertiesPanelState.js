@@ -412,10 +412,34 @@ export const createPropertiesPanel = () => {
 						style: "secondary",
 						margin: 15,
 						onClick: (e, field) => {
-							ElementStore.Elements.splice(
-								ElementStore.Elements.indexOf(MainStore.activePage),
-								1
-							);
+							if (MainStore.activePage?.childrens.length) {
+								let message = __("Are you sure you want to delete the page?");
+								frappe.confirm(message, () => {
+									ElementStore.Elements.splice(
+										ElementStore.Elements.indexOf(MainStore.activePage),
+										1
+									);
+									frappe.show_alert(
+										{
+											message: `Page Deleted Successfully`,
+											indicator: "green",
+										},
+										5
+									);
+								});
+							} else {
+								ElementStore.Elements.splice(
+									ElementStore.Elements.indexOf(MainStore.activePage),
+									1
+								);
+								frappe.show_alert(
+									{
+										message: `Page Deleted Successfully`,
+										indicator: "green",
+									},
+									5
+								);
+							}
 							e.target.blur();
 						},
 					},
