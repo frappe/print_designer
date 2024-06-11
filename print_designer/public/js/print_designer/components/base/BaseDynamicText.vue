@@ -232,6 +232,7 @@ const handleDblClick = (e, element) => {
 
 onMounted(() => {
 	selectedDynamicText.value = null;
+	if (!DOMRef || !!DOMRef.value.firstElementChild.innerText) return;
 	nextTick(() => {
 		DOMRef.value.firstElementChild.dataset.placeholder = "Choose Dynamic Field...";
 	});
