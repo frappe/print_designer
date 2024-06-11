@@ -96,9 +96,9 @@ export const useElementStore = defineStore("ElementStore", {
 			// this.Elements.length = 0;
 			// this.Headers.length = 0;
 			// this.Footers.length = 0;
-			// this.Headers.push(...layout.header);
-			// this.Elements.push(...layout.body);
-			// this.Footers.push(...layout.footer);
+			// this.Headers.push(...header);
+			// this.Elements.push(...body);
+			// this.Footers.push(...footer);
 			// this.Elements.forEach((page, index) => {
 			// 	page.header = [createHeaderFooterElement(this.getHeaderObject(index).childrens, "header")];
 			// 	page.footer = [createHeaderFooterElement(this.getFooterObject(index).childrens, "footer")]
@@ -389,12 +389,8 @@ export const useElementStore = defineStore("ElementStore", {
 				lastHeaderRow.height =
 					MainStore.page.headerHeight - MainStore.page.marginTop - lastHeaderRow.startY;
 			} else if (type == "footer" && rowElements.length) {
-				const lastHeaderRow = rowElements[rowElements.length - 1];
-				lastHeaderRow.height =
-					MainStore.page.height -
-					MainStore.page.marginTop -
-					MainStore.page.marginBottom -
-					lastHeaderRow.startY;
+				const lastFooterRow = rowElements[rowElements.length - 1];
+				lastFooterRow.height = MainStore.page.footerHeight - lastFooterRow.startY;
 			}
 			return rowElements;
 		},
@@ -619,12 +615,6 @@ export const useElementStore = defineStore("ElementStore", {
 					offsetRect.top = MainStore.page.headerHeight;
 				}
 			}
-			if (containerType == "footer" && index == 0) {
-				offsetRect.top =
-					MainStore.page.height -
-					MainStore.page.footerHeightWithMargin -
-					MainStore.page.marginTop;
-			}
 			// element is parent level row.
 			if (index > 0 && ["header", "body", "footer"].includes(containerType)) {
 				offsetRect.top = prevDimensions.bottom;
@@ -804,9 +794,22 @@ export const useElementStore = defineStore("ElementStore", {
 		},
 		updateChildrenInRowWrapper(wrapper, children) {
 			wrapper.childrens = children;
-			if (wrapper.childrens.some((el) => el.heightType == "auto-min-height")) {
+			if (
+				(wrapper.childrens.length == 1 &&
+					wrapper.childrens[0].heightType == "auto-min-height") ||
+				wrapper.childrens.some(
+					(el) =>
+						["row", "column"].includes(el.layoutType) &&
+						el.heightType == "auto-min-height"
+				)
+			) {
 				wrapper.heightType = "auto-min-height";
-			} else if (wrapper.childrens.some((el) => el.heightType == "auto")) {
+			} else if (
+				(wrapper.childrens.length == 1 && wrapper.childrens[0].heightType == "auto") ||
+				wrapper.childrens.some(
+					(el) => ["row", "column"].includes(el.layoutType) && el.heightType == "auto"
+				)
+			) {
 				wrapper.heightType = "auto";
 			} else {
 				wrapper.heightType = "fixed";
@@ -893,9 +896,21 @@ export const useElementStore = defineStore("ElementStore", {
 				this.computeLayoutInsideRectangle(childElements);
 			}
 			this.updateChildrenInRowWrapper(wrapper, childElements);
-			if (childElements.some((el) => el.heightType == "auto-min-height")) {
+			if (
+				(childElements.length == 1 && childElements[0].heightType == "auto-min-height") ||
+				childElements.some(
+					(el) =>
+						["row", "column"].includes(el.layoutType) &&
+						el.heightType == "auto-min-height"
+				)
+			) {
 				wrapper.heightType = "auto-min-height";
-			} else if (childElements.some((el) => el.heightType == "auto")) {
+			} else if (
+				(childElements.length == 1 && childElements[0].heightType == "auto") ||
+				childElements.some(
+					(el) => ["row", "column"].includes(el.layoutType) && el.heightType == "auto"
+				)
+			) {
 				wrapper.heightType = "auto";
 			} else {
 				wrapper.heightType = "fixed";
@@ -929,9 +944,21 @@ export const useElementStore = defineStore("ElementStore", {
 				this.computeLayoutInsideRectangle(childElements);
 			}
 			this.updateChildrenInColumnWrapper(wrapper, childElements);
-			if (childElements.some((el) => el.heightType == "auto-min-height")) {
+			if (
+				(childElements.length == 1 && childElements[0].heightType == "auto-min-height") ||
+				childElements.some(
+					(el) =>
+						["row", "column"].includes(el.layoutType) &&
+						el.heightType == "auto-min-height"
+				)
+			) {
 				wrapper.heightType = "auto-min-height";
-			} else if (childElements.some((el) => el.heightType == "auto")) {
+			} else if (
+				(childElements.length == 1 && childElements[0].heightType == "auto") ||
+				childElements.some(
+					(el) => ["row", "column"].includes(el.layoutType) && el.heightType == "auto"
+				)
+			) {
 				wrapper.heightType = "auto";
 			} else {
 				wrapper.heightType = "fixed";
@@ -1244,30 +1271,43 @@ export const useElementStore = defineStore("ElementStore", {
 			}
 			const currentElIndex = currentEl.index || elements.findIndex((el) => el === currentEl);
 			const currentStartY = parseInt(currentEl.startY);
+			const currentStartX = parseInt(currentEl.startX);
 			const currentEndY = parseInt(currentEl.startY + currentEl.height);
-
+			const currentEndX = parseInt(currentEl.startX + currentEl.width);
 			return (
 				elements.findIndex((el, index) => {
 					if (index == currentElIndex) return false;
 					const elStartY = parseInt(el.startY);
 					const elEndY = parseInt(el.startY + el.height);
+					const elStartX = parseInt(el.startX);
+					const elEndX = parseInt(el.startX + el.width);
 					if (
 						currentStartY <= elStartY &&
 						elStartY <= currentEndY &&
-						!(currentStartY <= elEndY && elEndY <= currentEndY)
+						!(currentStartY <= elEndY && elEndY <= currentEndY) &&
+						currentStartX <= elStartX &&
+						elStartX <= currentEndX &&
+						!(currentStartX <= elEndX && elEndX <= currentEndX)
 					) {
 						return true;
 					} else if (
 						!(currentStartY <= elStartY && elStartY <= currentEndY) &&
 						currentStartY <= elEndY &&
-						elEndY <= currentEndY
+						elEndY <= currentEndY &&
+						!(currentStartX <= elStartX && elStartX <= currentEndX) &&
+						currentStartX <= elEndX &&
+						elEndX <= currentEndX
 					) {
 						return true;
 					} else if (
 						elStartY <= currentStartY &&
 						currentStartY <= elEndY &&
 						elStartY <= currentEndY &&
-						currentEndY <= elEndY
+						currentEndY <= elEndY &&
+						elStartX <= currentStartX &&
+						currentStartX <= elEndX &&
+						elStartX <= currentEndX &&
+						currentEndX <= elEndX
 					) {
 						return true;
 					} else {
