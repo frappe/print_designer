@@ -1,9 +1,13 @@
-{% macro rectangle(element, render_element, send_to_jinja) -%}
-    <div id="{{ element.id }}" style="position:absolute; top:{{ element.startY }}px; left:{{ element.startX }}px; width:{{ element.width }}px; height:{{ element.height }}px; {{convert_css(element.style)}}"
+{% macro rectangle(element, render_element, send_to_jinja, heightType) -%}
+    {%- set heightType = element.get("heightType") -%}
+    {%- if settings.get("schema_version") == "1.1.0" or heightType == None -%}
+        {%- set heightType = "auto" if element.get("isDynamicHeight", False) else "fixed" -%}
+    {%- endif -%}
+    <div id="{{ element.id }}" style="position:{%- if heightType and heightType != 'fixed' -%}relative{% else %}absolute{%- endif -%}; {%- if heightType == 'fixed' -%}top: {%- else -%}margin-top: {%- endif -%}{{ element.startY }}px; left:{{ element.startX }}px; width:{{ element.width }}px; {%- if heightType != 'auto' -%} {%- if heightType == 'auto-min-height' -%}min-{%- endif -%}height:{{ element.height }}px; {%- endif -%} {{convert_css(element.style)}}"
     class="rectangle {{ element.classes | join(' ') }}">
         {% if element.childrens %}
             {% for object in element.childrens %}
-               {{ render_element(object, send_to_jinja) }}
+               {{ render_element(object, send_to_jinja, heightType) }}
             {% endfor %}
         {% endif %}
     </div>

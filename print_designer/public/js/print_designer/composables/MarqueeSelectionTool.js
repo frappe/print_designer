@@ -37,6 +37,7 @@ export function useMarqueeSelection() {
 		if (e.buttons != 1) return;
 		if (e.target.id == "canvas" && MainStore.activeControl != "mouse-pointer") {
 			MainStore.setActiveControl("MousePointer");
+			MainStore.activePage = null;
 			MainStore.isMarqueeActive = true;
 		}
 		if (!MainStore[beforeDraw]) return;
@@ -95,38 +96,34 @@ export function useMarqueeSelection() {
 				});
 			}
 
-			const a = {
-				x: parameters.startX - canvas.getBoundingClientRect().left,
-				y: parameters.startY - canvas.getBoundingClientRect().top,
+			const canvas = {
+				x: parameters.startX,
+				y: parameters.startY,
 				width: Math.abs(parameters.width),
-				height: Math.abs(parameters.height) + canvas.scrollTop,
+				height: Math.abs(parameters.height),
 			};
-			const mainContainerRect = MainStore.mainContainer.getBoundingClientRect();
-			a.x -=
-				mainContainerRect.x - MainStore.toolbarWidth > 0
-					? mainContainerRect.x - MainStore.toolbarWidth
-					: 0;
-			a.y -=
-				mainContainerRect.y - MainStore.page.marginTop <= 110
-					? MainStore.page.marginTop + 50
-					: mainContainerRect.y - MainStore.page.marginTop - 110;
-			for (const value of ElementStore.Elements) {
-				const { id, startX, startY, width, height, DOMRef } = value;
-				const b = {
-					id,
-					x: startX,
-					y: startY,
-					width,
-					height,
-					DOMRef,
-				};
-
-				if (isInBounds(a, b)) {
-					inBounds.push(DOMRef);
-					if ((e.metaKey || e.ctrlKey) && e.shiftKey) {
-						delete MainStore.currentElements[id];
-					} else {
-						MainStore.currentElements[id] = value;
+			for (const page of ElementStore.Elements) {
+				const pageRect = page.DOMRef.getBoundingClientRect();
+				a = { ...canvas };
+				a.x -= pageRect.x;
+				a.y -= pageRect.y;
+				for (const element of page.childrens) {
+					const { id, startX, startY, width, height, DOMRef } = element;
+					const b = {
+						id,
+						x: startX,
+						y: startY,
+						width,
+						height,
+						DOMRef,
+					};
+					if (!element.relativeContainer && isInBounds(a, b)) {
+						inBounds.push(DOMRef);
+						if ((e.metaKey || e.ctrlKey) && e.shiftKey) {
+							delete MainStore.currentElements[id];
+						} else {
+							MainStore.currentElements[id] = element;
+						}
 					}
 				}
 			}

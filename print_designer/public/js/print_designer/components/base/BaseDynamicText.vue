@@ -15,6 +15,7 @@
 					startX +
 					'px',
 			},
+			style.zIndex && { zIndex: style.zIndex },
 		]"
 		:class="MainStore.getCurrentElementsId.includes(id) ? 'active-elements' : 'text-hover'"
 		:ref="setElements(object, index)"
@@ -68,7 +69,7 @@
 <script setup>
 import BaseDynamicTextSpanTag from "./BaseDynamicTextSpanTag.vue";
 import BaseResizeHandles from "./BaseResizeHandles.vue";
-import { toRefs, onUpdated, watch, onMounted } from "vue";
+import { toRefs, onUpdated, watch, onMounted, nextTick } from "vue";
 import { useMainStore } from "../../store/MainStore";
 import { useElement } from "../../composables/Element";
 import { useDraw } from "../../composables/Draw";
@@ -231,7 +232,10 @@ const handleDblClick = (e, element) => {
 
 onMounted(() => {
 	selectedDynamicText.value = null;
-	DOMRef.value.firstElementChild.dataset.placeholder = "Choose Dynamic Field...";
+	if (!DOMRef || !!DOMRef.value.firstElementChild.innerText) return;
+	nextTick(() => {
+		DOMRef.value.firstElementChild.dataset.placeholder = "Choose Dynamic Field...";
+	});
 });
 
 onUpdated(() => {

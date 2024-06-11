@@ -12,19 +12,10 @@
 		<Icons style="display: none" />
 		<div class="primary-actions">
 			<button
-				class="btn btn-sm"
-				@click="
-					(event) => {
-						if (MainStore.mode == 'pdfSetup') {
-							MainStore.mode = 'editing';
-						} else {
-							MainStore.mode = 'pdfSetup';
-						}
-						event.target.blur();
-					}
-				"
+				class="btn btn-sm add-data-button"
+				@click="(event) => (MainStore.openJinjaModal = true)"
 			>
-				{{ MainStore.mode == "pdfSetup" ? "Exit" : "Header / Footer" }}
+				Custom Data
 			</button>
 			<button
 				class="btn btn-sm btn-primary"
@@ -39,14 +30,6 @@
 				"
 			>
 				Save
-			</button>
-		</div>
-		<div class="secondary-actions">
-			<button
-				class="btn btn-sm add-data-button"
-				@click="(event) => (MainStore.openJinjaModal = true)"
-			>
-				Manage Custom Data
 			</button>
 		</div>
 		<AppPropertiesPanelSection

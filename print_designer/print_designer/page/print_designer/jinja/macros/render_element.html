@@ -7,18 +7,18 @@
 {% from 'print_designer/page/print_designer/jinja/macros/table.html' import table with context %}
 
 
-{% macro render_element(element, send_to_jinja, is_parent_dynamic_height = false) -%}
+{% macro render_element(element, send_to_jinja, heightType = 'fixed') -%}
     {% if element.type == "rectangle" %}
-        {{ rectangle(element, render_element, send_to_jinja) }}
+        {{ rectangle(element, render_element, send_to_jinja, heightType) }}
     {% elif element.type == "image" %}
         {{image(element)}}
     {% elif element.type == "table" %}
-        {{table(element, send_to_jinja, is_parent_dynamic_height)}}
+        {{table(element, send_to_jinja, heightType)}}
     {% elif element.type == "text" %}
         {% if element.isDynamic %}
-            {{dynamictext(element, send_to_jinja, is_parent_dynamic_height)}}
+            {{dynamictext(element, send_to_jinja, heightType)}}
         {% else%}
-            {{statictext(element, send_to_jinja, is_parent_dynamic_height)}}
+            {{statictext(element, send_to_jinja, heightType)}}
         {% endif %}
     {% elif element.type == "barcode" %}
         {{barcode(element, send_to_jinja)}}

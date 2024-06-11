@@ -57,8 +57,9 @@ export const makeFeild = ({
 						obj_value = formatValue(object, propertyName, isStyle);
 
 						if (
-							(value || fieldtype == "Color") &&
-							formatValue(object, propertyName, isStyle) != value
+							(!(typeof value == "undefined" || value === null) ||
+								fieldtype == "Color") &&
+							obj_value != value
 						) {
 							object[propertyName] = value;
 							onChangeCallback && onChangeCallback(value);
@@ -93,10 +94,15 @@ export const makeFeild = ({
 			MainStore.frappeControls[name].$input[0].onfocus = () => {
 				MainStore.frappeControls[name].$input.select();
 				MainStore.frappeControls[name].$input.one("blur", () => {
-					MainStore.frappeControls[name].$input.val(
-						MainStore.frappeControls[name].value ||
-							MainStore.frappeControls[name].last_value
-					);
+					let value = MainStore.frappeControls[name].value;
+					if (
+						typeof value == "undefined" ||
+						value === null ||
+						(fieldtype == "Int" && !Number.isInteger(value))
+					) {
+						value = MainStore.frappeControls[name].last_value;
+					}
+					MainStore.frappeControls[name].$input.val(value);
 				});
 			};
 		} else if (fieldtype === "Select") {

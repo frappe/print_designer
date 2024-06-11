@@ -9,11 +9,7 @@ export function useAttachKeyBindings() {
 	function updateStartXY(axis, value) {
 		MainStore.getCurrentElementsValues.forEach((element) => {
 			let restrict;
-			if (element.parent === ElementStore.Elements) {
-				restrict = MainStore.mainContainer.getBoundingClientRect();
-			} else {
-				restrict = element.parent.DOMRef.getBoundingClientRect();
-			}
+			restrict = element.parent.DOMRef.getBoundingClientRect();
 			if (element[`start${axis}`] + value <= -1) {
 				element[`start${axis}`] = -1;
 			} else if (
@@ -32,12 +28,7 @@ export function useAttachKeyBindings() {
 	}
 	function updateWidthHeight(key, value) {
 		MainStore.getCurrentElementsValues.forEach((element) => {
-			let restrict;
-			if (element.parent === ElementStore.Elements) {
-				restrict = MainStore.mainContainer.getBoundingClientRect();
-			} else {
-				restrict = element.parent.DOMRef.getBoundingClientRect();
-			}
+			let restrict = element.parent.DOMRef.getBoundingClientRect();
 			if (element[key] + value <= -1) {
 				element[key] = -1;
 			} else if (
@@ -54,12 +45,13 @@ export function useAttachKeyBindings() {
 	const handleKeyDown = async (e) => {
 		MainStore.isAltKey = e.altKey;
 		MainStore.isShiftKey = e.shiftKey;
-		if (e.target !== document.body || MainStore.mode != "editing" || MainStore.openModal)
-			return;
+		if (e.target !== document.body || MainStore.openModal) return;
 		if (e.ctrlKey || e.metaKey) {
 			if (["a", "A"].indexOf(e.key) != -1) {
-				ElementStore.Elements.forEach((element) => {
-					MainStore.currentElements[element.id] = element;
+				ElementStore.Elements.forEach((page) => {
+					page.childrens.forEach((element) => {
+						MainStore.currentElements[element.id] = element;
+					});
 				});
 			} else if (!e.repeat && ["s", "S"].indexOf(e.key) != -1) {
 				await ElementStore.saveElements();

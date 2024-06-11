@@ -8,13 +8,20 @@ import {
 	createTable,
 	createBarcode,
 } from "../defaultObjects";
-import { handlePrintFonts, setCurrentElement } from "../utils";
+import {
+	handlePrintFonts,
+	setCurrentElement,
+	createHeaderFooterElement,
+	getParentPage,
+} from "../utils";
 
 import html2canvas from "html2canvas";
 
 export const useElementStore = defineStore("ElementStore", {
 	state: () => ({
 		Elements: new Array(),
+		Headers: new Array(),
+		Footers: new Array(),
 	}),
 	actions: {
 		createNewObject(event, element) {
@@ -37,42 +44,67 @@ export const useElementStore = defineStore("ElementStore", {
 			}
 			return newElement;
 		},
-		async computedLayoutForSave() {
-			const { headerRowElements, bodyRowElements, footerRowElements } =
-				await this.computeRowLayout();
-			// check if any element is overlapping with header or footer and raise errors.
-			if (!this.handleHeaderFooterOverlapping(headerRowElements.flat())) return;
-			if (!this.handleHeaderFooterOverlapping(bodyRowElements.flat())) return;
-			if (!this.handleHeaderFooterOverlapping(footerRowElements.flat())) return;
+		computeLayoutForSave() {
+			this.handleHeaderFooterOverlapping();
 
-			// calculate dimensions for rows
-			const headerDimensions = this.computeRowElementDimensions(headerRowElements, "header");
-			const bodyDimensions = this.computeRowElementDimensions(bodyRowElements, "body");
-			const footerDimensions = this.computeRowElementDimensions(footerRowElements, "footer");
-			// calculate columns inside rows and update dimensions to passed array
-			const headerColumnsInsideRows = await this.computeColumnLayout(
-				headerRowElements,
-				headerDimensions
-			);
-			const bodyColumnsInsideRows = await this.computeColumnLayout(
-				bodyRowElements,
-				bodyDimensions
-			);
-			const footerColumnsInsideRows = await this.computeColumnLayout(
-				footerRowElements,
-				footerDimensions
-			);
-
-			// clean up elements for save
-			const cleanedHeaderElements = this.cleanUpElementsForSave(
-				headerColumnsInsideRows,
-				"header"
-			);
-			const cleanedBodyElements = this.cleanUpElementsForSave(bodyColumnsInsideRows, "body");
-			const cleanedFooterElements = this.cleanUpElementsForSave(
-				footerColumnsInsideRows,
-				"footer"
-			);
+			const { header, body, footer } = this.computeMainLayout();
+			// before modifying save json object that is used by loadElements and UI.
+			const objectToSave = {
+				print_designer_header: JSON.stringify(header || []),
+				print_designer_body: JSON.stringify(body),
+				print_designer_footer: JSON.stringify(footer || []),
+				print_designer_after_table: null,
+			};
+			const layout = {
+				header: [],
+				body: [],
+				footer: [],
+			};
+			let headerElements = [];
+			let bodyElements = [];
+			let footerElements = [];
+			if (header) {
+				const headerArray = header.map((h) => {
+					h.childrens = this.computeRowLayout(h.childrens, headerElements, "header");
+					return h;
+				});
+				layout.header = {
+					firstPage: headerArray.find((h) => h.firstPage).childrens,
+					oddPage: headerArray.find((h) => h.oddPage).childrens,
+					evenPage: headerArray.find((h) => h.evenPage).childrens,
+					lastPage: headerArray.find((h) => h.lastPage).childrens,
+				};
+			}
+			// it will throw error if body is empty so no need to check here
+			layout.body = body.map((b) => {
+				b.childrens = this.computeRowLayout(b.childrens, bodyElements, "body");
+				return b;
+			});
+			if (footer) {
+				const footerArray = footer.map((f) => {
+					f.childrens = this.computeRowLayout(f.childrens, footerElements, "footer");
+					return f;
+				});
+				layout.footer = {
+					firstPage: footerArray.find((h) => h.firstPage).childrens,
+					oddPage: footerArray.find((h) => h.oddPage).childrens,
+					evenPage: footerArray.find((h) => h.evenPage).childrens,
+					lastPage: footerArray.find((h) => h.lastPage).childrens,
+				};
+			}
+			// WARNING: lines below are for debugging purpose only.
+			// this.Elements.length = 0;
+			// this.Headers.length = 0;
+			// this.Footers.length = 0;
+			// this.Headers.push(...header);
+			// this.Elements.push(...body);
+			// this.Footers.push(...footer);
+			// this.Elements.forEach((page, index) => {
+			// 	page.header = [createHeaderFooterElement(this.getHeaderObject(index).childrens, "header")];
+			// 	page.footer = [createHeaderFooterElement(this.getFooterObject(index).childrens, "footer")]
+			// });
+			// End of debugging code
+			objectToSave.print_designer_print_format = JSON.stringify(layout);
 
 			// update fonts in store
 			const MainStore = useMainStore();
@@ -84,20 +116,7 @@ export const useElementStore = defineStore("ElementStore", {
 					...(MainStore.printFooterFonts || {}),
 				})
 			);
-			return {
-				header: {
-					layout: cleanedHeaderElements,
-					dimensions: headerDimensions,
-				},
-				body: {
-					layout: cleanedBodyElements,
-					dimensions: bodyDimensions,
-				},
-				footer: {
-					layout: cleanedFooterElements,
-					dimensions: footerDimensions,
-				},
-			};
+			return objectToSave;
 		},
 		// This is modified version of upload function used in frappe/FileUploader.vue
 		async upload_file(file) {
@@ -196,7 +215,6 @@ export const useElementStore = defineStore("ElementStore", {
 		async saveElements() {
 			const MainStore = useMainStore();
 			if (this.checkIfAnyTableIsEmpty()) return;
-			if (MainStore.mode == "preview") return;
 			let is_standard = await frappe.db.get_value(
 				"Print Format",
 				MainStore.printDesignName,
@@ -208,10 +226,8 @@ export const useElementStore = defineStore("ElementStore", {
 				MainStore.page.headerHeight + MainStore.page.marginTop;
 			MainStore.page.footerHeightWithMargin =
 				MainStore.page.footerHeight + MainStore.page.marginBottom;
-			const layout = await this.computedLayoutForSave();
-			if (!layout) return;
-			const { header, body, footer } = layout;
-
+			const objectToSave = this.computeLayoutForSave();
+			if (!objectToSave) return;
 			const updatedPage = { ...MainStore.page };
 			const settingsForSave = {
 				page: updatedPage,
@@ -238,19 +254,10 @@ export const useElementStore = defineStore("ElementStore", {
 				convertCsstoString(MainStore.screenStyleSheet) +
 				convertCsstoString(MainStore.printStyleSheet);
 
-			const objectToSave = {
-				// flatten the layout array to 2 levels to remove row and column structure
-				print_designer_header: JSON.stringify(header.layout?.flat(2) || []),
-				print_designer_body: JSON.stringify(body.layout.flat(2)),
-				print_designer_footer: JSON.stringify(footer.layout?.flat(2) || []),
-				print_designer_settings: JSON.stringify(settingsForSave),
-				print_designer_after_table: null,
-				css: css,
-			};
-			const PrintFormatData = this.getPrintFormatData({ header, body, footer });
-
-			objectToSave.print_designer_print_format = PrintFormatData;
-			if (MainStore.isOlderSchema("1.1.0")) {
+			objectToSave.print_designer_settings = JSON.stringify(settingsForSave);
+			objectToSave.print_designer_after_table = null;
+			objectToSave.css = css;
+			if (MainStore.isOlderSchema("1.3.0")) {
 				await this.printFormatCopyOnOlderSchema(objectToSave);
 			} else {
 				await frappe.db.set_value("Print Format", MainStore.printDesignName, objectToSave);
@@ -280,159 +287,259 @@ export const useElementStore = defineStore("ElementStore", {
 			}
 			return false;
 		},
-		async computeRowLayout(columnContainer = null, activeSection = null) {
-			const MainStore = useMainStore();
-			if (!columnContainer) {
-				columnContainer = [...this.Elements].map((el, index) => {
-					return {
-						index,
-						startY: parseInt(el.startY),
-						endY: parseInt(el.startY + el.height),
-						startX: parseInt(el.startX),
-						endX: parseInt(el.startX + el.width),
-						element: el,
-					};
-				});
-			}
-			columnContainer.sort((a, b) => {
-				return a.startY < b.startY ? -1 : 1;
+		computeMainLayout() {
+			let header = [];
+			let body = [];
+			let footer = [];
+			const pages = [...this.Elements];
+			const headerArray = [...this.Headers];
+			const footerArray = [...this.Footers];
+			headerArray.forEach((h) => {
+				const headerCopy = { ...h };
+				delete headerCopy.DOMRef;
+				delete headerCopy.parent;
+				h.childrens = this.cleanUpElementsForSave(h.childrens, "header") || [];
+				header.push(headerCopy);
 			});
-			return columnContainer.reduce(
-				(computedLayout, currentEl) => {
-					let rows = computedLayout[activeSection || computedLayout.activeSection];
-					if (
-						!activeSection &&
-						computedLayout.activeSection == "headerRowElements" &&
-						currentEl.startY >= MainStore.page.headerHeight
-					) {
-						// handle empty headerRowElements
-						rows.length == 0 && rows.push([]);
-						// change activeSection and rows to bodyRowElements
-						computedLayout.activeSection = "bodyRowElements";
-						rows = computedLayout["bodyRowElements"];
-					}
-					if (
-						!activeSection &&
-						computedLayout.activeSection == "bodyRowElements" &&
-						currentEl.startY >=
-							MainStore.page.height -
-								MainStore.page.marginTop -
-								MainStore.page.footerHeightWithMargin
-					) {
-						// no need to handle empty bodyRowElements as it will throw error and never reach here
-						// change activeSection and rows to footerRowElements
-						computedLayout.activeSection = "footerRowElements";
-						rows = computedLayout["footerRowElements"];
-					}
-					if (rows.length == 0) {
-						rows.push([currentEl]);
-						return computedLayout;
-					}
-
-					// replace with .at() after checking compatibility for our user base.
-					const lastRow = rows[rows.length - 1];
-					const elementWithMaxEndY = lastRow[lastRow.length - 1];
-
-					if (currentEl.startY >= elementWithMaxEndY.endY) {
-						rows.push([currentEl]);
-						return computedLayout;
-					}
-
-					if (currentEl.endY > elementWithMaxEndY.endY) {
-						lastRow.push(currentEl);
-					} else {
-						lastRow.splice(-1, 0, currentEl);
-					}
-
-					return computedLayout;
-				},
-				{
-					headerRowElements: [],
-					bodyRowElements: [],
-					footerRowElements: [],
-					activeSection: "headerRowElements",
+			pages.forEach((page) => {
+				const pageCopy = { ...page };
+				delete pageCopy.DOMRef;
+				delete pageCopy.parent;
+				delete pageCopy.header;
+				delete pageCopy.footer;
+				pageCopy.childrens.sort((a, b) => {
+					return a.startY < b.startY ? -1 : 1;
+				});
+				pageCopy.childrens = this.cleanUpElementsForSave(pageCopy.childrens, "body");
+				body.push(pageCopy);
+			});
+			footerArray.forEach((f) => {
+				const footerCopy = { ...f };
+				delete footerCopy.DOMRef;
+				delete footerCopy.parent;
+				footerCopy.childrens = this.cleanUpElementsForSave(f.childrens, "footer") || [];
+				footer.push(footerCopy);
+			});
+			return { header, body, footer };
+		},
+		// TODO: Refactor this function
+		computeRowLayout(column, parentContainer = null, type = "row") {
+			const MainStore = useMainStore();
+			const rowElements = [];
+			let prevDimension = null;
+			column.sort((a, b) => (a.startY < b.startY ? -1 : 1));
+			const rows = column.reduce((currentRow, currentEl) => {
+				if (currentRow.length == 0) {
+					currentRow.push(currentEl);
+					return currentRow;
 				}
-			);
-		},
-		async computeColumnLayout(rows, rowDimensions) {
-			const columns = rows.map((elements) => {
-				elements.sort((a, b) => {
-					return a.startX < b.startX ? -1 : 1;
-				});
-				return elements.reduce((columns, currentEl) => {
-					if (columns.length == 0) {
-						columns.push([currentEl]);
-						return columns;
-					}
-					// replace with .at() after checking compatibility for our user base.
-					const lastColumn = columns[columns.length - 1];
-					const elementWithMaxEndX = lastColumn[lastColumn.length - 1];
+				// replace with .at() after checking compatibility for our user base.
+				const el = currentRow.at(-1);
+				const currentStartY = parseInt(currentEl.startY);
+				const currentEndY = parseInt(currentEl.startY + currentEl.height);
+				const maxEndY = parseInt(el.startY + el.height);
 
-					if (currentEl.startX >= elementWithMaxEndX.endX) {
-						columns.push([currentEl]);
-						return columns;
-					}
-					if (currentEl.endX > elementWithMaxEndX.endX) {
-						lastColumn.push(currentEl);
-					} else {
-						lastColumn.splice(-1, 0, currentEl);
-					}
-					return columns;
-				}, []);
-			});
-			// sort elements inside columns by startY
-			columns.forEach((column) => column.sort((a, b) => (a.startY < b.startY ? -1 : 1)));
-			// This will add column dimensions under key columnDimensions inside bodyDimensions.
-			this.computeColumnElementDimensions(columns, rowDimensions);
-			return columns;
+				if (currentStartY >= maxEndY) {
+					const dimension = this.computeRowElementDimensions(
+						currentRow,
+						rowElements.length,
+						prevDimension,
+						type
+					);
+					prevDimension = dimension;
+					const wrapper = this.createRowWrapperElement(
+						dimension,
+						currentRow,
+						parentContainer
+					);
+					rowElements.push(wrapper);
+					currentRow.length = 0;
+					currentRow.push(currentEl);
+					return currentRow;
+				}
+
+				if (currentEndY > maxEndY) {
+					currentRow.push(currentEl);
+				} else {
+					currentRow.splice(-1, 0, currentEl);
+				}
+				return currentRow;
+			}, []);
+			// don't create row if it is there is only one row and parent is column
+			if (parentContainer?.layoutType == "column" && rowElements.length == 0) {
+				return;
+			}
+			if (rows.length != 0) {
+				const dimension = this.computeRowElementDimensions(
+					rows,
+					rowElements.length,
+					prevDimension,
+					type
+				);
+				if (parentContainer.layoutType == "column") {
+					dimension.bottom = parentContainer.height;
+				}
+				prevDimension = dimension;
+				const wrapper = this.createRowWrapperElement(dimension, rows, parentContainer);
+				rowElements.push(wrapper);
+			}
+			rowElements.sort((a, b) => (a.startY < b.startY ? -1 : 1));
+			if (type == "header" && rowElements.length) {
+				const lastHeaderRow = rowElements[rowElements.length - 1];
+				lastHeaderRow.height =
+					MainStore.page.headerHeight - MainStore.page.marginTop - lastHeaderRow.startY;
+			} else if (type == "footer" && rowElements.length) {
+				const lastFooterRow = rowElements[rowElements.length - 1];
+				lastFooterRow.height = MainStore.page.footerHeight - lastFooterRow.startY;
+			}
+			return rowElements;
 		},
-		handleHeaderFooterOverlapping(elements) {
+		// TODO: extract repeated code to a function
+		computeColumnLayout(row, parentContainer) {
+			const columnElements = [];
+			let prevDimension = null;
+			row.sort((a, b) => (a.startX < b.startX ? -1 : 1));
+			const columns = row.reduce((currentColumn, currentEl) => {
+				if (currentColumn.length == 0) {
+					currentColumn.push(currentEl);
+					return currentColumn;
+				}
+				const el = currentColumn.at(-1);
+				const currentStartX = parseInt(currentEl.startX);
+				const currentEndX = parseInt(currentEl.startX + currentEl.width);
+				const maxEndX = parseInt(el.startX + el.width);
+				if (currentStartX >= maxEndX) {
+					const dimension = this.computeColumnElementDimensions(
+						currentColumn,
+						columnElements.length,
+						prevDimension
+					);
+					prevDimension = dimension;
+					const wrapper = this.createColumnWrapperElement(
+						dimension,
+						currentColumn,
+						parentContainer
+					);
+					columnElements.push(wrapper);
+					currentColumn.length = 0;
+					currentColumn.push(currentEl);
+					return currentColumn;
+				}
+				if (currentEndX > maxEndX) {
+					currentColumn.push(currentEl);
+				} else {
+					currentColumn.splice(-1, 0, currentEl);
+				}
+				return currentColumn;
+			}, []);
+			if (columnElements.length == 0) {
+				return;
+			}
+			if (columns.length != 0) {
+				// column is defined so now run row layout
+				const dimension = this.computeColumnElementDimensions(
+					columns,
+					columnElements.length,
+					prevDimension
+				);
+				// if parent is row then set right to parent width else page width
+				if (parentContainer.layoutType == "row") {
+					dimension.right = parentContainer.width;
+				} else {
+					dimension.right =
+						MainStore.page.width -
+						MainStore.page.marginLeft -
+						MainStore.page.marginRight;
+				}
+				prevDimension = dimension;
+				const wrapper = this.createColumnWrapperElement(
+					dimension,
+					columns,
+					parentContainer
+				);
+				columnElements.push(wrapper);
+			}
+			return columnElements;
+		},
+		computeLayoutInsideRectangle(childElements) {
+			if (childElements.at(-1).type == "rectangle") {
+				const el = childElements.at(-1);
+				if (el.type == "rectangle") {
+					el.childrens = this.computeRowLayout(el.childrens, el);
+					el.layoutType = "column";
+					el.classes.push("relative-column");
+					el.rectangleContainer = true;
+					if (el.childrens.some((e) => e.heightType == "auto-min-height")) {
+						el.heightType = "auto-min-height";
+					} else if (el.childrens.some((e) => e.heightType == "auto")) {
+						el.heightType = "auto";
+					} else {
+						el.heightType = "fixed";
+					}
+				}
+			}
+		},
+		handleHeaderFooterOverlapping() {
+			const elements = this.Elements;
 			const MainStore = useMainStore();
+
+			const throwOverlappingError = (type) => {
+				let message = __(`Please resolve overlapping elements `);
+				const messageType = Object.freeze({
+					header: "<b>" + __("in header") + "</b>",
+					footer: "<b>" + __("in footer") + "</b>",
+					auto: __("in table, auto layout failed"),
+				});
+				message += messageType[type];
+				frappe.show_alert(
+					{
+						message: message,
+						indicator: "red",
+					},
+					6
+				);
+				throw new Error(message);
+			};
+
 			const tableElement = this.Elements.filter((el) => el.type == "table");
-			let isOverlapping = false;
 
 			if (tableElement.length == 1 && MainStore.isHeaderFooterAuto) {
-				isOverlapping = !this.autoCalculateHeaderFooter(tableElement[0]);
+				if (!this.autoCalculateHeaderFooter(tableElement[0])) {
+					throwOverlappingError("auto");
+				}
 			} else {
-				isOverlapping = elements.some((element) => {
-					element = element.element;
+				elements.forEach((element) => {
 					if (
-						(element.startY < MainStore.page.headerHeight &&
-							element.startY + element.height > MainStore.page.headerHeight) ||
-						(element.startY <
+						element.startY < MainStore.page.headerHeight &&
+						element.startY + element.height > MainStore.page.headerHeight
+					) {
+						throwOverlappingError("header");
+					} else if (
+						element.startY <
 							MainStore.page.height -
 								MainStore.page.footerHeight -
 								MainStore.page.marginTop -
 								MainStore.page.marginBottom &&
-							element.startY + element.height >
-								MainStore.page.height -
-									MainStore.page.footerHeight -
-									MainStore.page.marginTop -
-									MainStore.page.marginBottom)
+						element.startY + element.height >
+							MainStore.page.height -
+								MainStore.page.footerHeight -
+								MainStore.page.marginTop -
+								MainStore.page.marginBottom
 					) {
-						return true;
+						throwOverlappingError("footer");
 					}
-					return false;
 				});
 			}
-			if (!isOverlapping) return true;
-			MainStore.mode = "pdfSetup";
-			frappe.show_alert(
-				{
-					message: "Please resolve overlapping header/footer elements",
-					indicator: "red",
-				},
-				5
-			);
 		},
 		autoCalculateHeaderFooter(tableEl) {
 			const MainStore = useMainStore();
 
 			if (this.isElementOverlapping(tableEl)) return false;
 
-			MainStore.page.headerHeight = tableEl.startY;
+			MainStore.page.headerHeight = tableEl.startY - 1;
 			MainStore.page.footerHeight =
-				MainStore.page.height -
+				MainStore.page.height +
+				1 -
 				(tableEl.startY +
 					tableEl.height +
 					MainStore.page.marginTop +
@@ -440,48 +547,33 @@ export const useElementStore = defineStore("ElementStore", {
 
 			return true;
 		},
-		computeRowElementDimensions(elements, containerType = "body") {
-			const dimensions = [];
-			elements.reduce(
-				(prevDimensions, container, index) => {
-					const calculatedDimensions = this.calculateWrapperElementDimensions(
-						prevDimensions,
-						container,
-						containerType,
-						index
-					);
-					dimensions.push(calculatedDimensions);
-					return calculatedDimensions;
-				},
-				{ bottom: 0 }
-			);
-			return dimensions;
-		},
-		computeColumnElementDimensions(rows, rowDimensions) {
+		computeRowElementDimensions(row, index, prevDimensions = null, containerType = "row") {
 			const MainStore = useMainStore();
-			rows.forEach((row, index) => {
-				const dimensions = [];
-				row.reduceRight(
-					(prevDimensions, container, index) => {
-						const calculatedDimensions = this.calculateWrapperElementDimensions(
-							prevDimensions,
-							container,
-							"column",
-							index
-						);
-						dimensions.push(calculatedDimensions);
-						return calculatedDimensions;
-					},
-					{
-						left:
-							MainStore.page.width -
-							MainStore.page.marginRight -
-							MainStore.page.marginLeft,
-					}
-				);
-				rowDimensions[index]["columnDimensions"] = dimensions.reverse();
-			});
+			if (!prevDimensions) {
+				prevDimensions = {
+					left:
+						MainStore.page.width -
+						MainStore.page.marginRight -
+						MainStore.page.marginLeft,
+					bottom: 0,
+				};
+			}
+			return this.calculateWrapperElementDimensions(
+				prevDimensions,
+				row,
+				containerType,
+				index
+			);
 		},
+		computeColumnElementDimensions(column, index, prevDimensions = null) {
+			if (!prevDimensions) {
+				prevDimensions = {
+					right: 0,
+				};
+			}
+			return this.calculateWrapperElementDimensions(prevDimensions, column, "column", index);
+		},
+		// TODO: move logic to computeRowElementDimensions
 		calculateWrapperElementDimensions(prevDimensions, children, containerType, index) {
 			// basically returns lowest left - top  highest right - bottom from all of the children elements
 			const MainStore = useMainStore();
@@ -495,7 +587,6 @@ export const useElementStore = defineStore("ElementStore", {
 			};
 			let offsetRect = children.reduce(
 				(offset, currentElement) => {
-					currentElement = currentElement.element;
 					let currentElementRect = {
 						top: currentElement.startY,
 						left: currentElement.startX,
@@ -524,17 +615,20 @@ export const useElementStore = defineStore("ElementStore", {
 					offsetRect.top = MainStore.page.headerHeight;
 				}
 			}
-			if (containerType == "footer" && index == 0) {
-				offsetRect.top =
-					MainStore.page.height -
-					MainStore.page.footerHeightWithMargin -
-					MainStore.page.marginTop;
-			}
-			if (index != 0) {
+			// element is parent level row.
+			if (index > 0 && ["header", "body", "footer"].includes(containerType)) {
 				offsetRect.top = prevDimensions.bottom;
 			}
 			if (containerType == "column") {
-				offsetRect.right = prevDimensions.left;
+				offsetRect.left = prevDimensions.right;
+				offsetRect.top = 0;
+			}
+			if (containerType == "row") {
+				if (index == 0) {
+					offsetRect.top = 0;
+				} else {
+					offsetRect.top = prevDimensions.bottom;
+				}
 			}
 			return offsetRect;
 		},
@@ -552,24 +646,12 @@ export const useElementStore = defineStore("ElementStore", {
 				case "footer":
 					MainStore.printFooterFonts = fontsObject;
 			}
-			return rows.map((columns) => {
-				return columns.map((column) => {
-					return column.map((element) => {
-						let newElement = this.childrensSave(element.element, fontsObject);
-						newElement.classes = newElement.classes.filter(
-							(name) =>
-								["inHeaderFooter", "overlappingHeaderFooter"].indexOf(name) == -1
-						);
-						if (element.type == "rectangle" && element.childrens.length) {
-							let childrensArray = element.childrens;
-							newElement.childrens = [];
-							childrensArray.forEach((el) => {
-								newElement.childrens.push(this.childrensSave(el, fontsObject));
-							});
-						}
-						return newElement;
-					});
-				});
+			return rows.map((element) => {
+				let newElement = this.childrensSave(element, fontsObject);
+				newElement.classes = newElement.classes.filter(
+					(name) => ["inHeaderFooter", "overlappingHeaderFooter"].indexOf(name) == -1
+				);
+				return newElement;
 			});
 		},
 		checkIfPrintFormatIsEmpty(elements, type) {
@@ -581,15 +663,16 @@ export const useElementStore = defineStore("ElementStore", {
 						break;
 					case "body":
 						MainStore.printBodyFonts = null;
+						let message = __("Atleast 1 element is required inside body");
 						frappe.show_alert(
 							{
-								message: "Atleast 1 element is required inside body",
+								message: message,
 								indicator: "red",
 							},
 							5
 						);
 						// This is intentionally using throw to stop the execution
-						throw new Error(__("Atleast 1 element is required inside body"));
+						throw new Error(message);
 					case "footer":
 						MainStore.printFooterFonts = null;
 						break;
@@ -601,19 +684,19 @@ export const useElementStore = defineStore("ElementStore", {
 		childrensSave(element, printFonts = null) {
 			let saveEl = { ...element };
 			delete saveEl.DOMRef;
-			delete saveEl.index;
 			delete saveEl.snapPoints;
 			delete saveEl.snapEdges;
 			delete saveEl.parent;
 			this.cleanUpDynamicContent(saveEl);
 			if (saveEl.type == "table") {
+				saveEl.table = { ...saveEl.table };
 				delete saveEl.table.childfields;
 				delete saveEl.table.default_layout;
 			}
 			if (printFonts && ["text", "table"].indexOf(saveEl.type) != -1) {
 				handlePrintFonts(saveEl, printFonts);
 			}
-			if (saveEl.type == "rectangle") {
+			if (saveEl.type == "rectangle" || saveEl.type == "page") {
 				const childrensArray = saveEl.childrens;
 				saveEl.childrens = [];
 				childrensArray.forEach((el) => {
@@ -673,98 +756,213 @@ export const useElementStore = defineStore("ElementStore", {
 				}
 			}
 		},
-		getPrintFormatData({ header, body, footer }) {
-			const headerElements = this.createRowWrapperElement(
-				header.layout,
-				header.dimensions,
-				"header"
-			);
-			const bodyElements = this.createRowWrapperElement(
-				body.layout,
-				body.dimensions,
-				"body"
-			);
-			const footerElements = this.createRowWrapperElement(
-				footer.layout,
-				footer.dimensions,
-				"footer"
-			);
-			const data = JSON.stringify({
-				header: headerElements,
-				body: bodyElements,
-				footer: footerElements,
-			});
-			return data;
-		},
-		createRowWrapperElement(rows, dimensions, containerType = "body") {
-			if (!rows) return [];
+		createWrapperElement(dimensions, parent) {
 			const MainStore = useMainStore();
-			const wrapperContainer = { childrens: [] };
-			rows.forEach((row, index) => {
-				const calculatedDimensions = dimensions[index];
-				const cordinates = {
-					startY: calculatedDimensions.top,
-					pageY: calculatedDimensions.top,
-					startX: 0,
-					pageX: 0,
-				};
-				const wrapperRectangleEl = createRectangle(cordinates, wrapperContainer);
-				wrapperRectangleEl.width =
+			const coordinates = {};
+			if (parent.type == "page") {
+				coordinates["startY"] = dimensions.top;
+				coordinates["pageY"] = dimensions.top;
+				coordinates["startX"] = 0;
+				coordinates["pageX"] = 0;
+			} else if (parent.layoutType == "row") {
+				coordinates["startY"] = 0;
+				coordinates["pageY"] = 0;
+				coordinates["startX"] = dimensions.left;
+				coordinates["pageX"] = dimensions.left;
+			} else {
+				coordinates["startY"] = dimensions.top;
+				coordinates["pageY"] = dimensions.top;
+				coordinates["startX"] = dimensions.left;
+				coordinates["pageX"] = dimensions.left;
+			}
+			const wrapper = createRectangle(coordinates, parent);
+			wrapper.layoutType = parent.layoutType == "row" ? "column" : "row";
+			if (wrapper.layoutType == "column") {
+				wrapper.width = dimensions.right - dimensions.left;
+				wrapper.height = parent.height || 0;
+				wrapper.classes.push("relative-column");
+				wrapper.relativeColumn = true;
+			} else {
+				wrapper.width =
+					parent.width ||
 					MainStore.page.width - MainStore.page.marginLeft - MainStore.page.marginRight;
-				wrapperRectangleEl.height = calculatedDimensions.bottom - calculatedDimensions.top;
-				wrapperRectangleEl.childrens = this.createColumnWrapperElement(
-					row,
-					calculatedDimensions.columnDimensions,
-					wrapperRectangleEl
-				);
-				if (wrapperRectangleEl.childrens.some((el) => el.isDynamicHeight == true)) {
-					wrapperRectangleEl.isDynamicHeight = true;
-				}
-				wrapperRectangleEl.classes.push("relative-row");
-			});
-			return wrapperContainer.childrens.map((el) => this.childrensSave(el));
+				wrapper.height = dimensions.bottom - dimensions.top;
+				wrapper.classes.push("relative-row");
+				wrapper.classes.push(wrapper.id);
+			}
+			return wrapper;
 		},
-		createColumnWrapperElement(row, dimensions, rowContainer = null) {
-			return row.map((column, index) => {
-				const calculatedDimensions = dimensions[index];
-				if (index == 0) {
-					calculatedDimensions.left = 0;
-				}
-				const cordinates = {
-					startY: 0, // parentDimensions.top,
-					pageY: 0,
-					startX: calculatedDimensions.left,
-					pageX: calculatedDimensions.left,
-				};
-				const wrapperRectangleEl = createRectangle(cordinates, rowContainer);
-				wrapperRectangleEl.width = calculatedDimensions.right - calculatedDimensions.left;
-				wrapperRectangleEl.height = rowContainer.height;
-				wrapperRectangleEl.childrens = column;
-				if (
-					wrapperRectangleEl.childrens.length == 1 &&
-					wrapperRectangleEl.childrens[0].isDynamicHeight == true
-				) {
-					wrapperRectangleEl.isDynamicHeight = true;
-				}
-				wrapperRectangleEl.childrens.forEach((el) => {
-					el.startY -= rowContainer.startY;
-					el.startX -= cordinates.startX;
-					["startX", "startY", "height", "width"].forEach((property) => {
-						if (typeof el[property] == "string") {
-							el[property] = parseFloat(el[property]);
-						}
-						el[property] = parseFloat(el[property].toFixed(3));
-					});
+		updateChildrenInRowWrapper(wrapper, children) {
+			wrapper.childrens = children;
+			if (
+				(wrapper.childrens.length == 1 &&
+					wrapper.childrens[0].heightType == "auto-min-height") ||
+				wrapper.childrens.some(
+					(el) =>
+						["row", "column"].includes(el.layoutType) &&
+						el.heightType == "auto-min-height"
+				)
+			) {
+				wrapper.heightType = "auto-min-height";
+			} else if (
+				(wrapper.childrens.length == 1 && wrapper.childrens[0].heightType == "auto") ||
+				wrapper.childrens.some(
+					(el) => ["row", "column"].includes(el.layoutType) && el.heightType == "auto"
+				)
+			) {
+				wrapper.heightType = "auto";
+			} else {
+				wrapper.heightType = "fixed";
+			}
+			wrapper.childrens.sort((a, b) => (a.startY < b.startY ? -1 : 1));
+			wrapper.startX = 0;
+			return;
+		},
+		updateRowChildrenDimensions(wrapper, children, parent) {
+			if (parent.type == "page") {
+				children.forEach((el) => {
+					el.startY -= wrapper.startY;
 				});
-				["startX", "startY", "height", "width"].forEach((property) => {
-					wrapperRectangleEl[property] = parseFloat(
-						wrapperRectangleEl[property].toFixed(3)
-					);
-				});
-				wrapperRectangleEl.classes.push("relative-column");
-				wrapperRectangleEl.relativeColumn = true;
-				return wrapperRectangleEl;
+				return;
+			}
+			children.forEach((el) => {
+				el.startY -= wrapper.startY;
 			});
+		},
+		updateColumnChildrenDimensions(wrapper, children) {
+			children.sort((a, b) => (a.startX < b.startX ? -1 : 1));
+
+			children.forEach((el) => {
+				el.startY -= wrapper.startY;
+				el.startX -= wrapper.startX;
+			});
+		},
+		updateChildrenInColumnWrapper(wrapper, children) {
+			wrapper.childrens = children;
+			wrapper.childrens.forEach((el) => {
+				el.startY += wrapper.startY;
+			});
+			// TODO: add better control for dynamic height
+			wrapper.startY = 0;
+			if (
+				wrapper.childrens.some(
+					(el) => el.layoutType == "row" || el.heightType == "auto-min-height"
+				)
+			) {
+				wrapper.heightType = "auto-min-height";
+			} else if (
+				wrapper.childrens.some(
+					(el) => el.layoutType == "column" || el.heightType == "auto"
+				)
+			) {
+				wrapper.heightType = "auto";
+			} else {
+				wrapper.heightType = "fixed";
+			}
+		},
+		createRowWrapperElement(dimension, currentRow, parent) {
+			const MainStore = useMainStore();
+			const coordinates = {};
+			if (parent.type == "page") {
+				coordinates["startY"] = dimension.top;
+				coordinates["pageY"] = dimension.top;
+				coordinates["startX"] = 0;
+				coordinates["pageX"] = 0;
+			} else {
+				coordinates["startY"] = dimension.top;
+				coordinates["pageY"] = dimension.top;
+				coordinates["startX"] = dimension.left;
+				coordinates["pageX"] = dimension.left;
+			}
+			const wrapper = createRectangle(coordinates, parent);
+			wrapper.layoutType = "row";
+			wrapper.width =
+				parent.width ||
+				MainStore.page.width - MainStore.page.marginLeft - MainStore.page.marginRight;
+			wrapper.height = dimension.bottom - dimension.top;
+			wrapper.classes.push("relative-row");
+			delete wrapper.parent;
+			this.updateRowElement(wrapper, currentRow, parent);
+			return wrapper;
+		},
+		updateRowElement(wrapper, currentRow, parent) {
+			wrapper.layoutType = "row";
+			this.updateRowChildrenDimensions(wrapper, currentRow, parent);
+			let childElements = [...currentRow];
+			const columnEls = this.computeColumnLayout(childElements, wrapper);
+			if (columnEls) {
+				childElements = columnEls;
+			} else {
+				this.computeLayoutInsideRectangle(childElements);
+			}
+			this.updateChildrenInRowWrapper(wrapper, childElements);
+			if (
+				(childElements.length == 1 && childElements[0].heightType == "auto-min-height") ||
+				childElements.some(
+					(el) =>
+						["row", "column"].includes(el.layoutType) &&
+						el.heightType == "auto-min-height"
+				)
+			) {
+				wrapper.heightType = "auto-min-height";
+			} else if (
+				(childElements.length == 1 && childElements[0].heightType == "auto") ||
+				childElements.some(
+					(el) => ["row", "column"].includes(el.layoutType) && el.heightType == "auto"
+				)
+			) {
+				wrapper.heightType = "auto";
+			} else {
+				wrapper.heightType = "fixed";
+			}
+		},
+		createColumnWrapperElement(dimension, currentColumn, parent) {
+			const coordinates = {
+				startY: dimension.top,
+				pageY: dimension.top,
+				startX: dimension.left,
+				pageX: dimension.left,
+			};
+			const wrapper = createRectangle(coordinates, parent);
+			wrapper.layoutType = "column";
+			wrapper.width = dimension.right - dimension.left;
+			wrapper.height = parent.height;
+			wrapper.classes.push("relative-column");
+			wrapper.relativeColumn = true;
+			delete wrapper.parent;
+			this.updateColumnElement(wrapper, currentColumn);
+			return wrapper;
+		},
+		updateColumnElement(wrapper, currentColumn) {
+			wrapper.layoutType = "column";
+			this.updateColumnChildrenDimensions(wrapper, currentColumn);
+			let childElements = [...currentColumn];
+			const rowEls = this.computeRowLayout(childElements, wrapper);
+			if (rowEls) {
+				childElements = rowEls;
+			} else {
+				this.computeLayoutInsideRectangle(childElements);
+			}
+			this.updateChildrenInColumnWrapper(wrapper, childElements);
+			if (
+				(childElements.length == 1 && childElements[0].heightType == "auto-min-height") ||
+				childElements.some(
+					(el) =>
+						["row", "column"].includes(el.layoutType) &&
+						el.heightType == "auto-min-height"
+				)
+			) {
+				wrapper.heightType = "auto-min-height";
+			} else if (
+				(childElements.length == 1 && childElements[0].heightType == "auto") ||
+				childElements.some(
+					(el) => ["row", "column"].includes(el.layoutType) && el.heightType == "auto"
+				)
+			) {
+				wrapper.heightType = "auto";
+			} else {
+				wrapper.heightType = "fixed";
+			}
 		},
 		async printFormatCopyOnOlderSchema(objectToSave) {
 			// TODO: have better message.
@@ -921,7 +1119,7 @@ export const useElementStore = defineStore("ElementStore", {
 			element.isDraggable = true;
 			element.isResizable = true;
 			this.handleDynamicContent(element);
-			if (element.type == "rectangle") {
+			if (element.type == "rectangle" || element.type == "page") {
 				element.isDropZone = true;
 				const childrensArray = element.childrens;
 				element.childrens = [];
@@ -958,35 +1156,37 @@ export const useElementStore = defineStore("ElementStore", {
 			});
 			return;
 		},
-		async loadElements(printDesignName) {
-			frappe.dom.freeze(__("Loading Print Format"));
-			const printFormat = await frappe.db.get_value("Print Format", printDesignName, [
-				"print_designer_header",
-				"print_designer_body",
-				"print_designer_after_table",
-				"print_designer_footer",
-				"print_designer_settings",
-			]);
-			let ElementsHeader = JSON.parse(printFormat.message.print_designer_header);
-			let ElementsBody = JSON.parse(printFormat.message.print_designer_body);
-			let ElementsAfterTable = JSON.parse(printFormat.message.print_designer_after_table);
-			let ElementsFooter = JSON.parse(printFormat.message.print_designer_footer);
-			let settings = JSON.parse(printFormat.message.print_designer_settings);
-			this.loadSettings(settings);
-			this.Elements = [
-				...(ElementsHeader || []),
-				...(ElementsBody || []),
-				...(ElementsAfterTable || []),
-				...(ElementsFooter || []),
-			];
-			this.Elements.map((element) => {
+		getHeaderObject(index) {
+			if (index == 0) {
+				return this.Headers.find((header) => header.firstPage == true);
+			} else if (index == this.Elements.length - 1) {
+				return this.Headers.find((header) => header.lastPage == true);
+			} else if (index % 2 != 0) {
+				return this.Headers.find((header) => header.oddPage == true);
+			} else {
+				return this.Headers.find((header) => header.evenPage == true);
+			}
+		},
+		getFooterObject(index) {
+			if (index == 0) {
+				return this.Footers.find((footer) => footer.firstPage == true);
+			} else if (index == this.Elements.length - 1) {
+				return this.Footers.find((footer) => footer.lastPage == true);
+			} else if (index % 2 != 0) {
+				return this.Footers.find((footer) => footer.oddPage == true);
+			} else {
+				return this.Footers.find((footer) => footer.evenPage == true);
+			}
+		},
+		setElementProperties(parent) {
+			parent.childrens.map((element) => {
 				element.DOMRef = null;
-				element.parent = this.Elements;
+				element.parent = parent;
 				delete element.printY;
 				element.isDraggable = true;
 				element.isResizable = true;
 				this.handleDynamicContent(element);
-				if (element.type == "rectangle") {
+				if (element.type == "rectangle" || element.type == "page") {
 					element.isDropZone = true;
 					if (element.childrens.length) {
 						let childrensArray = element.childrens;
@@ -1000,6 +1200,55 @@ export const useElementStore = defineStore("ElementStore", {
 				}
 				return element;
 			});
+		},
+		createPageElement(element, type) {
+			return {
+				type: "page",
+				childrens: [...element],
+				firstPage: true,
+				oddPage: true,
+				evenPage: true,
+				lastPage: true,
+				DOMRef: null,
+			};
+		},
+		async loadElements(printDesignName) {
+			frappe.dom.freeze(__("Loading Print Format"));
+			const printFormat = await frappe.db.get_value("Print Format", printDesignName, [
+				"print_designer_header",
+				"print_designer_body",
+				"print_designer_after_table",
+				"print_designer_footer",
+				"print_designer_settings",
+			]);
+			let settings = JSON.parse(printFormat.message.print_designer_settings);
+			this.loadSettings(settings);
+
+			let ElementsBody = JSON.parse(printFormat.message.print_designer_body);
+			let ElementsAfterTable = JSON.parse(printFormat.message.print_designer_after_table);
+			const headers = JSON.parse(printFormat.message.print_designer_header);
+			const footers = JSON.parse(printFormat.message.print_designer_footer);
+			headers.forEach((header) => {
+				this.Headers.push(header);
+			});
+			footers.forEach((footer) => {
+				this.Footers.push(footer);
+			});
+			// backwards compatibility :(
+			if (ElementsAfterTable && ElementsAfterTable.length) {
+				ElementsBody[0].childrens.push(...ElementsAfterTable);
+			}
+			this.Elements.length = 0;
+			this.Elements.push(...ElementsBody);
+			ElementsBody.forEach((page, index) => {
+				page.header = [
+					createHeaderFooterElement(this.getHeaderObject(index).childrens, "header"),
+				];
+				page.footer = [
+					createHeaderFooterElement(this.getFooterObject(index).childrens, "footer"),
+				];
+			});
+			this.Elements.forEach((page) => this.setElementProperties(page));
 			frappe.dom.unfreeze();
 		},
 		setPrimaryTable(tableEl, value) {
@@ -1014,34 +1263,51 @@ export const useElementStore = defineStore("ElementStore", {
 		},
 		// This is called to check if the element is overlapping with any other element (row only)
 		// TODO: add column calculations
-		isElementOverlapping(currentEl, elements = this.Elements) {
-			const currentElIndex =
-				currentEl.index || this.Elements.findIndex((el) => el === currentEl);
+		isElementOverlapping(currentEl, elements = null) {
+			const MainStore = useMainStore();
+			MainStore.activePage = getParentPage(currentEl.parent);
+			if (!elements) {
+				elements = MainStore.activePage.childrens;
+			}
+			const currentElIndex = currentEl.index || elements.findIndex((el) => el === currentEl);
 			const currentStartY = parseInt(currentEl.startY);
-			const currentEndY = currentEl.endY || parseInt(currentEl.startY + currentEl.height);
-
+			const currentStartX = parseInt(currentEl.startX);
+			const currentEndY = parseInt(currentEl.startY + currentEl.height);
+			const currentEndX = parseInt(currentEl.startX + currentEl.width);
 			return (
 				elements.findIndex((el, index) => {
 					if (index == currentElIndex) return false;
 					const elStartY = parseInt(el.startY);
-					const elEndY = el.endY || parseInt(el.startY + el.height);
+					const elEndY = parseInt(el.startY + el.height);
+					const elStartX = parseInt(el.startX);
+					const elEndX = parseInt(el.startX + el.width);
 					if (
 						currentStartY <= elStartY &&
 						elStartY <= currentEndY &&
-						!(currentStartY <= elEndY && elEndY <= currentEndY)
+						!(currentStartY <= elEndY && elEndY <= currentEndY) &&
+						currentStartX <= elStartX &&
+						elStartX <= currentEndX &&
+						!(currentStartX <= elEndX && elEndX <= currentEndX)
 					) {
 						return true;
 					} else if (
 						!(currentStartY <= elStartY && elStartY <= currentEndY) &&
 						currentStartY <= elEndY &&
-						elEndY <= currentEndY
+						elEndY <= currentEndY &&
+						!(currentStartX <= elStartX && elStartX <= currentEndX) &&
+						currentStartX <= elEndX &&
+						elEndX <= currentEndX
 					) {
 						return true;
 					} else if (
 						elStartY <= currentStartY &&
 						currentStartY <= elEndY &&
 						elStartY <= currentEndY &&
-						currentEndY <= elEndY
+						currentEndY <= elEndY &&
+						elStartX <= currentStartX &&
+						currentStartX <= elEndX &&
+						elStartX <= currentEndX &&
+						currentEndX <= elEndX
 					) {
 						return true;
 					} else {

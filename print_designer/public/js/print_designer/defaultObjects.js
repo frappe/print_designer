@@ -1,11 +1,8 @@
 import { useMainStore } from "./store/MainStore";
-import { useElementStore } from "./store/ElementStore";
 
 export const createRectangle = (cordinates, parent = null) => {
-	const ElementStore = useElementStore();
 	const MainStore = useMainStore();
 
-	if (parent === null) parent = ElementStore.Elements;
 	let id = frappe.utils.get_random(10);
 	if (cordinates instanceof MouseEvent) {
 		cordinates = {
@@ -35,17 +32,13 @@ export const createRectangle = (cordinates, parent = null) => {
 		classes: [],
 	};
 
-	parent !== ElementStore.Elements
-		? parent.childrens.push(newRectangle)
-		: ElementStore.Elements.push(newRectangle);
+	parent.childrens?.push(newRectangle);
 	MainStore.lastCreatedElement = newRectangle;
 	return newRectangle;
 };
 export const createImage = (cordinates, parent = null) => {
-	const ElementStore = useElementStore();
 	const MainStore = useMainStore();
 
-	if (parent === null) parent = ElementStore.Elements;
 	let id = frappe.utils.get_random(10);
 	if (cordinates instanceof MouseEvent) {
 		cordinates = {
@@ -76,17 +69,13 @@ export const createImage = (cordinates, parent = null) => {
 		classes: [],
 	};
 
-	parent !== ElementStore.Elements
-		? parent.childrens.push(newImage)
-		: ElementStore.Elements.push(newImage);
+	parent.childrens?.push(newImage) || parent.childrens.push(newImage);
 	MainStore.lastCreatedElement = newImage;
 	return newImage;
 };
 export const createBarcode = (cordinates, parent = null) => {
-	const ElementStore = useElementStore();
 	const MainStore = useMainStore();
 
-	if (parent === null) parent = ElementStore.Elements;
 	let id = frappe.utils.get_random(10);
 	if (cordinates instanceof MouseEvent) {
 		cordinates = {
@@ -121,17 +110,13 @@ export const createBarcode = (cordinates, parent = null) => {
 		classes: [],
 	};
 
-	parent !== ElementStore.Elements
-		? parent.childrens.push(newBarcode)
-		: ElementStore.Elements.push(newBarcode);
+	parent.childrens?.push(newBarcode) || parent.childrens.push(newBarcode);
 	MainStore.lastCreatedElement = newBarcode;
 	return newBarcode;
 };
 export const createTable = (cordinates, parent = null) => {
-	const ElementStore = useElementStore();
 	const MainStore = useMainStore();
 
-	if (parent === null) parent = ElementStore.Elements;
 	let id = frappe.utils.get_random(10);
 	if (cordinates instanceof MouseEvent) {
 		cordinates = {
@@ -166,22 +151,18 @@ export const createTable = (cordinates, parent = null) => {
 		labelStyle: {},
 		headerStyle: {},
 		altStyle: {},
-		isDynamicHeight: true,
+		heightType: "auto",
 		classes: [],
 	};
 
-	parent !== ElementStore.Elements
-		? parent.childrens.push(newTable)
-		: ElementStore.Elements.push(newTable);
+	parent.childrens?.push(newTable) || parent.childrens.push(newTable);
 	MainStore.lastCreatedElement = newTable;
 	return newTable;
 };
 
 export const createText = (cordinates, parent = null) => {
-	const ElementStore = useElementStore();
 	const MainStore = useMainStore();
 
-	if (parent === null) parent = ElementStore.Elements;
 	let id = frappe.utils.get_random(10);
 	if (cordinates instanceof MouseEvent) {
 		cordinates = {
@@ -215,17 +196,13 @@ export const createText = (cordinates, parent = null) => {
 		style: {},
 		classes: [],
 	};
-	parent !== ElementStore.Elements
-		? parent.childrens.push(newStaticText)
-		: ElementStore.Elements.push(newStaticText);
+	parent.childrens?.push(newStaticText) || parent.childrens.push(newStaticText);
 	MainStore.lastCreatedElement = newStaticText;
 	return newStaticText;
 };
 export const createDynamicText = (cordinates, parent = null) => {
-	const ElementStore = useElementStore();
 	const MainStore = useMainStore();
 
-	if (parent === null) parent = ElementStore.Elements;
 	let id = frappe.utils.get_random(10);
 	if (cordinates instanceof MouseEvent) {
 		cordinates = {
@@ -259,12 +236,10 @@ export const createDynamicText = (cordinates, parent = null) => {
 		labelDisplayStyle: "standard",
 		style: {},
 		labelStyle: {},
-		isDynamicHeight: true,
+		heightType: "auto",
 		classes: [],
 	};
-	parent !== ElementStore.Elements
-		? parent.childrens.push(newDynamicText)
-		: ElementStore.Elements.push(newDynamicText);
+	parent.childrens?.push(newDynamicText) || parent.childrens.push(newDynamicText);
 	MainStore.lastCreatedElement = newDynamicText;
 	return newDynamicText;
 };

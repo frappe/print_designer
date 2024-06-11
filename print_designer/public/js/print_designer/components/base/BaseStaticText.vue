@@ -15,6 +15,7 @@
 					startX +
 					'px',
 			},
+			style.zIndex && { zIndex: style.zIndex },
 		]"
 		:class="MainStore.getCurrentElementsId.includes(id) ? 'active-elements' : 'text-hover'"
 		:ref="setElements(object, index)"
@@ -194,14 +195,14 @@ const handleDblClick = (e, element, index) => {
 };
 
 onMounted(() => {
-	if (!!DOMRef.value.firstElementChild.innerText) return;
+	if (!DOMRef || !!DOMRef.value.firstElementChild.innerText) return;
 	setTimeout(function () {
 		DOMRef.value.firstElementChild.focus();
 		DOMRef.value.firstElementChild.dataset.placeholder = "Type Something...";
 	}, 0);
 });
 onUpdated(() => {
-	if (!isFixedSize.value) {
+	if (!isFixedSize.value && DOMRef) {
 		let targetRect = DOMRef.value.getBoundingClientRect();
 		width.value = targetRect.width + 2;
 		height.value = targetRect.height + 2;

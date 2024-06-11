@@ -1,15 +1,19 @@
 import { useMainStore } from "../store/MainStore";
-import { useElementStore } from "../store/ElementStore";
 import { useDraggable } from "./Draggable";
 import { useResizable } from "./Resizable";
 import { useDropZone } from "./DropZone";
 import { watch, markRaw } from "vue";
 import interact from "@interactjs/interact";
-import { changeDraggable, changeResizable, changeDropZone, getSnapPointsAndEdges } from "../utils";
+import {
+	changeDraggable,
+	changeResizable,
+	changeDropZone,
+	getSnapPointsAndEdges,
+	getParentPage,
+} from "../utils";
 
 export function useElement({ draggable = true, resizable = true }) {
 	const MainStore = useMainStore();
-	const ElementStore = useElementStore();
 	const setReferance = (element) => (el) => {
 		element.DOMRef = markRaw(el);
 		el.piniaElementRef = element;
@@ -18,8 +22,8 @@ export function useElement({ draggable = true, resizable = true }) {
 		if (!element) return;
 		element.index = index;
 		if (element.DOMRef) return;
-		setReferance(element)(DOMElement);
 		if (element && DOMElement) {
+			setReferance(element)(DOMElement);
 			draggable && setDraggable(element);
 			resizable && setResizable(element);
 			const {
@@ -32,7 +36,9 @@ export function useElement({ draggable = true, resizable = true }) {
 			} = getSnapPointsAndEdges(element);
 			element.snapPoints = [rowSnapPoint, columnSnapPoint];
 			element.snapEdges = [leftSnapEdge, rightSnapEdge, topSnapEdge, bottomSnapEdge];
-			element.type == "rectangle" && setDropZone(element);
+			if (element.type == "rectangle" || element.type == "page") {
+				setDropZone(element);
+			}
 			element && changeResizable(element);
 			element && changeDraggable(element);
 			element && changeDropZone(element);
@@ -59,10 +65,12 @@ export function useElement({ draggable = true, resizable = true }) {
 				() => {
 					if (!element) return;
 					if (MainStore.activeControl == "mouse-pointer") {
-						element.isDraggable = true;
+						if (element.type != "page") {
+							element.isDraggable = true;
+						}
 						if (!MainStore.isAltKey) {
 							element.isResizable = true;
-							if (element.type == "rectangle") {
+							if (element.type == "rectangle" || element.type == "page") {
 								element.isDropZone = true;
 							}
 						} else {
@@ -97,9 +105,15 @@ export function useElement({ draggable = true, resizable = true }) {
 		}
 	};
 	const setDraggable = (element) => {
+		if (element.relativeContainer) return;
+		const pageParent = getParentPage(element);
+		if (!pageParent) {
+			return;
+		}
+		const parentDOMRef = pageParent.DOMRef;
 		useDraggable({
 			element,
-			restrict: MainStore.mainContainer,
+			restrict: parentDOMRef,
 			dragMoveListener: (e) => {
 				if (e.metaKey || e.ctrlKey) {
 					e.interactable.options.drag.modifiers[0].disable();
@@ -127,12 +141,9 @@ export function useElement({ draggable = true, resizable = true }) {
 				e.stopImmediatePropagation();
 			},
 			dragStartListener: (e) => {
-				let parentRect;
-				if (element.parent == ElementStore.Elements) {
-					parentRect = MainStore.mainContainer.getBoundingClientRect();
-				} else {
-					parentRect = element.parent.DOMRef.getBoundingClientRect();
-				}
+				const parentRect =
+					element.parent.DOMRef?.getBoundingClientRect() ||
+					parentDOMRef.getBoundingClientRect();
 				const elementRect = element.DOMRef.getBoundingClientRect();
 				let offsetRect = MainStore.getCurrentElementsValues.reduce(
 					(offset, currentElement) => {
@@ -171,33 +182,42 @@ export function useElement({ draggable = true, resizable = true }) {
 				};
 				elementPreviousZAxis = element.style.zIndex || 0;
 				element.style.zIndex = 9999;
-
-				e.interactable.options.drag.modifiers[0].options.restriction = {
+				const restrictionRect = {
 					top: parentRect.top + restrictRect.top,
 					left: parentRect.left + restrictRect.left,
 					right: parentRect.right - restrictRect.right,
 					bottom: parentRect.bottom - restrictRect.bottom,
 				};
+				if (MainStore.mode == "editing" && element.parent.type == "page") {
+					restrictionRect.top += MainStore.page.headerHeight;
+					restrictionRect.bottom -= MainStore.page.footerHeight;
+				}
+				e.interactable.options.drag.modifiers[0].options.restriction = restrictionRect;
 			},
 		});
 	};
 	const setResizable = (element) => {
+		const pageParent = getParentPage(element);
+		if (!pageParent) {
+			return;
+		}
+		const parentDOMRef = pageParent.DOMRef;
 		useResizable({
 			element,
-			restrict: MainStore.mainContainer,
+			restrict: parentDOMRef,
 			resizeStartListener: (e) => {
-				let parentRect;
-				if (element.parent == ElementStore.Elements) {
-					parentRect = MainStore.mainContainer.getBoundingClientRect();
-				} else {
-					parentRect = element.parent.DOMRef.getBoundingClientRect();
-				}
-				e.interactable.options.resize.modifiers[0].options.outer = {
+				let parentRect = element.parent.DOMRef.getBoundingClientRect();
+				const restrictionRect = {
 					top: parentRect.top,
 					left: parentRect.left,
 					right: parentRect.right,
 					bottom: parentRect.bottom,
 				};
+				if (MainStore.mode == "editing" && element.parent.type == "page") {
+					restrictionRect.top += MainStore.page.headerHeight;
+					restrictionRect.bottom -= MainStore.page.footerHeight;
+				}
+				e.interactable.options.resize.modifiers[0].options.outer = restrictionRect;
 				if (!element.childrens || !element.childrens.length) return;
 				let offsetRect = element.childrens.reduce(
 					(offset, currentElement) => {
@@ -235,7 +255,7 @@ export function useElement({ draggable = true, resizable = true }) {
 				element.startY = (element.startY || 0) + e.deltaRect.top;
 				element.width = (element.width || 0) - e.deltaRect.left + e.deltaRect.right;
 				element.height = (element.height || 0) - e.deltaRect.top + e.deltaRect.bottom;
-				if (element.type == "rectangle") {
+				if (element.type == "rectangle" || element.type == "page") {
 					element.childrens &&
 						element.childrens.forEach((childEl) => {
 							childEl.startX -= e.deltaRect.left;

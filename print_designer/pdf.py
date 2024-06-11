@@ -6,6 +6,7 @@ import frappe
 from frappe.monitor import add_data_to_monitor
 from frappe.utils.error import log_error
 from frappe.utils.jinja_globals import is_rtl
+from frappe.utils.pdf import pdf_body_html as fw_pdf_body_html
 
 
 def pdf_header_footer_html(soup, head, content, styles, html_id, css):
@@ -82,12 +83,11 @@ def pdf_body_html(print_format, jenv, args, template):
 				return f"<h1><b>Something went wrong while rendering the print format.</b> <hr/> If you don't know what just happened, and wish to file a ticket or issue on Github <hr /> Please copy the error from <code>Error Log {error.name}</code> or ask Administrator.<hr /><h3>Error rendering print format: {error.reference_name}</h3><h4>{error.method}</h4><pre>{html.escape(error.error)}</pre>"
 			else:
 				return f"<h1><b>Something went wrong while rendering the print format.</b> <hr/> If you don't know what just happened, and wish to file a ticket or issue on Github <hr /> Please copy the error from <code>Error Log {error.name}</code> or ask Administrator.</h1>"
-
-	return template.render(args, filters={"len": len})
+	return fw_pdf_body_html(template, args)
 
 
 def is_older_schema(settings, current_version):
-	format_version = settings.get("schema_version")
+	format_version = settings.get("schema_version", "1.0.0")
 	format_version = format_version.split(".")
 	current_version = current_version.split(".")
 	if int(format_version[0]) < int(current_version[0]):

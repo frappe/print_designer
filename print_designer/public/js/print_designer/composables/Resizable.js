@@ -4,7 +4,7 @@ import "@interactjs/auto-start";
 import "@interactjs/modifiers";
 import { useMainStore } from "../store/MainStore";
 import { useElementStore } from "../store/ElementStore";
-import { recursiveChildrens, checkUpdateElementOverlapping } from "../utils";
+import { recursiveChildrens, checkUpdateElementOverlapping, getParentPage } from "../utils";
 
 export function useResizable({
 	element,
@@ -19,15 +19,18 @@ export function useResizable({
 		}
 		const MainStore = useMainStore();
 		const ElementStore = useElementStore();
+		const edges = {
+			bottom: ".resize-bottom",
+		};
+		if (!element.relativeContainer) {
+			edges.left = ".resize-left";
+			edges.right = ".resize-right";
+			edges.top = ".resize-top";
+		}
 		interact(element.DOMRef)
 			.resizable({
 				ignoreFrom: ".resizer",
-				edges: {
-					left: ".resize-left",
-					right: ".resize-right",
-					bottom: ".resize-bottom",
-					top: ".resize-top",
-				},
+				edges: edges,
 				modifiers: [
 					interact.modifiers.restrictEdges(),
 					interact.modifiers.snapEdges({
@@ -48,14 +51,16 @@ export function useResizable({
 				if (element.parent == e.target.piniaElementRef.parent) return;
 				if (
 					!e.dropzone &&
-					e.target.piniaElementRef.parent !== ElementStore.Elements &&
+					e.target.piniaElementRef.parent.type != "page" &&
 					!MainStore.lastCloned
 				) {
 					let splicedElement;
 					let currentRect = e.target.getBoundingClientRect();
-					let canvasRect = MainStore.mainContainer.getBoundingClientRect();
+					let canvasRect = getParentPage(
+						e.target.piniaElementRef.parent
+					).DOMRef.getBoundingClientRect();
 					let currentParent = e.target.piniaElementRef.parent;
-					if (currentParent == ElementStore.Elements) {
+					if (currentParent.type == "page") {
 						splicedElement = currentParent.splice(
 							e.target.piniaElementRef.index,
 							1
