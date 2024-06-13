@@ -92,5 +92,5 @@ def patch_format():
 
 
 def execute():
-	"""Updating Table and Dynamic Text Elements to have property isDynamicHeight with default value as True"""
+	"""Moved header and footer to new schema."""
 	patch_format()
