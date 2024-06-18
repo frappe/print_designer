@@ -37,7 +37,7 @@ import { useElementStore } from "./store/ElementStore";
 import { useDraggable } from "./composables/Draggable";
 import { useResizable } from "./composables/Resizable";
 import { useDropZone } from "./composables/DropZone";
-import { isRef, nextTick } from "vue";
+import { ref, isRef, nextTick } from "vue";
 import { getValue } from "./store/fetchMetaAndData";
 
 export const changeDraggable = (element) => {
@@ -350,27 +350,136 @@ const deleteDynamicReferance = (curobj) => {
 		});
 	}
 };
+export const parseJinja = async (field, row) => {
+	if (field.value != "" && field.parseJinja) {
+		try {
+			// call render_user_text_withdoc method using frappe.call and return the result
+			const MainStore = useMainStore();
+			let result = await frappe.call({
+				method: "print_designer.print_designer.page.print_designer.print_designer.render_user_text_withdoc",
+				args: {
+					string: field.value,
+					doctype: MainStore.doctype,
+					docname: MainStore.currentDoc,
+					row: row,
+					send_to_jinja: MainStore.mainParsedJinjaData || {},
+				},
+			});
+			result = result.message;
+			if (result.success) {
+				return result.message;
+			} else {
+				console.error("Error From User Provided Jinja String\n\n", result.error);
+			}
+		} catch (error) {
+			console.error("Error in Jinja Template\n", { value_string: field.value, error });
+			frappe.show_alert(
+				{
+					message: "Unable Render Jinja Template. Please Check Console",
+					indicator: "red",
+				},
+				5
+			);
+			return field.value;
+		}
+	} else {
+		return field.value;
+	}
+};
+
+export const getFormattedValue = async (field, row = null) => {
+	const MainStore = useMainStore();
+	const formattedValue = ref(field.value);
+	if (isRef(row)) {
+		row = row.value;
+	}
+	if (!row && field.tableName && Object.keys(MainStore.docData).length > 0) {
+		row = MainStore.docData[field.tableName][0];
+	}
+
+	const isDataAvailable = !!row || Object.keys(MainStore.docData).length > 0;
+	if (field.is_static) {
+		if (field.parseJinja) {
+			formattedValue.value = await parseJinja(field, row);
+		}
+		return formattedValue.value;
+	} else if (row) {
+		if (field.fieldtype == "Image") {
+			formattedValue.value = frappe.format(
+				row[field.options],
+				{ fieldtype: "Image" },
+				{ inline: true },
+				row
+			);
+			formattedValue.value = `<img class="print-item-image" src="${formattedValue.value}" alt="">`;
+		} else if (isDataAvailable && typeof row[field.fieldname] != "undefined") {
+			formattedValue.value = frappe.format(
+				row[field.fieldname],
+				{ fieldtype: field.fieldtype, options: field.options },
+				{ inline: true },
+				row
+			);
+		} else {
+			formattedValue.value =
+				["Image, Attach Image"].indexOf(field.fieldtype) != -1
+					? null
+					: `{{ ${field.fieldname} }}`;
+		}
+		return formattedValue.value;
+	} else {
+		let rawValue = MainStore.docData[field.fieldname];
+		if (field.parentField) {
+			rawValue = await getValue(
+				field.doctype,
+				MainStore.docData[field.parentField],
+				field.fieldname
+			);
+		}
+		field.value = frappe.format(
+			rawValue,
+			{ fieldtype: field.fieldtype, options: field.options },
+			{ inline: true },
+			MainStore.docData
+		);
+		if (!field.value) {
+			if (["Image, Attach Image"].indexOf(field.fieldtype) != -1) {
+				field.value = null;
+			} else {
+				switch (field.fieldname) {
+					case "page":
+						field.value = "0";
+						break;
+					case "topage":
+						field.value = "999";
+						break;
+					case "date":
+						field.value = frappe.datetime.now_date();
+						break;
+					case "time":
+						field.value = frappe.datetime.now_time();
+						break;
+					default:
+						field.value = `{{ ${field.parentField ? field.parentField + "." : ""}${
+							field.fieldname
+						} }}`;
+				}
+			}
+		}
+		return field.value;
+	}
+};
+
 export const updateDynamicData = async () => {
 	const MainStore = useMainStore();
 	if (!Object.keys(MainStore.docData).length) return;
 	MainStore.dynamicData.forEach(async (el) => {
 		if (el.is_static) return;
-		let value = el.parentField
-			? await getValue(el.doctype, MainStore.docData[el.parentField], el.fieldname)
-			: el.tableName
-			? MainStore.docData[el.tableName][0] &&
-			  frappe.format(
-					MainStore.docData[el.tableName][0][el.fieldname],
-					{ fieldtype: el.fieldtype, options: el.options },
-					{ inline: true },
-					MainStore.docData
-			  )
-			: frappe.format(
-					MainStore.docData[el.fieldname],
-					{ fieldtype: el.fieldtype, options: el.options },
-					{ inline: true },
-					MainStore.docData
-			  );
+		let row;
+		if (el.tableName) {
+			row = MainStore.docData[el.tableName];
+			row && (row = row[0]);
+		}
+		let value = getFormattedValue(el, row);
 		if (typeof value == "string" && value.startsWith("<svg")) {
 			value.match(new RegExp(`data-barcode-value="(.*?)">`));
 			value = result[1];

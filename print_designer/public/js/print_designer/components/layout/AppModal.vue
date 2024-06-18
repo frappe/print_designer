@@ -182,8 +182,8 @@ onUnmounted(() => {
 </style>
 <style lang="scss" scoped>
 .modal-dialog {
-	--primary: #6f5f35;
-	--primary-color: #6f5f35;
+	--primary: #7b4b57;
+	--primary-color: #7b4b57;
 	display: flex;
 	font-size: 0.75rem;
 	position: absolute;
