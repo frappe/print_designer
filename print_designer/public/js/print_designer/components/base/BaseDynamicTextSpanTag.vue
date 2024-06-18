@@ -62,6 +62,7 @@
 <script setup>
 import { useMainStore } from "../../store/MainStore";
 import { ref, watch, onMounted } from "vue";
+import { getFormattedValue } from "../../utils";
 
 const selectDynamicText = (isLabel = false) => {
 	props.field.labelStyleEditing = isLabel;
@@ -101,7 +102,7 @@ const props = defineProps({
 });
 
 const parsedValue = ref("");
-const row = ref({});
+const row = ref(null);
 
 onMounted(() => {
 	watch(
@@ -116,43 +117,6 @@ onMounted(() => {
 	);
 });
 
-const parseJinja = async () => {
-	if (props.field.value != "" && props.field.parseJinja) {
-		try {
-			// call render_user_text_withdoc method using frappe.call and return the result
-			const MainStore = useMainStore();
-			let result = await frappe.call({
-				method: "print_designer.print_designer.page.print_designer.print_designer.render_user_text_withdoc",
-				args: {
-					string: props.field.value,
-					doctype: MainStore.doctype,
-					docname: MainStore.currentDoc,
-					row: row.value,
-					send_to_jinja: MainStore.mainParsedJinjaData || {},
-				},
-			});
-			result = result.message;
-			if (result.success) {
-				parsedValue.value = result.message;
-			} else {
-				console.error("Error From User Provided Jinja String\n\n", result.error);
-			}
-		} catch (error) {
-			console.error("Error in Jinja Template\n", { value_string: props.field.value, error });
-			frappe.show_alert(
-				{
-					message: "Unable Render Jinja Template. Please Check Console",
-					indicator: "red",
-				},
-				5
-			);
-			parsedValue.value = props.field.value;
-		}
-	} else {
-		parsedValue.value = props.field.value;
-	}
-};
-
 watch(
 	() => [
 		props.field.value,
@@ -162,39 +126,7 @@ watch(
 		row.value,
 	],
 	async () => {
-		const isDataAvailable = props.table
-			? row.value
-			: Object.keys(MainStore.docData).length > 0;
-		if (props.field.is_static) {
-			if (props.field.parseJinja) {
-				parseJinja();
-				return;
-			}
-			parsedValue.value = props.field.value;
-			return;
-		} else if (props.table) {
-			if (isDataAvailable && typeof row.value[props.field.fieldname] != "undefined") {
-				parsedValue.value = frappe.format(
-					row.value[props.field.fieldname],
-					{ fieldtype: props.field.fieldtype, options: props.field.options },
-					{ inline: true },
-					row.value
-				);
-			} else {
-				parsedValue.value =
-					["Image, Attach Image"].indexOf(props.field.fieldtype) != -1
-						? null
-						: `{{ ${props.field.fieldname} }}`;
-			}
-			return;
-		} else {
-			parsedValue.value =
-				props.field.value ||
-				`{{ ${props.field.parentField ? props.field.parentField + "." : ""}${
-					props.field.fieldname
-				} }}`;
-			return;
-		}
+		parsedValue.value = await getFormattedValue(props.field, row);
 	},
 	{ immediate: true, deep: true }
 );
