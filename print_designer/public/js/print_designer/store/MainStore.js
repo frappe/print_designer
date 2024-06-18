@@ -301,6 +301,7 @@ export const useMainStore = defineStore("MainStore", {
 								fieldtype: "Int",
 								label: "No",
 								options: undefined,
+								table: selectedTable,
 							},
 						];
 					}
@@ -468,7 +469,7 @@ export const useMainStore = defineStore("MainStore", {
 				) {
 					return object.selectedDynamicText?.[styleEditMode][propertyName];
 				}
-				if (state.isValidValue(object.selectedColumn?.["style"][propertyName])) {
+				if (state.isValidValue(object.selectedColumn?.["style"]?.[propertyName])) {
 					return object.selectedColumn?.["style"][propertyName];
 				}
 				if (state.isValidValue(object[styleEditMode][propertyName])) {
