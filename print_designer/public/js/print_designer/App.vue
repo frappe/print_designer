@@ -111,8 +111,8 @@ watchEffect(() => {
 	justify-content: space-between;
 	margin: 0;
 	cursor: default;
-	--primary: #6f5f35;
-	--primary-color: #6f5f35;
+	--primary: #7b4b57;
+	--primary-color: #7b4b57;
 	.app-sections {
 		flex: 1;
 		height: calc(100vh - var(--navbar-height));
