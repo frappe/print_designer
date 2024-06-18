@@ -704,6 +704,7 @@ export const createPropertiesPanel = () => {
 									fieldtype: "Int",
 									label: "No",
 									options: undefined,
+									tableName: currentEL["table"],
 								};
 								if (value && currentEL) {
 									currentEL["table"] = MainStore.metaFields.find(
@@ -755,6 +756,9 @@ export const createPropertiesPanel = () => {
 														dlKeys[index]
 													],
 												];
+												col.dynamicContent.forEach((dc) => {
+													dc.tableName = currentEL["table"].fieldname;
+												});
 												col.label =
 													col.dynamicContent[0].label ||
 													col.dynamicContent[0].fieldname;

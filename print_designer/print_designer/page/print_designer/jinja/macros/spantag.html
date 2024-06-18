@@ -15,7 +15,11 @@
         {%- set value = _(frappe.db.get_value(field.doctype, doc[field.parentField], field.fieldname)) -%}
         {{ frappe.format(value, {'fieldtype': field.fieldtype, 'options': field.options}) }}
     {%- elif row -%}
+    {%- if field.fieldtype == "Image" and row.get(field['options']) -%}
+        <img class="print-item-image" src="{{ row.get(field['options']) }}" alt="">
+    {%- else -%}
         {{row.get_formatted(field.fieldname)}}
+    {%- endif -%}
     {%- else -%}
         {{doc.get_formatted(field.fieldname)}}
     {%- endif -%}

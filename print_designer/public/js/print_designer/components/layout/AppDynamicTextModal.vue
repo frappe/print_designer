@@ -148,6 +148,7 @@ import { useMainStore } from "../../store/MainStore";
 import AppModal from "./AppModal.vue";
 import IconsUse from "../../icons/IconsUse.vue";
 import AppDynamicPreviewModal from "./AppDynamicPreviewModal.vue";
+import { getFormattedValue } from "../../utils";
 const MainStore = useMainStore();
 const props = defineProps({
 	openDynamicModal: {
@@ -215,15 +216,21 @@ const parentFieldWatcher = watch(
 
 onMounted(() => {
 	if (props.openDynamicModal) {
-		fieldnames.value = props.openDynamicModal.dynamicContent;
+		fieldnames.value = props.openDynamicModal.dynamicContent || [];
 		selectedDoctypeLabel.value = MainStore.doctype;
-		if (props.table) {
-			fieldnames.value = props.openDynamicModal.dynamicContent || [];
-		}
 		fieldnames.value.findIndex((fd) => fd.print_hide) != -1 && (hiddenFields.value = true);
 		if (!hiddenFields.value) {
 			hiddenFields.value = MainStore.isHiddenFieldsVisible;
 		}
+		fieldnames.value.forEach(async (field) => {
+			let rowValue = null;
+			if (props.table) {
+				rowValue = MainStore.docData[props.table.fieldname][0];
+				field.value = await getFormattedValue(field, rowValue);
+			} else {
+				field.value = await getFormattedValue(field, null);
+			}
+		});
 	}
 });
 
@@ -270,28 +277,11 @@ const selectField = async (field, fieldtype) => {
 	});
 	if (isRemoved) return;
 	let index = fieldnames.value.length;
-	let value = previewRef.value.parentField
-		? await getValue(
-				doctype.value,
-				MainStore.docData[previewRef.value.parentField],
-				field.fieldname
-		  )
-		: props.table
-		? MainStore.docData[props.table.fieldname]?.length &&
-		  typeof MainStore.docData[props.table.fieldname][0][field.fieldname] != "undefined"
-			? frappe.format(
-					MainStore.docData[props.table.fieldname][0][field.fieldname],
-					{ fieldtype: field.fieldtype, options: field.options },
-					{ inline: true },
-					MainStore.docData
-			  )
-			: `{{ ${field.fieldname} }}`
-		: frappe.format(
-				MainStore.docData[field.fieldname],
-				{ fieldtype: field.fieldtype, options: field.options },
-				{ inline: true },
-				MainStore.docData
-		  );
+	let rowValue = null;
+	if (props.table) {
+		rowValue = MainStore.docData[props.table.fieldname][0];
+	}
+	let value = await getFormattedValue(field, rowValue);
 	if (!value) {
 		if (["Image, Attach Image"].indexOf(field.fieldtype) != -1) {
 			value = null;
