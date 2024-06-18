@@ -17,7 +17,7 @@
 	>
 		<div
 			:style="['overflow: hidden;', widthHeightStyle(width, height)]"
-			@click.stop.self="
+			@click.self="
 				() => {
 					selectedColumn = null;
 					selectedDynamicText = null;
@@ -49,7 +49,7 @@
 							@dragleave="dragleave"
 							@dragover="allowDrop"
 							@contextmenu.prevent="handleMenu($event, index)"
-							@mousedown.self="handleColumnClick(column)"
+							@mousedown="handleColumnClick(column)"
 							@dblclick.stop="handleDblClick(table, column)"
 							:ref="
 								(el) => {
