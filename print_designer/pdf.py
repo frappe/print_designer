@@ -9,6 +9,7 @@ from frappe.utils.jinja_globals import is_rtl
 from frappe.utils.pdf import pdf_body_html as fw_pdf_body_html
 from frappe.www.printview import get_print_format_doc, validate_print_permission
 from frappe.model.document import Document
+import base64
 
 def pdf_header_footer_html(soup, head, content, styles, html_id, css):
 	if soup.find(id="__print_designer"):
@@ -192,9 +193,16 @@ def get_rendered_template_pd(
 				args.update({"element": [element]})
 				#Need to change options value to raw_cmd
 				rendered_html = template.render(args, filters={"len": len})
-
 				html_with_raw_cmd_list.append({'type': 'raw', 'format': 'command', 'flavor': 'plain', 'data': rawCmdBeforeEle})
-				html_with_raw_cmd_list.append({ 'type': 'raw', 'format': 'html', 'flavor': 'plain', 'data': rendered_html, 'options': options})
+				element_type = element.get("childrens")[0].get("childrens")[0].get("childrens")[0].get("type")
+				if element_type == 'image':
+					file_path = element.get("childrens")[0].get("childrens")[0].get("childrens")[0].get("image").get('file_url')
+					file_path = f'{frappe.local.site}{file_path}'
+					base64_image = get_base64_encoded_image(file_path)
+					frappe.log_error("Base64 Encoded Image:", base64_image)
+					html_with_raw_cmd_list.append({ 'type': 'raw', 'format': 'image', 'flavor': 'file',  "data": "data:image/jpeg;base64," + base64_image, 'options': options })
+				else:		
+					html_with_raw_cmd_list.append({ 'type': 'raw', 'format': 'html', 'flavor': 'plain', 'data': rendered_html, 'options': options})
 				html_with_raw_cmd_list.append({'type': 'raw', 'format': 'command', 'flavor': 'plain', 'data': rawCmdAfterEle})
 			except Exception as e :
 				error = log_error(title=e, reference_doctype="Print Format", reference_name=print_format.name)
@@ -215,3 +223,9 @@ def convert_str_raw_cmd(raw_string, printer_lang):
 		}
 	}
 	return str_cmd_dict[raw_string][printer_lang]
+
+def get_base64_encoded_image(file_path):
+    with open(file_path, "rb") as image_file:
+        encoded_string = base64.b64encode(image_file.read()).decode('utf-8')
+        return encoded_string
+
