@@ -389,7 +389,7 @@ export const parseJinja = async (field, row) => {
 
 export const getFormattedValue = async (field, row = null) => {
 	const MainStore = useMainStore();
-	const formattedValue = ref(field.value);
+
 	if (isRef(row)) {
 		row = row.value;
 	}
@@ -398,11 +398,13 @@ export const getFormattedValue = async (field, row = null) => {
 	}
 
 	const isDataAvailable = !!row || Object.keys(MainStore.docData).length > 0;
+
+	const formattedValue = ref(field.value);
+
 	if (field.is_static) {
 		if (field.parseJinja) {
 			formattedValue.value = await parseJinja(field, row);
 		}
-		return formattedValue.value;
 	} else if (row) {
 		if (field.fieldtype == "Image") {
 			formattedValue.value = frappe.format(
@@ -425,7 +427,6 @@ export const getFormattedValue = async (field, row = null) => {
 					? null
 					: `{{ ${field.fieldname} }}`;
 		}
-		return formattedValue.value;
 	} else {
 		let rawValue = MainStore.docData[field.fieldname];
 		if (field.parentField) {
@@ -435,38 +436,38 @@ export const getFormattedValue = async (field, row = null) => {
 				field.fieldname
 			);
 		}
-		field.value = frappe.format(
+		formattedValue.value = frappe.format(
 			rawValue,
 			{ fieldtype: field.fieldtype, options: field.options },
 			{ inline: true },
 			MainStore.docData
 		);
-		if (!field.value) {
+		if (!formattedValue.value) {
 			if (["Image, Attach Image"].indexOf(field.fieldtype) != -1) {
-				field.value = null;
+				formattedValue.value = null;
 			} else {
 				switch (field.fieldname) {
 					case "page":
-						field.value = "0";
+						formattedValue.value = "0";
 						break;
 					case "topage":
-						field.value = "999";
+						formattedValue.value = "999";
 						break;
 					case "date":
-						field.value = frappe.datetime.now_date();
+						formattedValue.value = frappe.datetime.now_date();
 						break;
 					case "time":
-						field.value = frappe.datetime.now_time();
+						formattedValue.value = frappe.datetime.now_time();
 						break;
 					default:
-						field.value = `{{ ${field.parentField ? field.parentField + "." : ""}${
-							field.fieldname
-						} }}`;
+						formattedValue.value = `{{ ${
+							field.parentField ? field.parentField + "." : ""
+						}${field.fieldname} }}`;
 				}
 			}
 		}
-		return field.value;
 	}
+	return formattedValue.value;
 };
 
 export const updateDynamicData = async () => {
