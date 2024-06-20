@@ -177,8 +177,12 @@ def get_rendered_template_pd(
 	for set_type in element_List:
 		for element in element_List[set_type]:
 			try :
-				rawCmdBeforeEle = element.get('childrens')[0].get('rawCmdBeforeEle', ' ').strip()
-				rawCmdAfterEle = element.get('childrens')[0].get('rawCmdAfterEle', ' ').strip()
+				if type(element) != dict:
+					element_obj = element_List.get(set_type).get(element)
+					if element_obj is None or  len(element_obj) == 0 :
+						continue
+				rawCmdBeforeEle = element.get('childrens')[0].get('childrens')[0].get('rawCmdBeforeEle', ' ').strip()
+				rawCmdAfterEle = element.get('childrens')[0].get('childrens')[0].get('rawCmdAfterEle', ' ').strip()
 				
 				if rawCmdBeforeEle != "" and rawCmdBeforeEle != 'custom':
 					rawCmdBeforeEle = convert_str_raw_cmd(rawCmdBeforeEle, raw_cmd_lang)
@@ -188,13 +192,13 @@ def get_rendered_template_pd(
 				if rawCmdAfterEle != "" and rawCmdAfterEle != 'custom':
 					rawCmdAfterEle = convert_str_raw_cmd(rawCmdAfterEle, raw_cmd_lang)
 				elif rawCmdAfterEle == 'custom':
-					rawCmdAfterEle = element.get('childrens')[0].get('customRawCmdAfterEle', ' ').strip()
+					rawCmdAfterEle = element.get('childrens')[0].get('childrens')[0].get('customRawCmdAfterEle', ' ').strip()
 
 				args.update({"element": [element]})
 				#Need to change options value to raw_cmd
 				rendered_html = template.render(args, filters={"len": len})
 				html_with_raw_cmd_list.append({'type': 'raw', 'format': 'command', 'flavor': 'plain', 'data': rawCmdBeforeEle})
-				element_type = element.get("childrens")[0].get("childrens")[0].get("childrens")[0].get("type")
+				element_type = element.get("childrens")[0].get("childrens")[0].get("childrens")[0].get("childrens")[0].get("type")
 				if element_type == 'image':
 					file_path = element.get("childrens")[0].get("childrens")[0].get("childrens")[0].get("image").get('file_url')
 					file_path = f'{frappe.local.site}{file_path}'
