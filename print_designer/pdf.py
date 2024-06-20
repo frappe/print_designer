@@ -157,7 +157,7 @@ def get_rendered_template_pd(
 		}
 	)
 	template_source = jenv.loader.get_source( 				
-		jenv, "print_designer/page/print_designer/jinja/redner_element.html" 
+		jenv, "print_designer/page/print_designer/jinja/render_element.html" 
 		)[0]
 	args.update({"afterTableElement": json.loads(print_format.print_designer_after_table or "[]")})
 	template = jenv.from_string(template_source)
