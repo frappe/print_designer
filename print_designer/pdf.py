@@ -181,24 +181,16 @@ def get_rendered_template_pd(
 					element_obj = element_List.get(set_type).get(element)
 					if element_obj is None or  len(element_obj) == 0 :
 						continue
-				rawCmdBeforeEle = element.get('childrens')[0].get('childrens')[0].get('rawCmdBeforeEle', ' ').strip()
-				rawCmdAfterEle = element.get('childrens')[0].get('childrens')[0].get('rawCmdAfterEle', ' ').strip()
+				# rawCmdBeforeEle = element.get('childrens')[0].get('childrens')[0].get('rawCmdBeforeEle', ' ').strip()
+				# rawCmdAfterEle = element.get('childrens')[0].get('childrens')[0].get('rawCmdAfterEle', ' ').strip()
+				rawCmdBeforeEle, rawCmdAfterEle = get_raw_cmd(element.get('childrens'), raw_cmd_lang)	if element.get('childrens') is not None else ""
 				
-				if rawCmdBeforeEle != "" and rawCmdBeforeEle != 'custom':
-					rawCmdBeforeEle = convert_str_raw_cmd(rawCmdBeforeEle, raw_cmd_lang)
-				elif rawCmdBeforeEle == 'custom':
-					rawCmdBeforeEle = element.get('childrens')[0].get('customRawCmdBeforeEle', ' ').strip()
-
-				if rawCmdAfterEle != "" and rawCmdAfterEle != 'custom':
-					rawCmdAfterEle = convert_str_raw_cmd(rawCmdAfterEle, raw_cmd_lang)
-				elif rawCmdAfterEle == 'custom':
-					rawCmdAfterEle = element.get('childrens')[0].get('childrens')[0].get('customRawCmdAfterEle', ' ').strip()
-
 				args.update({"element": [element]})
 				#Need to change options value to raw_cmd
 				rendered_html = template.render(args, filters={"len": len})
 				html_with_raw_cmd_list.append({'type': 'raw', 'format': 'command', 'flavor': 'plain', 'data': rawCmdBeforeEle})
-				element_type = element.get("childrens")[0].get("childrens")[0].get("childrens")[0].get("childrens")[0].get("type")
+				element_type = get_element_type(element.get("childrens"))
+
 				if element_type == 'image':
 					file_path = element.get("childrens")[0].get("childrens")[0].get("childrens")[0].get("image").get('file_url')
 					file_path = f'{frappe.local.site}{file_path}'
@@ -226,10 +218,39 @@ def convert_str_raw_cmd(raw_string, printer_lang):
 			'ESCPOS' : "\x1D\x56\x01"
 		}
 	}
-	return str_cmd_dict[raw_string][printer_lang]
+	return str_cmd_dict.get(raw_string).get(printer_lang) or ""
 
 def get_base64_encoded_image(file_path):
     with open(file_path, "rb") as image_file:
         encoded_string = base64.b64encode(image_file.read()).decode('utf-8')
         return encoded_string
+
+
+def get_raw_cmd(element_dict, raw_cmd_lang):
+	for element in element_dict:
+		if element.get('childrens') is not None:
+			if element.get('layoutType') == "column" and 'index' in element:
+				rawCmdBeforeEle = element.get('rawCmdBeforeEle')
+				rawCmdAfterEle = element.get('rawCmdAfterEle')
+				if rawCmdBeforeEle == "custom":
+					rawCmdBeforeEle = element.get('customRawCmdBeforeEle')
+				elif rawCmdBeforeEle is not None:
+					rawCmdBeforeEle = convert_str_raw_cmd(rawCmdBeforeEle, raw_cmd_lang)
+				
+				if rawCmdAfterEle == "custom":
+					rawCmdAfterEle = element.get('customRawCmdAfterEle')
+				elif rawCmdAfterEle is not None:
+					rawCmdAfterEle = convert_str_raw_cmd(rawCmdBeforeEle, raw_cmd_lang)
+					
+				return rawCmdBeforeEle or "", rawCmdAfterEle or ""
+			
+			return get_raw_cmd(element.get('childrens'), raw_cmd_lang)
+		else:
+			return ""
+
+def get_element_type(element_dict):
+	for element in element_dict:
+		if  element.get("childrens"):
+			return get_element_type(element.get("childrens"))
+		return element.get('type')
 
