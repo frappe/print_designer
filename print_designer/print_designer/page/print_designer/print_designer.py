@@ -20,6 +20,11 @@ def render_user_text_withdoc(string, doctype, docname=None, row=None, send_to_ji
 
 
 @frappe.whitelist(allow_guest=False)
+def get_meta(doctype):
+	return frappe.get_meta(doctype).as_dict()
+
+
+@frappe.whitelist(allow_guest=False)
 def render_user_text(string, doc, row=None, send_to_jinja=None):
 	if not row:
 		row = {}

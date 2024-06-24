@@ -277,41 +277,11 @@ const selectField = async (field, fieldtype) => {
 	});
 	if (isRemoved) return;
 	let index = fieldnames.value.length;
-	let rowValue = null;
-	if (props.table) {
-		rowValue = MainStore.docData[props.table.fieldname][0];
-	}
-	let value = await getFormattedValue(field, rowValue);
-	if (!value) {
-		if (["Image, Attach Image"].indexOf(field.fieldtype) != -1) {
-			value = null;
-		} else {
-			switch (field.fieldname) {
-				case "page":
-					value = "0";
-					break;
-				case "topage":
-					value = "999";
-					break;
-				case "date":
-					value = frappe.datetime.now_date();
-					break;
-				case "time":
-					value = frappe.datetime.now_time();
-					break;
-				default:
-					value = `{{ ${
-						previewRef.value.parentField ? previewRef.value.parentField + "." : ""
-					}${field.fieldname} }}`;
-			}
-		}
-	}
 	let dynamicField = {
 		doctype: doctype.value,
 		parentField: previewRef.value.parentField,
 		fieldname: field.fieldname,
 		options: field.options,
-		value,
 		fieldtype,
 		label: props.table ? field.label : `${field.label} :`,
 		suffix: null,
@@ -323,6 +293,11 @@ const selectField = async (field, fieldtype) => {
 		labelStyle: {},
 		nextLine: !props.table,
 	};
+	let rowValue = null;
+	if (props.table) {
+		rowValue = MainStore.docData[props.table.fieldname][0];
+	}
+	dynamicField["value"] = await getFormattedValue(dynamicField, rowValue);
 	if (previewRef.value.selectedEl) {
 		index = previewRef.value.selectedEl.index + 1;
 		fieldnames.value.splice(index, 0, dynamicField);
