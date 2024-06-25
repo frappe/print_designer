@@ -307,6 +307,9 @@ const handleKeyDown = ({
 					element.startY -= finalValue.value - object[property];
 				});
 				MainStore.page.headerHeight += object[property] - finalValue.value;
+				if (MainStore.page.headerHeight < 0) {
+					MainStore.page.headerHeight = 0;
+				}
 			} else if (property == "marginLeft") {
 				ElementStore.Elements.forEach((element) => {
 					element.startX -= finalValue.value - object[property];
@@ -360,6 +363,9 @@ const handleBlur = ({
 				page.footer[0].startY += object[property] - convertedValue.value;
 			});
 			MainStore.page.headerHeight += object[property] - convertedValue.value;
+			if (MainStore.page.headerHeight < 0) {
+				MainStore.page.headerHeight = 0;
+			}
 		} else if (property == "marginLeft") {
 			ElementStore.Elements.forEach((element) => {
 				element.startX -= convertedValue.value - object[property];
@@ -368,6 +374,9 @@ const handleBlur = ({
 			ElementStore.Elements.forEach((page) => {
 				page.footer[0].height += object[property] - convertedValue.value;
 				MainStore.page.footerHeight += object[property] - convertedValue.value;
+				if (MainStore.page.footerHeight < 0) {
+					MainStore.page.footerHeight = 0;
+				}
 			});
 		}
 		if (["width", "height"].indexOf(property)) {
