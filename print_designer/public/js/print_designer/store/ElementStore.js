@@ -467,7 +467,7 @@ export const useElementStore = defineStore("ElementStore", {
 				if (el.type == "rectangle") {
 					el.childrens = this.computeRowLayout(el.childrens, el);
 					el.layoutType = "column";
-					el.classes.push("relative-column");
+					el.classes = el.classes.filter((c) => c != "relative-column");
 					el.rectangleContainer = true;
 					if (el.childrens.some((e) => e.heightType == "auto-min-height")) {
 						el.heightType = "auto-min-height";
@@ -780,6 +780,7 @@ export const useElementStore = defineStore("ElementStore", {
 			if (wrapper.layoutType == "column") {
 				wrapper.width = dimensions.right - dimensions.left;
 				wrapper.height = parent.height || 0;
+				wrapper.classes = wrapper.classes.filter((c) => c != "relative-column");
 				wrapper.classes.push("relative-column");
 				wrapper.relativeColumn = true;
 			} else {
@@ -787,6 +788,7 @@ export const useElementStore = defineStore("ElementStore", {
 					parent.width ||
 					MainStore.page.width - MainStore.page.marginLeft - MainStore.page.marginRight;
 				wrapper.height = dimensions.bottom - dimensions.top;
+				wrapper.classes = wrapper.classes.filter((c) => c != "relative-row");
 				wrapper.classes.push("relative-row");
 				wrapper.classes.push(wrapper.id);
 			}
@@ -880,6 +882,7 @@ export const useElementStore = defineStore("ElementStore", {
 				parent.width ||
 				MainStore.page.width - MainStore.page.marginLeft - MainStore.page.marginRight;
 			wrapper.height = dimension.bottom - dimension.top;
+			wrapper.classes = wrapper.classes.filter((c) => c != "relative-row");
 			wrapper.classes.push("relative-row");
 			delete wrapper.parent;
 			this.updateRowElement(wrapper, currentRow, parent);
@@ -927,6 +930,7 @@ export const useElementStore = defineStore("ElementStore", {
 			wrapper.layoutType = "column";
 			wrapper.width = dimension.right - dimension.left;
 			wrapper.height = parent.height;
+			wrapper.classes = wrapper.classes.filter((c) => c != "relative-column");
 			wrapper.classes.push("relative-column");
 			wrapper.relativeColumn = true;
 			delete wrapper.parent;
