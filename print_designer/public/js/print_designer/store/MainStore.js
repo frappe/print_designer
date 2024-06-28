@@ -79,6 +79,7 @@ export const useMainStore = defineStore("MainStore", {
 		globalStyles,
 		printDesignName: "",
 		isLayerPanelEnabled: false,
+		isRawPrintEnabled:false,
 		page: {
 			height: 1122.519685,
 			width: 793.7007874,
@@ -91,7 +92,6 @@ export const useMainStore = defineStore("MainStore", {
 			headerHeightWithMargin: 0,
 			footerHeightWithMargin: 0,
 			UOM: "mm",
-			isRawPrintEnable:false
 		},
 		controls: {
 			MousePointer: {
