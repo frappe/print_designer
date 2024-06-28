@@ -308,159 +308,6 @@ export const createPropertiesPanel = () => {
 	});
 
 	MainStore.propertiesPanel.push({
-		title: "Raw Printing",
-		sectionCondtional: () =>
-            true,
-        fields: [
-			{
-				label: "Enable Raw Printing",
-				name: "isRawPrintEnable",
-				isLabelled: true,
-				condtional: () => MainStore.getCurrentElementsId.length < 1,
-				frappeControl: (ref, name) => {
-					const MainStore = useMainStore();
-					makeFeild({
-						name: name,
-						ref: ref,
-						fieldtype: "Select",
-						requiredData: [MainStore.page],
-						options: () => [
-							{ label: "Yes", value: true },
-							{ label: "No", value: false },
-						],
-						onChangeCallback: (value = null) => {
-							MainStore.frappeControls[name].$input.blur();
-						},
-						reactiveObject: () => MainStore.page,
-						propertyName: "isRawPrintEnable",
-					});
-				},
-			},
-			{
-				label: "Raw Cmd Language",
-				name: "rawCmdLang",
-				isLabelled: true,
-				condtional: () => MainStore.getCurrentElementsId.length < 1 && MainStore.frappeControls['isRawPrintEnable'] && MainStore.frappeControls['isRawPrintEnable'].value == 'true',
-				frappeControl: (ref, name) => {
-					const MainStore = useMainStore();
-					makeFeild({
-						name: name,
-						ref: ref,
-						fieldtype: "Select",
-						requiredData: [MainStore],
-						options: () => [
-							{ label: "ESC/POS", value: "ESCPOS" },
-							{ label: "ZPL", value: "ZPL" },
-							{ label: "EPL", value: "EPL" },
-							{ label: "Evolis", value: "EVOLIS" },
-							{ label: "SBPL", value: "SBPL" },
-						],
-						reactiveObject: () => MainStore.page,
-						propertyName: "rawCmdLang",
-					});
-				},
-			},
-			{
-				label: "Raw Cmd Before Element",
-				name: "rawCmdBeforeEle",
-				isLabelled: true,
-				condtional: () => {
-					return (
-						MainStore.getCurrentElementsId.length == 1 && MainStore.frappeControls['isRawPrintEnable'] 
-						&& MainStore.frappeControls['isRawPrintEnable'].value == 'true'
-					)
-				},
-				frappeControl: (ref, name) => {
-					const MainStore = useMainStore();
-					makeFeild({
-						name: name,
-						ref: ref,
-						fieldtype: "Select",
-						requiredData: [MainStore.getCurrentElementsValues[0]],
-						options: () => [
-							{ label: "Paper Cut", value: "paper_cut" },
-							{ label: "Partial Paper Cut", value: "partial_paper_cut" },
-							{ label: "Custom", value: "custom" },
-						],
-						reactiveObject: () => MainStore.getCurrentElementsValues[0],
-						propertyName: "rawCmdBeforeEle",
-					});
-				},
-			},
-			{
-				label: "Custom Raw Cmd Before Element",
-				name: "customRawCmdBeforeEle",
-				isLabelled: true,
-				condtional: () => {
-					return (MainStore.getCurrentElementsId.length == 1  && MainStore.frappeControls['rawCmdBeforeEle']   
-						&& MainStore.frappeControls['isRawPrintEnable'] && MainStore.frappeControls['isRawPrintEnable'].value == 'true' 
-						&& MainStore.frappeControls['rawCmdBeforeEle'].value == 'custom')
-				},
-				frappeControl: (ref, name) => {
-					const MainStore = useMainStore();
-					makeFeild({
-						name: name,
-						ref: ref,
-						fieldtype: "Data",
-						requiredData: [MainStore.getCurrentElementsValues[0]],
-						reactiveObject: () => MainStore.getCurrentElementsValues[0],
-						propertyName: "customRawCmdBeforeEle",
-					});
-				},
-			},
-			{
-				label: "Raw Cmd After Element",
-				name: "rawCmdAfterEle",
-				isLabelled: true,
-				condtional: () => {
-					return (
-						MainStore.getCurrentElementsId.length == 1 && MainStore.frappeControls['isRawPrintEnable'] 
-						&& MainStore.frappeControls['isRawPrintEnable'].value == 'true'
-					)
-				},
-				frappeControl: (ref, name) => {
-					const MainStore = useMainStore();
-					makeFeild({
-						name: name,
-						ref: ref,
-						fieldtype: "Select",
-						requiredData: [MainStore.getCurrentElementsValues[0]],
-						options: () => [
-							{ label: "Paper Cut", value: "paper_cut" },
-							{ label: "Partial Paper Cut", value: "partial_paper_cut" },
-							{ label: "Custom", value: "custom" },
-						],
-						reactiveObject: () => MainStore.getCurrentElementsValues[0],
-						propertyName: "rawCmdAfterEle",
-					});
-				},
-			},
-			{
-				label: "Custom Raw Cmd After Element",
-				name: "customRawCmdAfterEle",
-				isLabelled: true,
-				condtional: () => {
-					return (MainStore.getCurrentElementsId.length == 1  && MainStore.frappeControls['rawCmdAfterEle']   
-						&& MainStore.frappeControls['isRawPrintEnable'] && MainStore.frappeControls['isRawPrintEnable'].value == 'true' 
-						&& MainStore.frappeControls['rawCmdAfterEle'].value == 'custom')
-				},
-				frappeControl: (ref, name) => {
-					const MainStore = useMainStore();
-					makeFeild({
-						name: name,
-						ref: ref,
-						fieldtype: "Data",
-						requiredData: [MainStore.getCurrentElementsValues[0]],
-						
-						reactiveObject: () => MainStore.getCurrentElementsValues[0],
-						propertyName: "customRawCmdAfterEle",
-					});
-				},
-			}
-		],
-	});
-
-	MainStore.propertiesPanel.push({
 		title: "Page Settings",
 		sectionCondtional: () =>
 			!MainStore.getCurrentElementsId.length && MainStore.activeControl === "mouse-pointer",
@@ -625,6 +472,154 @@ export const createPropertiesPanel = () => {
 				pageInput("Header", "page_header", "headerHeight"),
 				pageInput("Footer", "page_footer", "footerHeight"),
 			],
+		],
+	});
+
+	MainStore.propertiesPanel.push({
+		title: "Raw Printing",
+		sectionCondtional: () => MainStore.isRawPrintEnabled && MainStore.getCurrentElementsId.length == 1 || MainStore.getCurrentElementsId.length == 0,
+        fields: [
+			{
+				label: "Enable Raw Printing",
+				name: "isRawPrintEnabled",
+				isLabelled: true,
+				condtional: () => MainStore.getCurrentElementsId.length == 0,
+				frappeControl: (ref, name) => {
+					const MainStore = useMainStore();
+					makeFeild({
+						name: name,
+						ref: ref,
+						fieldtype: "Select",
+						requiredData: [MainStore],
+						options: () => [
+							{ label: "Yes", value: "Yes"},
+							{ label: "No", value: "No", is_selected: true  },
+						],
+						formatValue: (object, property, isStyle) => {
+							if (!object) return;
+							return object[property] ? "Yes" : "No";
+						},
+						onChangeCallback: (value = null) => {
+							if (value) {
+								
+								MainStore.isRawPrintEnabled = value === "Yes";
+								if(MainStore.isRawPrintEnabled){
+									MainStore.page.headerHeight = 0
+									MainStore.page.footerHeight = 0
+								}
+								MainStore.frappeControls[name].$input.blur();
+							}
+						},
+						reactiveObject: () => MainStore,
+						propertyName: "isRawPrintEnabled",
+					});
+				},
+			},
+			{
+				label: "Raw Cmd Language",
+				name: "rawCmdLang",
+				isLabelled: true,
+				condtional: () =>  MainStore.isRawPrintEnabled  && MainStore.getCurrentElementsId.length < 1,
+				frappeControl: (ref, name) => {
+					const MainStore = useMainStore();
+					makeFeild({
+						name: name,
+						ref: ref,
+						fieldtype: "Select",
+						requiredData: [MainStore],
+						options: () => [
+							{ label: "ESC/POS", value: "ESCPOS" },
+							{ label: "ZPL", value: "ZPL" },
+							{ label: "EPL", value: "EPL" },
+							{ label: "Evolis", value: "EVOLIS" },
+							{ label: "SBPL", value: "SBPL" },
+						],
+						reactiveObject: () => MainStore.page,
+						propertyName: "rawCmdLang",
+					});
+				},
+			},
+			{
+				label: "Raw Cmd Before Element",
+				name: "rawCmdBeforeEle",
+				isLabelled: true,
+				condtional: () => MainStore.isRawPrintEnabled && MainStore.getCurrentElementsId.length == 1 ,
+				frappeControl: (ref, name) => {
+					const MainStore = useMainStore();
+					makeFeild({
+						name: name,
+						ref: ref,
+						fieldtype: "Select",
+						requiredData: [MainStore.getCurrentElementsValues[0]],
+						options: () => [
+							{ label: "", value: "" },
+							{ label: "Paper Cut", value: "paper_cut" },
+							{ label: "Partial Paper Cut", value: "partial_paper_cut" },
+							{ label: "Custom", value: "custom" },
+						],
+						reactiveObject: () => MainStore.getCurrentElementsValues[0],
+						propertyName: "rawCmdBeforeEle",
+					});
+				},
+			},
+			{
+				label: "Custom Raw Cmd Before Element",
+				name: "customRawCmdBeforeEle",
+				isLabelled: true,
+				condtional: () => MainStore.isRawPrintEnabled && MainStore.getCurrentElementsId.length == 1  && MainStore.getCurrentElementsValues[0]['rawCmdBeforeEle'] == 'custom',
+				frappeControl: (ref, name) => {
+					const MainStore = useMainStore();
+					makeFeild({
+						name: name,
+						ref: ref,
+						fieldtype: "Data",
+						requiredData: [MainStore.getCurrentElementsValues[0]],
+						reactiveObject: () => MainStore.getCurrentElementsValues[0],
+						propertyName: "customRawCmdBeforeEle",
+					});
+				},
+			},
+			{
+				label: "Raw Cmd After Element",
+				name: "rawCmdAfterEle",
+				isLabelled: true,
+				condtional: () => MainStore.isRawPrintEnabled && MainStore.getCurrentElementsId.length == 1,
+				frappeControl: (ref, name) => {
+					const MainStore = useMainStore();
+					makeFeild({
+						name: name,
+						ref: ref,
+						fieldtype: "Select",
+						requiredData: [MainStore.getCurrentElementsValues[0]],
+						options: () => [
+							{ label: "", value: "" },
+							{ label: "Paper Cut", value: "paper_cut" },
+							{ label: "Partial Paper Cut", value: "partial_paper_cut" },
+							{ label: "Custom", value: "custom" },
+						],
+						reactiveObject: () => MainStore.getCurrentElementsValues[0],
+						propertyName: "rawCmdAfterEle",
+					});
+				},
+			},
+			{
+				label: "Custom Raw Cmd After Element",
+				name: "customRawCmdAfterEle",
+				isLabelled: true,
+				condtional: () => MainStore.isRawPrintEnabled && MainStore.getCurrentElementsId.length == 1  && MainStore.getCurrentElementsValues[0]['rawCmdAfterEle'] == 'custom',
+				frappeControl: (ref, name) => {
+					const MainStore = useMainStore();
+					makeFeild({
+						name: name,
+						ref: ref,
+						fieldtype: "Data",
+						requiredData: [MainStore.getCurrentElementsValues[0]],
+						
+						reactiveObject: () => MainStore.getCurrentElementsValues[0],
+						propertyName: "customRawCmdAfterEle",
+					});
+				},
+			}
 		],
 	});
 
