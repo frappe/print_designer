@@ -225,14 +225,10 @@ frappe.ui.form.PrintView = class PrintView extends frappe.ui.form.PrintView {
 			});
 		}
 	}
-	isPDRawPrintEnable(pDesignerSetting){
-		if (pDesignerSetting.print_designer_settings != undefined){
-			pDesignerSetting =  JSON.parse(pDesignerSetting.print_designer_settings)
-			if (pDesignerSetting.page.isRawPrintEnable != undefined){
-				return(pDesignerSetting.page.isRawPrintEnable == "true")? true:false
-			}
-		}
-		return false
+	isPDRawPrintEnable(pf){
+		if (!pf.print_designer_settings) return false;
+		let settings = JSON.parse(pf.print_designer_settings);
+		return !!settings.isRawPrintEnabled;
 	}
 	printit() {
 		let me = this;
