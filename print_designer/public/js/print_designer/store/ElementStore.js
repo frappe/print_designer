@@ -13,6 +13,7 @@ import {
 	setCurrentElement,
 	createHeaderFooterElement,
 	getParentPage,
+	cloneElement,
 } from "../utils";
 
 import html2canvas from "html2canvas";
@@ -46,7 +47,7 @@ export const useElementStore = defineStore("ElementStore", {
 		},
 		computeLayoutForSave() {
 			this.handleHeaderFooterOverlapping();
-
+			const MainStore = useMainStore();
 			const { header, body, footer } = this.computeMainLayout();
 			// before modifying save json object that is used by loadElements and UI.
 			const objectToSave = {
@@ -77,6 +78,14 @@ export const useElementStore = defineStore("ElementStore", {
 			}
 			// it will throw error if body is empty so no need to check here
 			layout.body = body.map((b) => {
+				if (MainStore.isRawPrintEnabled){
+					if (!b.childrens[0]['rawCmdBeforeEle']){
+						b.childrens[0]['rawCmdBeforeEle'] = null
+					}
+					if (!b.childrens[0]['rawCmdAfterEle']){
+						b.childrens[0]['rawCmdAfterEle'] = null
+					}
+				}
 				b.childrens = this.computeRowLayout(b.childrens, bodyElements, "body");
 				return b;
 			});
@@ -107,7 +116,7 @@ export const useElementStore = defineStore("ElementStore", {
 			objectToSave.print_designer_print_format = JSON.stringify(layout);
 
 			// update fonts in store
-			const MainStore = useMainStore();
+			
 			MainStore.currentFonts.length = 0;
 			MainStore.currentFonts.push(
 				...Object.keys({
@@ -243,6 +252,7 @@ export const useElementStore = defineStore("ElementStore", {
 				printBodyFonts: MainStore.printBodyFonts,
 				userProvidedJinja: MainStore.userProvidedJinja,
 				schema_version: MainStore.schema_version,
+				isRawPrintEnabled : MainStore.isRawPrintEnabled
 			};
 			const convertCsstoString = (stylesheet) => {
 				let cssRule = Array.from(stylesheet.cssRules)
@@ -1085,6 +1095,7 @@ export const useElementStore = defineStore("ElementStore", {
 							print_designer_footer: objectToSave.print_designer_footer,
 							print_designer_print_format: objectToSave.print_designer_print_format,
 							print_designer_settings: objectToSave.print_designer_settings,
+							print_designer_print_format
 						});
 						d.hide();
 						frappe.set_route("print-designer", values.print_format_name);
@@ -1361,5 +1372,34 @@ export const useElementStore = defineStore("ElementStore", {
 				}) != -1
 			);
 		},
+		isChildElement(currEle){
+			if(currEle && currEle.parent.type == "page"){
+				return false
+			}
+			return true
+		},
+		isHeaderFooterExists(){
+			const { header, body, footer } = this.computeMainLayout();
+			let headerFlag = false;
+			let footerFlag = false;
+
+			for( let page of header){
+				if(page.childrens.length){
+					headerFlag = true
+					break;
+				}
+			}
+
+			for( let page of footer){
+				if(page.childrens.length){
+					footerFlag =  true;
+					break;
+				}
+			}
+			if (headerFlag || footerFlag){
+				return true
+			}
+			return false
+		},	
 	},
 });
