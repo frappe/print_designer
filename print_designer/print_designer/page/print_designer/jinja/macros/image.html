@@ -16,9 +16,11 @@
     style="position: absolute; top:{{ element.startY }}px; left:{{ element.startX }}px;width:{{ element.width }}px;height:{{ element.height }}px;
 {{convert_css(element.style)}}"
     class="image {{ element.classes | join(' ') }}"
->
+>   
+
+    {% set  base64_string = get_base64_string(value) %}
     <div
-        style="width:100%; height:100%; background-image: url('{{frappe.get_url()}}{{value}}');"
+        style="width:100%; height:100%; background-image: url('data:image/jpeg;base64,{{base64_string}}');"
         class="image {{ element.classes | join(' ') }}"
     ></div>
 </div>
