@@ -252,7 +252,8 @@ export const useElementStore = defineStore("ElementStore", {
 				printBodyFonts: MainStore.printBodyFonts,
 				userProvidedJinja: MainStore.userProvidedJinja,
 				schema_version: MainStore.schema_version,
-				isRawPrintEnabled : MainStore.isRawPrintEnabled
+				isRawPrintEnabled : MainStore.isRawPrintEnabled,
+				rawCmdLang : MainStore.rawCmdLang,
 			};
 			const convertCsstoString = (stylesheet) => {
 				let cssRule = Array.from(stylesheet.cssRules)
@@ -1095,7 +1096,7 @@ export const useElementStore = defineStore("ElementStore", {
 							print_designer_footer: objectToSave.print_designer_footer,
 							print_designer_print_format: objectToSave.print_designer_print_format,
 							print_designer_settings: objectToSave.print_designer_settings,
-							print_designer_print_format
+							
 						});
 						d.hide();
 						frappe.set_route("print-designer", values.print_format_name);

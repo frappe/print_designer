@@ -3,7 +3,7 @@ from typing import Literal
 import frappe
 from frappe.model.document import BaseDocument
 from frappe.utils.jinja import get_jenv
-
+import base64
 
 @frappe.whitelist(allow_guest=False)
 def render_user_text_withdoc(string, doctype, docname=None, row=None, send_to_jinja=None):
@@ -308,3 +308,14 @@ def get_qrcode(barcode_value, options=None, png_base64=False):
 		stream.close()
 
 	return {"type": "png_base64" if png_base64 else "svg", "value": qrcode_svg}
+
+@frappe.whitelist()
+def  get_base64_string(file_path):
+	try:
+		file_path = frappe.utils.get_site_path(file_path.split("/")[1],"files",file_path.split("/")[3])
+		with open(file_path, "rb") as image_file:
+			encoded_string = base64.b64encode(image_file.read()).decode('utf-8')
+			return encoded_string
+	except Exception as e:
+		frappe.log_error("Error While Rendering img:{}".format(str(e)))
+		frappe.throw("Error while rendering img")
