@@ -555,6 +555,12 @@ export const createPropertiesPanel = () => {
 							{ label: "SBPL", value: "SBPL" },
 						],
 						reactiveObject: () => MainStore,
+
+						onChangeCallback: (value = null) => {
+							if (value) {
+								MainStore.rawCmdLang = value;
+							}
+						},
 						propertyName: "rawCmdLang",
 					});
 				},
