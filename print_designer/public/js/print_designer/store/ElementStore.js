@@ -48,6 +48,12 @@ export const useElementStore = defineStore("ElementStore", {
 		computeLayoutForSave() {
 			this.handleHeaderFooterOverlapping();
 			const MainStore = useMainStore();
+			// Check Language is set if isRawPrintEnabled == true
+			if(MainStore.isRawPrintEnabled){
+				if(!MainStore.rawCmdLang){
+					frappe.throw("Please select Raw Command Language")
+				}
+			}
 			const { header, body, footer } = this.computeMainLayout();
 			// before modifying save json object that is used by loadElements and UI.
 			const objectToSave = {
