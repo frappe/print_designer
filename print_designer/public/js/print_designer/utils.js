@@ -443,7 +443,7 @@ export const getFormattedValue = async (field, row = null) => {
 			MainStore.docData
 		);
 		if (!formattedValue.value) {
-			if (["Image, Attach Image"].indexOf(field.fieldtype) != -1) {
+			if (["Image", "Attach Image"].indexOf(field.fieldtype) != -1) {
 				formattedValue.value = null;
 			} else {
 				switch (field.fieldname) {
@@ -466,6 +466,9 @@ export const getFormattedValue = async (field, row = null) => {
 				}
 			}
 		}
+	}
+	if (field.fieldtype == "Signature") {
+		formattedValue.value = `<img class="print-item-image" src="${formattedValue.value}" alt="">`;
 	}
 	return formattedValue.value;
 };

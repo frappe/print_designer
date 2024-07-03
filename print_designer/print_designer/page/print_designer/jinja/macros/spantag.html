@@ -15,13 +15,25 @@
         {%- set value = _(frappe.db.get_value(field.doctype, doc[field.parentField], field.fieldname)) -%}
         {{ frappe.format(value, {'fieldtype': field.fieldtype, 'options': field.options}) }}
     {%- elif row -%}
-    {%- if field.fieldtype == "Image" and row.get(field['options']) -%}
-        <img class="print-item-image" src="{{ row.get(field['options']) }}" alt="">
+        {%- if field.fieldtype == "Image" and row.get(field['options']) -%}
+            <img class="print-item-image" src="{{ row.get(field['options']) }}" alt="">
+        {%- elif field.fieldtype == "Signature" -%}
+            {%- if doc.get_formatted(field.fieldname) != "/assets/frappe/images/signature-placeholder.png" -%}
+                <img class="print-item-image" src="{{doc.get_formatted(field.fieldname)}}" alt="">
+            {%- endif -%}
+        {%- else -%}
+            {{row.get_formatted(field.fieldname)}}
+        {%- endif -%}
     {%- else -%}
-        {{row.get_formatted(field.fieldname)}}
-    {%- endif -%}
-    {%- else -%}
-        {{doc.get_formatted(field.fieldname)}}
+        {%- if field.fieldtype == "Image" and doc.get(field['options']) -%}
+            <img class="print-item-image" src="{{ doc.get(field['options']) }}" alt="">
+        {%- elif field.fieldtype == "Signature" -%}
+            {%- if doc.get_formatted(field.fieldname) != "/assets/frappe/images/signature-placeholder.png" -%}
+                <img class="print-item-image" src="{{doc.get_formatted(field.fieldname)}}" alt="">
+            {%- endif -%}
+        {%- else -%}
+            {{doc.get_formatted(field.fieldname)}}
+        {%- endif -%}
     {%- endif -%}
 {%- endmacro -%}
 
