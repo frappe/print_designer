@@ -483,9 +483,7 @@ export const createPropertiesPanel = () => {
 			if(MainStore.getCurrentElementsId.length == 0) return true;
 
 			if(MainStore.isRawPrintEnabled && MainStore.getCurrentElementsId.length == 1){
-				if(ElementStore.isChildElement(MainStore.getCurrentElementsValues[0])){
-					return false
-				}
+				if(ElementStore.isChildElement(MainStore.getCurrentElementsValues[0])) return false
 				return true
 			};
 			return false;
@@ -570,7 +568,12 @@ export const createPropertiesPanel = () => {
 				name: "rawCmdBeforeEle",
 				isLabelled: true,
 				condtional: () =>{ 
-					return MainStore.isRawPrintEnabled && MainStore.getCurrentElementsId.length == 1
+					if (!MainStore.isRawPrintEnabled) return false
+
+					if(MainStore.getCurrentElementsId.length){
+						return !ElementStore.isTopElementOverlapping(MainStore.getCurrentElementsValues[0])
+					}
+					return MainStore.getCurrentElementsId.length == 1
 				},
 				frappeControl: (ref, name) => {
 					const MainStore = useMainStore();
@@ -618,7 +621,13 @@ export const createPropertiesPanel = () => {
 				name: "rawCmdAfterEle",
 				isLabelled: true,
 				condtional: () => {
-					return MainStore.isRawPrintEnabled && MainStore.getCurrentElementsId.length == 1  
+					if (!MainStore.isRawPrintEnabled) return false
+
+					if(MainStore.getCurrentElementsId.length){
+						return !ElementStore.isBottomElementOverlapping(MainStore.getCurrentElementsValues[0])
+					}
+					
+					return MainStore.getCurrentElementsId.length == 1  
 
 				},
 				frappeControl: (ref, name) => {

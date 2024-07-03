@@ -552,7 +552,7 @@ export const useElementStore = defineStore("ElementStore", {
 				});
 			}
 		},
-		isParentElementOverlapping(elements){
+		isParentElementOverlapping(elements){			
 			for(let index in elements){
 				let nextIndex = parseInt(index) + 1
 				let currEle = elements[index]
@@ -1408,5 +1408,31 @@ export const useElementStore = defineStore("ElementStore", {
 			}
 			return false
 		},	
+
+		isTopElementOverlapping(curObj){
+			let otherElements = curObj.parent.childrens
+			if (otherElements.length == 1) return false
+
+			for(let nextElement of otherElements){
+				if(nextElement.id == curObj.id) continue
+				nextElement.EndY = nextElement.startY + nextElement.height
+				if(nextElement.startY < curObj.startY && curObj.startY < nextElement.EndY){
+					return true
+				}
+			}
+			return false
+		},
+		isBottomElementOverlapping(curObj){
+			let otherElements = curObj.parent.childrens
+			if (otherElements.length == 1) return false
+			curObj.EndY = curObj.startY + curObj.height
+			for(let nextElement of otherElements){
+				if(nextElement.id == curObj.id) continue
+				if(curObj.startY < nextElement.startY && nextElement.startY < curObj.EndY){
+					return true
+				}
+			}
+			return false
+		}
 	},
 });
