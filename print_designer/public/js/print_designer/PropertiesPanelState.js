@@ -564,6 +564,34 @@ export const createPropertiesPanel = () => {
 				},
 			},
 			{
+				label: "Dot Density",
+				name: "dotDensity",
+				isLabelled: true,
+				condtional: () =>
+					MainStore.getCurrentElementsId.length == 0 && MainStore.isRawPrintEnabled,
+				frappeControl: (ref, name) => {
+					const MainStore = useMainStore();
+					makeFeild({
+						name: name,
+						ref: ref,
+						fieldtype: "Select",
+						requiredData: [MainStore],
+						options: () => [
+							{ label: "Single", value: "single" },
+							{ label: "Double", value: "double" },
+						],
+						reactiveObject: () => MainStore,
+
+						onChangeCallback: (value = null) => {
+							if (value) {
+								MainStore.dotDensity = value;
+							}
+						},
+						propertyName: "dotDensity",
+					});
+				},
+			},
+			{
 				label: "Raw Cmd Before Element",
 				name: "rawCmdBeforeEle",
 				isLabelled: true,
