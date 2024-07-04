@@ -577,6 +577,7 @@ export const createPropertiesPanel = () => {
 						fieldtype: "Select",
 						requiredData: [MainStore],
 						options: () => [
+							{ label: "", value: "", is_selected : true },
 							{ label: "Single", value: "single" },
 							{ label: "Double", value: "double" },
 						],
