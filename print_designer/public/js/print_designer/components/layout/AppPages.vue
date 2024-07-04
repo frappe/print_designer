@@ -434,7 +434,7 @@ const ElementStore = useElementStore();
 
 	& .main-container {
 		position: relative;
-		background-color: white;
+		background-color: var(--print-page-bg);
 		height: 100%;
 		margin-left: calc(-1 * var(--print-margin-left));
 		scroll-margin-top: 50px;
