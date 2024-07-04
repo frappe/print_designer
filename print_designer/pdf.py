@@ -167,7 +167,7 @@ def _render_raw_print(
 				"language": raw_cmd_lang,
 				"x": settings.get('page').get('marginTop'),
 				"y": settings.get('page').get('marginLeft'),
-				"dotDensity": "double",
+				"dotDensity": settings.get('dotDensity', 'single'),
 				"pageWidth": settings.get('page').get('width'),
 			}
 	

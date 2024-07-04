@@ -260,6 +260,7 @@ export const useElementStore = defineStore("ElementStore", {
 				schema_version: MainStore.schema_version,
 				isRawPrintEnabled : MainStore.isRawPrintEnabled,
 				rawCmdLang : MainStore.rawCmdLang,
+				dotDensity : MainStore.dotDensity,
 			};
 			const convertCsstoString = (stylesheet) => {
 				let cssRule = Array.from(stylesheet.cssRules)
