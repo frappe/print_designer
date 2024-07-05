@@ -153,7 +153,6 @@ export const setCurrentElement = (event, element) => {
 };
 const childrensCleanUp = (parentElement, element, isClone, isMainElement) => {
 	const MainStore = useMainStore();
-	const ElementStore = useElementStore();
 	!isMainElement && (element = { ...element });
 	!isClone && element && deleteSnapObjects(element);
 	element.id = frappe.utils.get_random(10);
@@ -169,7 +168,8 @@ const childrensCleanUp = (parentElement, element, isClone, isMainElement) => {
 	element.snapEdges = [];
 	if (
 		element.type == "table" ||
-		(["text", "image", "barcode"].indexOf(element.type) != -1 && element.isDynamic)
+		element.type == "barcode" ||
+		(["text", "image"].indexOf(element.type) != -1 && element.isDynamic)
 	) {
 		if (["text", "barcode"].indexOf(element.type) != -1) {
 			element.dynamicContent = [
