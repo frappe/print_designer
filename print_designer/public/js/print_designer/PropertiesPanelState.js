@@ -1,13 +1,13 @@
-import { storeToRefs } from "pinia";
-import { makeFeild } from "./frappeControl";
-import { useElementStore } from "./store/ElementStore";
 import { useMainStore } from "./store/MainStore";
+import { useElementStore } from "./store/ElementStore";
+import { makeFeild } from "./frappeControl";
+import { storeToRefs } from "pinia";
 import {
-    getConditonalObject,
-    getParentPage,
-    handleAlignIconClick,
-    handleBorderIconClick,
-    parseFloatAndUnit,
+	parseFloatAndUnit,
+	handleAlignIconClick,
+	handleBorderIconClick,
+	getConditonalObject,
+	getParentPage,
 } from "./utils";
 export const createPropertiesPanel = () => {
 	const MainStore = useMainStore();
