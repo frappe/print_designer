@@ -186,6 +186,7 @@ export const useMainStore = defineStore("MainStore", {
 		},
 		getPageSettings() {
 			return {
+				backgroundColor: this.page.backgroundColor,
 				height:
 					this.convertToPageUOM(
 						this.page.height - (this.page.marginTop + this.page.marginBottom)
