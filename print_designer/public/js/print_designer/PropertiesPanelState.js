@@ -389,6 +389,23 @@ export const createPropertiesPanel = () => {
 					});
 				},
 			},
+                {
+                    label: "Background",
+                    name: "pageBackground",
+                    isLabelled: true,
+                    condtional: null,
+                    frappeControl: (ref, name) => {
+                        const { page } = storeToRefs(MainStore);
+                        makeFeild({
+                            name,
+                            ref,
+                            fieldtype: "Color",
+                            requiredData: () => page.backgroundColor,
+                            reactiveObject: page,
+                            propertyName: "backgroundColor",
+                        });
+                    },
+                },
 			[
 				pageInput("Height", "page_height", "height", {
 					parentBorderTop: true,
