@@ -1,13 +1,13 @@
-import { useMainStore } from "./store/MainStore";
-import { useElementStore } from "./store/ElementStore";
-import { makeFeild } from "./frappeControl";
 import { storeToRefs } from "pinia";
+import { makeFeild } from "./frappeControl";
+import { useElementStore } from "./store/ElementStore";
+import { useMainStore } from "./store/MainStore";
 import {
-	parseFloatAndUnit,
-	handleAlignIconClick,
-	handleBorderIconClick,
-	getConditonalObject,
-	getParentPage,
+    getConditonalObject,
+    getParentPage,
+    handleAlignIconClick,
+    handleBorderIconClick,
+    parseFloatAndUnit,
 } from "./utils";
 export const createPropertiesPanel = () => {
 	const MainStore = useMainStore();
@@ -386,6 +386,23 @@ export const createPropertiesPanel = () => {
 						],
 						reactiveObject: page,
 						propertyName: "UOM",
+					});
+				},
+			},
+			{
+				label: "Background",
+				name: "pageBackground",
+				isLabelled: true,
+				condtional: null,
+				frappeControl: (ref, name) => {
+					const { page } = storeToRefs(MainStore);
+					makeFeild({
+						name,
+						ref,
+						fieldtype: "Color",
+						requiredData: () => page.backgroundColor,
+						reactiveObject: page,
+						propertyName: "backgroundColor",
 					});
 				},
 			},

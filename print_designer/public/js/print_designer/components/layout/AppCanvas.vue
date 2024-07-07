@@ -353,6 +353,10 @@ onMounted(() => {
 						MainStore.convertToPageUOM(MainStore.page.marginRight) +
 							MainStore.page.UOM,
 					],
+					[
+						"--print-page-bg",
+						MainStore.page.backgroundColor,
+					],
 				],
 			]);
 		}

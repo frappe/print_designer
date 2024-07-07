@@ -91,6 +91,7 @@ export const useMainStore = defineStore("MainStore", {
 			headerHeightWithMargin: 0,
 			footerHeightWithMargin: 0,
 			UOM: "mm",
+			backgroundColor: "#ffffff",
 		},
 		controls: {
 			MousePointer: {
@@ -185,6 +186,7 @@ export const useMainStore = defineStore("MainStore", {
 		},
 		getPageSettings() {
 			return {
+				backgroundColor: this.page.backgroundColor,
 				height:
 					this.convertToPageUOM(
 						this.page.height - (this.page.marginTop + this.page.marginBottom)
