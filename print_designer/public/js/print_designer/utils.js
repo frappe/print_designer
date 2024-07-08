@@ -436,12 +436,16 @@ export const getFormattedValue = async (field, row = null) => {
 				field.fieldname
 			);
 		}
-		formattedValue.value = frappe.format(
-			rawValue,
-			{ fieldtype: field.fieldtype, options: field.options },
-			{ inline: true },
-			MainStore.docData
-		);
+		if (!(field.fieldtype == "Image") && !(field.fieldtype == "Attach Image")) {
+			formattedValue.value = frappe.format(
+				rawValue,
+				{ fieldtype: field.fieldtype, options: field.options },
+				{ inline: true },
+				MainStore.docData
+			);
+		} else {
+			formattedValue.value = rawValue;
+		}
 		if (!formattedValue.value) {
 			if (["Image", "Attach Image"].indexOf(field.fieldtype) != -1) {
 				formattedValue.value = null;
@@ -483,7 +487,7 @@ export const updateDynamicData = async () => {
 			row = MainStore.docData[el.tableName];
 			row && (row = row[0]);
 		}
-		let value = getFormattedValue(el, row);
+		let value = await getFormattedValue(el, row);
 		if (typeof value == "string" && value.startsWith("<svg")) {
 			value.match(new RegExp(`data-barcode-value="(.*?)">`));
 			value = result[1];
