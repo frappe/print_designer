@@ -1,16 +1,28 @@
 {% macro render_styles(settings) %}
 <style>
+	#filler{
+        background-color: {{ settings.page.backgroundColor}};
+        margin-top: -1px; /* Come back to avoid strange gray line between the content and filler */
+        height: 10000%; /* Fill the entire page even for huge formats */
+        position: fixed;
+        width: 10000%; /* Fill the entire page even for huge formats */
+        z-index: -1; /* Send to back */
+    }
     .print-format {
         box-sizing: border-box;
         padding: 0in;
         max-width: {{convert_uom(number=settings.page.width, to_uom="mm")}} !important;
         dpi: {{settings.PDFPrintDPI or 96}}mm;
         page-width: {{convert_uom(number=settings.page.width, to_uom="mm")}};
+        /* 5mm margin to avoid strange blank */
+        /* vertical line to the right */
+        page-width: {{convert_uom(number=settings.page.width - ((settings.page.width % 2 + 1) * 2), to_uom="mm")}};
         page-height: {{convert_uom(number=settings.page.height, to_uom="mm")}};
         margin-top:{{convert_uom(number=settings.page.headerHeightWithMargin or settings.page.marginTop, to_uom='mm')}};
         margin-bottom:{{convert_uom(number=settings.page.footerHeightWithMargin or settings.page.marginBottom, to_uom='mm')}};
         margin-left:{{convert_uom(number=settings.page.marginLeft, to_uom='mm')}};
         margin-right:{{convert_uom(number=settings.page.marginRight, to_uom='mm')}};
+        background-color: {{ settings.page.backgroundColor}};
     }
     @media screen {
         #__print_designer {
