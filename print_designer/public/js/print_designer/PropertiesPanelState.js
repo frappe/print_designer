@@ -1188,6 +1188,39 @@ export const createPropertiesPanel = () => {
 			MainStore.getCurrentElementsValues[0]?.type == "rectangle",
 		fields: [
 			[colorStyleFrappeControl("Background", "rectangleBackgroundColor", "backgroundColor")],
+			{
+				label: "Background Color",
+				name: "backgroundColor",
+				labelDirection: "column",
+				isLabelled: true,
+				condtional: () => {
+					if(!MainStore.isRawPrintEnabled) return false
+					if(MainStore.getCurrentElementsId.length == 1 && MainStore.getCurrentElementsValues[0].type == "rectangle"){
+						return true
+					}
+					return false
+				},
+				frappeControl: (ref, name) => {
+					makeFeild({
+						name: name,
+						ref: ref,
+						fieldtype: "Select",
+						requiredData: [MainStore.getCurrentElementsValues[0]],
+						options: () => [
+							{ label: "White", value: "white",  is_selected : true  },
+							{ label: "Black", value: "black" },
+						],
+						onChangeCallback: (value = null) => {
+							if (value) {
+								value =  (value == "black")? "#000000":"#ffffff"
+								MainStore.getCurrentElementsValues[0].style.backgroundColor = value
+							}
+						},
+						reactiveObject: () => MainStore.getCurrentElementsValues[0],
+						propertyName: "backgroundColor",
+					});
+				},
+			}
 		],
 	});
 	MainStore.propertiesPanel.push({
@@ -1589,6 +1622,72 @@ export const createPropertiesPanel = () => {
 					"backgroundColor",
 					true
 				),
+				{
+					label: "Text Color",
+					name: "textColor",
+					labelDirection: "column",
+					isLabelled: true,
+					condtional: () => {
+						if(!MainStore.isRawPrintEnabled) return false
+						if(MainStore.getCurrentElementsId.length == 1 && MainStore.getCurrentElementsValues[0].type == "text"){
+							return true
+						}
+						return false
+					},
+					frappeControl: (ref, name) => {
+						makeFeild({
+							name: name,
+							ref: ref,
+							fieldtype: "Select",
+							requiredData: [MainStore.getCurrentElementsValues[0]],
+							options: () => [
+								{ label: "White", value: "white" },
+								{ label: "Black", value: "black",  is_selected : true  },
+							],
+							onChangeCallback: (value = null) => {
+								if (value) {
+									value =  (value == "black")? "#000000":"#ffffff"
+									MainStore.getCurrentElementsValues[0].style.color = value
+								}
+							},
+							reactiveObject: () => MainStore.getCurrentElementsValues[0],
+							propertyName: "textColor",
+						});
+					},
+				},
+				{
+					label: "Background Color",
+					name: "backgroundColor",
+					labelDirection: "column",
+					isLabelled: true,
+					condtional: () => {
+						if(!MainStore.isRawPrintEnabled) return false
+						if(MainStore.getCurrentElementsId.length == 1 && MainStore.getCurrentElementsValues[0].type == "text"){
+							return true
+						}
+						return false
+					},
+					frappeControl: (ref, name) => {
+						makeFeild({
+							name: name,
+							ref: ref,
+							fieldtype: "Select",
+							requiredData: [MainStore.getCurrentElementsValues[0]],
+							options: () => [
+								{ label: "White", value: "white",  is_selected : true  },
+								{ label: "Black", value: "black" },
+							],
+							onChangeCallback: (value = null) => {
+								if (value) {
+									value =  (value == "black")? "#000000":"#ffffff"
+									MainStore.getCurrentElementsValues[0].style.backgroundColor = value
+								}
+							},
+							reactiveObject: () => MainStore.getCurrentElementsValues[0],
+							propertyName: "backgroundColor",
+						});
+					},
+				},
 			],
 		],
 	});
@@ -1621,6 +1720,7 @@ export const createPropertiesPanel = () => {
 				labelDirection: "column",
 				isLabelled: true,
 				condtional: () => {
+					if (MainStore.isRawPrintEnabled) return false
 					return parseFloatAndUnit(
 						getConditonalObject({
 							reactiveObject: () => MainStore.getCurrentElementsValues[0],
@@ -1641,6 +1741,39 @@ export const createPropertiesPanel = () => {
 					});
 				},
 			},
+			{
+				label: "Border Color",
+				name: "borderColor",
+				labelDirection: "column",
+				isLabelled: true,
+				condtional: () => {
+					if(!MainStore.isRawPrintEnabled) return false
+					if(MainStore.getCurrentElementsId.length == 1 && MainStore.getCurrentElementsValues[0].type == "rectangle"){
+						return true
+					}
+					return false
+				},
+				frappeControl: (ref, name) => {
+					makeFeild({
+						name: name,
+						ref: ref,
+						fieldtype: "Select",
+						requiredData: [MainStore.getCurrentElementsValues[0]],
+						options: () => [
+							{ label: "White", value: "white" },
+							{ label: "Black", value: "black",  is_selected : true  },
+						],
+						onChangeCallback: (value = null) => {
+							if (value) {
+								value =  (value == "black")? "#000000":"#ffffff"
+								MainStore.getCurrentElementsValues[0].style.borderColor = value
+							}
+						},
+						reactiveObject: () => MainStore.getCurrentElementsValues[0],
+						propertyName: "borderColor",
+					});
+				},
+			}
 		],
 	});
 	MainStore.propertiesPanel.push({
