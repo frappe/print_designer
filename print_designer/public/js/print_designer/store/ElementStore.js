@@ -13,6 +13,7 @@ import {
 	setCurrentElement,
 	createHeaderFooterElement,
 	getParentPage,
+	cloneElement,
 } from "../utils";
 
 import html2canvas from "html2canvas";
@@ -46,7 +47,13 @@ export const useElementStore = defineStore("ElementStore", {
 		},
 		computeLayoutForSave() {
 			this.handleHeaderFooterOverlapping();
-
+			const MainStore = useMainStore();
+			// Check Language is set if isRawPrintEnabled == true
+			if(MainStore.isRawPrintEnabled){
+				if(!MainStore.rawCmdLang){
+					frappe.throw("Please select Raw Command Language")
+				}
+			}
 			const { header, body, footer } = this.computeMainLayout();
 			// before modifying save json object that is used by loadElements and UI.
 			const objectToSave = {
@@ -77,6 +84,14 @@ export const useElementStore = defineStore("ElementStore", {
 			}
 			// it will throw error if body is empty so no need to check here
 			layout.body = body.map((b) => {
+				if (MainStore.isRawPrintEnabled){
+					if (!b.childrens[0]['rawCmdBeforeEle']){
+						b.childrens[0]['rawCmdBeforeEle'] = null
+					}
+					if (!b.childrens[0]['rawCmdAfterEle']){
+						b.childrens[0]['rawCmdAfterEle'] = null
+					}
+				}
 				b.childrens = this.computeRowLayout(b.childrens, bodyElements, "body");
 				return b;
 			});
@@ -107,7 +122,7 @@ export const useElementStore = defineStore("ElementStore", {
 			objectToSave.print_designer_print_format = JSON.stringify(layout);
 
 			// update fonts in store
-			const MainStore = useMainStore();
+			
 			MainStore.currentFonts.length = 0;
 			MainStore.currentFonts.push(
 				...Object.keys({
@@ -243,6 +258,10 @@ export const useElementStore = defineStore("ElementStore", {
 				printBodyFonts: MainStore.printBodyFonts,
 				userProvidedJinja: MainStore.userProvidedJinja,
 				schema_version: MainStore.schema_version,
+				isRawPrintEnabled : MainStore.isRawPrintEnabled,
+				rawCmdLang : MainStore.rawCmdLang,
+				dotDensity : MainStore.dotDensity,
+				paperType : MainStore.paperType
 			};
 			const convertCsstoString = (stylesheet) => {
 				let cssRule = Array.from(stylesheet.cssRules)
@@ -483,26 +502,30 @@ export const useElementStore = defineStore("ElementStore", {
 			const elements = this.Elements;
 			const MainStore = useMainStore();
 
-			const throwOverlappingError = (type) => {
+			const throwOverlappingError = (type, changelayout) => {
 				let message = __(`Please resolve overlapping elements `);
 				const messageType = Object.freeze({
 					header: "<b>" + __("in header") + "</b>",
 					footer: "<b>" + __("in footer") + "</b>",
 					auto: __("in table, auto layout failed"),
-				});
-				message += messageType[type];
-				frappe.show_alert(
-					{
-						message: message,
-						indicator: "red",
-					},
-					6
-				);
-				throw new Error(message);
-			};
 
+					});
+					changelayout = (changelayout == undefined)? true:false
+					if (changelayout) {
+						MainStore.mode = "pdfSetup";
+						message += messageType[type];
+					}
+					frappe.show_alert(
+						{
+							message: message,
+							indicator: "red",
+					});
+					throw new Error(message);
+			}
 			const tableElement = this.Elements.filter((el) => el.type == "table");
-
+			if(this.isParentElementOverlapping(elements)){
+				throwOverlappingError("element", false);
+			}
 			if (tableElement.length == 1 && MainStore.isHeaderFooterAuto) {
 				if (!this.autoCalculateHeaderFooter(tableElement[0])) {
 					throwOverlappingError("auto");
@@ -530,6 +553,43 @@ export const useElementStore = defineStore("ElementStore", {
 					}
 				});
 			}
+		},
+		isParentElementOverlapping(elements){			
+			for(let index in elements){
+				let nextIndex = parseInt(index) + 1
+				let currEle = elements[index]
+				let firstEleObj = {}
+				let otherEleObj = {}
+				
+				for (let otherEleIndex in elements){
+					otherEleIndex = parseInt(otherEleIndex)
+					if( otherEleIndex < nextIndex) { continue; }
+					let otherEle = elements[otherEleIndex];
+					if (currEle.startY > otherEle.startY){
+						firstEleObj = {
+							'startY': otherEle.startY,
+							'endY': otherEle.startY + otherEle.height,
+						}
+					
+						otherEleObj = {
+							'startY': currEle.startY,
+						}
+					} else {
+						firstEleObj = {
+							'startY': currEle.startY,
+							'endY': currEle.startY + currEle.height,
+						}
+					
+						otherEleObj = {
+							'startY': otherEle.startY,
+						}
+					}
+					if ( otherEleObj.startY >= firstEleObj.startY && otherEleObj.startY <= firstEleObj.endY ){
+						return true
+					}	
+				}
+			}
+			return false
 		},
 		autoCalculateHeaderFooter(tableEl) {
 			const MainStore = useMainStore();
@@ -1044,6 +1104,7 @@ export const useElementStore = defineStore("ElementStore", {
 							print_designer_footer: objectToSave.print_designer_footer,
 							print_designer_print_format: objectToSave.print_designer_print_format,
 							print_designer_settings: objectToSave.print_designer_settings,
+							
 						});
 						d.hide();
 						frappe.set_route("print-designer", values.print_format_name);
@@ -1320,5 +1381,60 @@ export const useElementStore = defineStore("ElementStore", {
 				}) != -1
 			);
 		},
+		isChildElement(currEle){
+			if(currEle && currEle.parent.type == "page"){
+				return false
+			}
+			return true
+		},
+		isHeaderFooterExists(){
+			const { header, body, footer } = this.computeMainLayout();
+			let headerFlag = false;
+			let footerFlag = false;
+
+			for( let page of header){
+				if(page.childrens.length){
+					headerFlag = true
+					break;
+				}
+			}
+
+			for( let page of footer){
+				if(page.childrens.length){
+					footerFlag =  true;
+					break;
+				}
+			}
+			if (headerFlag || footerFlag){
+				return true
+			}
+			return false
+		},	
+
+		isTopElementOverlapping(curObj){
+			let otherElements = curObj.parent.childrens
+			if (otherElements.length == 1) return false
+
+			for(let nextElement of otherElements){
+				if(nextElement.id == curObj.id) continue
+				nextElement.EndY = nextElement.startY + nextElement.height
+				if(nextElement.startY < curObj.startY && curObj.startY < nextElement.EndY){
+					return true
+				}
+			}
+			return false
+		},
+		isBottomElementOverlapping(curObj){
+			let otherElements = curObj.parent.childrens
+			if (otherElements.length == 1) return false
+			curObj.EndY = curObj.startY + curObj.height
+			for(let nextElement of otherElements){
+				if(nextElement.id == curObj.id) continue
+				if(curObj.startY < nextElement.startY && nextElement.startY < curObj.EndY){
+					return true
+				}
+			}
+			return false
+		}
 	},
 });
