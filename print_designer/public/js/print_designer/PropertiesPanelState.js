@@ -563,10 +563,42 @@ export const createPropertiesPanel = () => {
 					});
 				},
 			},
+			[
+				{
+					label: "Dot Density",
+					name: "dotDensity",
+					isLabelled: true,
+					labelDirection: "column",
+					condtional: () =>
+						MainStore.getCurrentElementsId.length == 0 && MainStore.isRawPrintEnabled,
+					frappeControl: (ref, name) => {
+						const MainStore = useMainStore();
+						makeFeild({
+							name: name,
+							ref: ref,
+							fieldtype: "Select",
+							requiredData: [MainStore],
+							options: () => [
+								{ label: "", value: "", is_selected : true },
+								{ label: "Single", value: "single" },
+								{ label: "Double", value: "double" },
+							],
+							reactiveObject: () => MainStore,
+
+							onChangeCallback: (value = null) => {
+								if (value) {
+									MainStore.dotDensity = value;
+								}
+							},
+							propertyName: "dotDensity",
+						});
+					},
+				},
 			{
-				label: "Dot Density",
-				name: "dotDensity",
+				label: "Paper type",
+				name: "paperType",
 				isLabelled: true,
+				labelDirection: "column",
 				condtional: () =>
 					MainStore.getCurrentElementsId.length == 0 && MainStore.isRawPrintEnabled,
 				frappeControl: (ref, name) => {
@@ -578,20 +610,21 @@ export const createPropertiesPanel = () => {
 						requiredData: [MainStore],
 						options: () => [
 							{ label: "", value: "", is_selected : true },
-							{ label: "Single", value: "single" },
-							{ label: "Double", value: "double" },
+							{ label: "Label", value: "label" },
+							{ label: "Continous Roll", value: "continous_roll" },
 						],
 						reactiveObject: () => MainStore,
 
 						onChangeCallback: (value = null) => {
 							if (value) {
-								MainStore.dotDensity = value;
+								MainStore.paperType = value;
 							}
 						},
-						propertyName: "dotDensity",
+						propertyName: "paperType",
 					});
 				},
-			},
+			}
+			],
 			{
 				label: "Raw Cmd Before Element",
 				name: "rawCmdBeforeEle",

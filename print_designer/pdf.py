@@ -163,6 +163,7 @@ def _render_raw_print(
 	
 	template = jenv.from_string(template_source)
 	html_with_raw_cmd_list = []
+	paper_type = settings.get('paperType', "'continous_roll'")
 	options = {
 				"language": raw_cmd_lang,
 				"x": settings.get('page').get('marginTop'),
@@ -170,7 +171,9 @@ def _render_raw_print(
 				"dotDensity": settings.get('dotDensity', 'single'),
 				"pageWidth": settings.get('page').get('width'),
 			}
-	
+	if paper_type == "label":
+		options.update({'pageHeight' : settings.get('page').get('height')})
+
 	for element in element_List['body']:
 		try :
 			rawCmdBeforeEle, rawCmdAfterEle = get_raw_cmd(element.get('childrens'), raw_cmd_lang)	if element.get('childrens') is not None else ""

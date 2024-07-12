@@ -261,6 +261,7 @@ export const useElementStore = defineStore("ElementStore", {
 				isRawPrintEnabled : MainStore.isRawPrintEnabled,
 				rawCmdLang : MainStore.rawCmdLang,
 				dotDensity : MainStore.dotDensity,
+				paperType : MainStore.paperType
 			};
 			const convertCsstoString = (stylesheet) => {
 				let cssRule = Array.from(stylesheet.cssRules)
