@@ -153,7 +153,6 @@ export const setCurrentElement = (event, element) => {
 };
 const childrensCleanUp = (parentElement, element, isClone, isMainElement) => {
 	const MainStore = useMainStore();
-	const ElementStore = useElementStore();
 	!isMainElement && (element = { ...element });
 	!isClone && element && deleteSnapObjects(element);
 	element.id = frappe.utils.get_random(10);
@@ -169,7 +168,8 @@ const childrensCleanUp = (parentElement, element, isClone, isMainElement) => {
 	element.snapEdges = [];
 	if (
 		element.type == "table" ||
-		(["text", "image", "barcode"].indexOf(element.type) != -1 && element.isDynamic)
+		element.type == "barcode" ||
+		(["text", "image"].indexOf(element.type) != -1 && element.isDynamic)
 	) {
 		if (["text", "barcode"].indexOf(element.type) != -1) {
 			element.dynamicContent = [
@@ -436,12 +436,16 @@ export const getFormattedValue = async (field, row = null) => {
 				field.fieldname
 			);
 		}
-		formattedValue.value = frappe.format(
-			rawValue,
-			{ fieldtype: field.fieldtype, options: field.options },
-			{ inline: true },
-			MainStore.docData
-		);
+		if (!(field.fieldtype == "Image") && !(field.fieldtype == "Attach Image")) {
+			formattedValue.value = frappe.format(
+				rawValue,
+				{ fieldtype: field.fieldtype, options: field.options },
+				{ inline: true },
+				MainStore.docData
+			);
+		} else {
+			formattedValue.value = rawValue;
+		}
 		if (!formattedValue.value) {
 			if (["Image", "Attach Image"].indexOf(field.fieldtype) != -1) {
 				formattedValue.value = null;
@@ -483,7 +487,7 @@ export const updateDynamicData = async () => {
 			row = MainStore.docData[el.tableName];
 			row && (row = row[0]);
 		}
-		let value = getFormattedValue(el, row);
+		let value = await getFormattedValue(el, row);
 		if (typeof value == "string" && value.startsWith("<svg")) {
 			value.match(new RegExp(`data-barcode-value="(.*?)">`));
 			value = result[1];

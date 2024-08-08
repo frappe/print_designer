@@ -223,12 +223,14 @@ onMounted(() => {
 			hiddenFields.value = MainStore.isHiddenFieldsVisible;
 		}
 		fieldnames.value.forEach(async (field) => {
-			let rowValue = null;
-			if (props.table) {
-				rowValue = MainStore.docData[props.table.fieldname][0];
-				field.value = await getFormattedValue(field, rowValue);
-			} else {
-				field.value = await getFormattedValue(field, null);
+			if (field.fieldtype != "StaticText" || !field.parseJinja) {
+				let rowValue = null;
+				if (props.table) {
+					rowValue = MainStore.docData[props.table.fieldname][0];
+					field.value = await getFormattedValue(field, rowValue);
+				} else {
+					field.value = await getFormattedValue(field, null);
+				}
 			}
 		});
 	}
