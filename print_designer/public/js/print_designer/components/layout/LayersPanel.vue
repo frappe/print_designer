@@ -54,6 +54,23 @@
 							MainStore.getCurrentElementsId &&
 							MainStore.getCurrentElementsId.includes(layer.id),
 					}"
+					v-else-if="layer.type == 'page'"
+				>
+					<span class="fa fa-file-o" style="padding: 0px 10px 0px 5px"></span> Page
+					{{ layer.index + 1 }}
+					<AppLayer
+						class="childern-container"
+						v-if="layer.childrens.length"
+						:elements="layer.childrens"
+					/>
+				</div>
+				<div
+					class="layer"
+					:class="{
+						'layer-active':
+							MainStore.getCurrentElementsId &&
+							MainStore.getCurrentElementsId.includes(layer.id),
+					}"
 					v-else
 				>
 					<span class="fa fa-square-o" style="padding: 0px 10px 0px 5px"></span> Rect
