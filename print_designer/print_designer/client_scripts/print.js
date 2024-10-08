@@ -225,6 +225,11 @@ frappe.ui.form.PrintView = class PrintView extends frappe.ui.form.PrintView {
 			});
 		}
 	}
+	isPDRawPrintEnable(pf){
+		if (!pf.print_designer_settings) return false;
+		let settings = JSON.parse(pf.print_designer_settings);
+		return !!settings.isRawPrintEnabled;
+	}
 	printit() {
 		let me = this;
 		// Enable Network Printing
@@ -232,8 +237,12 @@ frappe.ui.form.PrintView = class PrintView extends frappe.ui.form.PrintView {
 			super.printit();
 			return;
 		}
+
 		if (this.get_print_format().print_designer) {
 			if (!this.pdfDoc) return;
+			if(this.isPDRawPrintEnable(this.get_print_format())){
+				return this.print_raw(me)
+			}
 			this.pdfDoc.getData().then((arrBuff) => {
 				let file = new Blob([arrBuff], { type: "application/pdf" });
 				let fileUrl = URL.createObjectURL(file);
@@ -265,6 +274,58 @@ frappe.ui.form.PrintView = class PrintView extends frappe.ui.form.PrintView {
 			return;
 		}
 		super.printit();
+	}
+	print_raw(me){
+			if (me.get_mapped_printer().length === 1) {
+				// printer is already mapped in localstorage (applies for both raw and pdf )
+				me.get_pd_raw_commands(function (out) {
+						if(!out.success){
+							frappe.throw(out.msg)
+						}
+						frappe.ui.form
+							.qz_connect()
+							.then(function () {
+								let printer_map = me.get_mapped_printer()[0];
+								let config = qz.configs.create(printer_map.printer);
+								return qz.print(config, out.raw_commands);
+							})
+							.then(frappe.ui.form.qz_success)
+							.catch((err) => {
+								frappe.ui.form.qz_fail(err);
+							});
+				});
+			
+			} else {
+				// printer not mapped in localstorage and the current print format is raw printing
+				frappe.show_alert(
+					{
+						message: __("Printer mapping not set."),
+						subtitle: __(
+							"Please set a printer mapping for this print format in the Printer Settings"
+						),
+						indicator: "warning",
+					},
+					14
+				);
+				me.printer_setting_dialog();
+				return
+			} 
+	}
+	get_pd_raw_commands(callback) {
+		// fetches rendered print designed raw commands from the server for the current print format.
+		frappe.call({
+			method: "print_designer.pdf.render_raw_print",
+			args: {
+				doctype : this.frm.doc.doctype,
+				name: this.frm.doc.name,
+				print_format: this.selected_format(),
+			},
+			callback: function (r) {
+				if (!r.exc) {
+					callback(r.message);
+				}
+			},
+		});
 	}
 	show(frm) {
 		super.show(frm);

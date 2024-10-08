@@ -7,7 +7,8 @@ from frappe.monitor import add_data_to_monitor
 from frappe.utils.error import log_error
 from frappe.utils.jinja_globals import is_rtl
 from frappe.utils.pdf import pdf_body_html as fw_pdf_body_html
-
+from frappe.www.printview import get_print_format_doc, validate_print_permission
+from frappe.model.document import Document
 
 def pdf_header_footer_html(soup, head, content, styles, html_id, css):
 	if soup.find(id="__print_designer"):
@@ -118,3 +119,120 @@ def get_print_format_template(jenv, print_format):
 			return jenv.loader.get_source(
 				jenv, "print_designer/page/print_designer/jinja/print_format.html"
 			)[0]
+
+@frappe.whitelist()
+def render_raw_print(doctype: str, name: str, print_format: str | None = None):
+
+	document = frappe.get_doc(doctype, name)
+	document.check_permission()
+	print_format = get_print_format_doc(print_format, meta=document.meta)
+
+	return _render_raw_print(doc=document, print_format=print_format)
+
+
+def _render_raw_print(
+	doc: "Document",
+	print_format: str | None = None,
+):
+	
+	print_settings = frappe.get_single("Print Settings").as_dict()
+	
+	if not frappe.flags.ignore_print_permissions:
+		validate_print_permission(doc)
+	
+	element_List = json.loads(print_format.print_designer_print_format)
+	doc.run_method("before_print", print_settings)
+
+	jenv = frappe.get_jenv()
+	args = {}
+	settings = json.loads(print_format.print_designer_settings)
+
+	raw_cmd_lang = settings.get('rawCmdLang')
+	if raw_cmd_lang is None:
+		return {'success' : False, 'msg' : 'Language is not selected from Print Designer'}
+	
+	args.update(
+		{
+			"doc": doc,
+			"settings": settings
+		}
+	)
+	template_source = jenv.loader.get_source( 				
+		jenv, "print_designer/page/print_designer/jinja/render_raw_template.html" 
+		)[0]
+	
+	template = jenv.from_string(template_source)
+	html_with_raw_cmd_list = []
+	paper_type = settings.get('paperType', "'continous_roll'")
+	options = {
+				"language": raw_cmd_lang,
+				"x": settings.get('page').get('marginTop'),
+				"y": settings.get('page').get('marginLeft'),
+				"dotDensity": settings.get('dotDensity', 'single'),
+				"pageWidth": settings.get('page').get('width'),
+			}
+	if paper_type == "label":
+		options.update({'pageHeight' : settings.get('page').get('height')})
+
+	for element in element_List['body']:
+		try :
+			rawCmdBeforeEle, rawCmdAfterEle = get_raw_cmd(element.get('childrens'), raw_cmd_lang)	if element.get('childrens') is not None else ""
+			
+			args.update({"element": [element]})
+			rendered_html = template.render(args, filters={"len": len})
+			if rawCmdBeforeEle:
+				html_with_raw_cmd_list.append({'type': 'raw', 'format': 'command', 'flavor': 'plain', 'data': rawCmdBeforeEle})
+			
+			html_with_raw_cmd_list.append({ 'type': 'raw', 'format': 'html', 'flavor': 'plain', 'data': rendered_html, 'options': options})
+			
+			if rawCmdAfterEle:
+				html_with_raw_cmd_list.append({'type': 'raw', 'format': 'command', 'flavor': 'plain', 'data': rawCmdAfterEle})
+		except Exception as e :
+			error = log_error(title=e, reference_doctype="Print Format", reference_name=print_format.name)
+			if frappe.conf.developer_mode:
+				return { 'success' : False, 'msg' : f"<h1><b>Something went wrong while rendering the print format.</b> <hr/> If you don't know what just happened, and wish to file a ticket or issue on Github <hr /> Please copy the error from <code>Error Log {error.name}</code> or ask Administrator.<hr /><h3>Error rendering print format: {error.reference_name}</h3><h4>{error.method}</h4><pre>{html.escape(error.error)}</pre>"}
+			else:
+				return { 'success' : False, 'msg' : f"<h1><b>Something went wrong while rendering the print format.</b> <hr/> If you don't know what just happened, and wish to file a ticket or issue on Github <hr /> Please copy the error from <code>Error Log {error.name}</code> or ask Administrator.</h1>"}
+
+	return {'success' : True, 'raw_commands' : html_with_raw_cmd_list}
+
+def convert_str_raw_cmd(raw_string, printer_lang):
+	str_cmd_dict = {
+		'paper_cut' : {
+			'ESCPOS' : "\x1D\x56\x30",
+		},
+		'partial_paper_cut' : {
+			'ESCPOS' : "\x1D\x56\x01"
+		}
+	}
+	return str_cmd_dict.get(raw_string).get(printer_lang) or ""
+
+
+def get_raw_cmd(element_dict, raw_cmd_lang):
+	for element in element_dict:
+		if element.get('childrens') is not None:
+			if "rawCmdBeforeEle" in element  and "rawCmdAfterEle" in element :
+				rawCmdBeforeEle = element.get('rawCmdBeforeEle')
+				rawCmdAfterEle = element.get('rawCmdAfterEle')
+				if rawCmdBeforeEle == "custom":
+					rawCmdBeforeEle = element.get('customRawCmdBeforeEle')
+				elif rawCmdBeforeEle is not None:
+					rawCmdBeforeEle = convert_str_raw_cmd(rawCmdBeforeEle, raw_cmd_lang)
+				
+				if rawCmdAfterEle == "custom":
+					rawCmdAfterEle = element.get('customRawCmdAfterEle')
+				elif rawCmdAfterEle is not None:
+					rawCmdAfterEle = convert_str_raw_cmd(rawCmdBeforeEle, raw_cmd_lang)
+					
+				return rawCmdBeforeEle or "", rawCmdAfterEle or ""
+			
+			return get_raw_cmd(element.get('childrens'), raw_cmd_lang)
+		else:
+			return ""
+
+def get_element_type(element_dict):
+	for element in element_dict:
+		if  element.get("childrens"):
+			return get_element_type(element.get("childrens"))
+		return element.get('type')
+
