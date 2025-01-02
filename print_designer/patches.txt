@@ -1,6 +1,7 @@
 [pre_model_sync]
 print_designer.patches.introduce_dynamic_containers
 execute:from print_designer.patches.create_custom_fields import custom_field_patch; custom_field_patch() #208
+execute:from print_designer.patches.create_custom_fields import custom_field_patch; custom_field_patch() #new_pdf_backend
 
 [post_model_sync]
 print_designer.patches.update_white_space_property

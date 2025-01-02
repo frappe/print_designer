@@ -58,5 +58,13 @@ CUSTOM_FIELDS = {
 			"default": "print_designer",
 			"insert_after": "standard",
 		},
+		{
+			"default": "0",
+			"fieldname": "new_pdf_backend",
+			"fieldtype": "Check",
+			"label": "New PDF Backend ( Beta )",
+            "hidden": 1,
+            "insert_after": "disabled",
+		},
 	]
 }
