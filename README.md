@@ -64,6 +64,61 @@ Get started with your personal or business site with a few clicks on Frappe Clou
 	</a>
 </div>
 
+
+### Self Hosting
+
+Follow these steps to set up Print Designer in production:
+
+**Step 1**: Download the easy install script
+
+```bash
+wget https://frappe.io/easy-install.py
+```
+
+**Step 2**: Run the deployment command
+
+```bash
+python3 ./easy-install.py deploy \
+    --project=pd_prod_setup \
+    --email=email@example.com \
+    --image=ghcr.io/frappe/print_designer \
+    --version=stable \
+    --app=print_designer \
+    --sitename subdomain.domain.tld
+```
+
+Replace the following parameters with your values:
+- `email@example.com`: Your email address
+- `subdomain.domain.tld`: Your domain name where print designer will be hosted
+
+The script will set up a production-ready instance of Print Designer with all the necessary configurations in about 5 minutes.
+
+## Getting Started (Development)
+
+### Docker
+
+You need Docker, docker-compose and git setup on your machine. Refer [Docker documentation](https://docs.docker.com/). After that, run following command:
+
+**Step 1**: Setup folder and download the required files
+
+```bash
+mkdir frappe-pd && cd frappe-pd
+wget -O docker-compose.yml https://raw.githubusercontent.com/frappe/print_designer/develop/docker/docker-compose.yml
+wget -O init.sh https://raw.githubusercontent.com/frappe/print_designer/develop/docker/init.sh
+```
+
+**Step 2**: Run the container
+
+```bash
+docker compose up
+```
+
+Wait until the setup script creates a site and you see `Current Site set to print-designer.localhost` in the terminal. Once done, the site [http://print-designer.localhost:8000](http://print-designer.localhost:8000) should now be available.
+
+**Credentials:**
+Username: `Administrator`
+Password: `admin`
+
 ## Getting Started (Development)
 
 ### Local Setup
