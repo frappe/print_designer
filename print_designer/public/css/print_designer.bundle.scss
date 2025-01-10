@@ -2,20 +2,18 @@
     display:flex;
     flex-direction:column;
     overflow: auto;
-    padding: 40px 0;
     background-color: var(--control-bg);
     border-radius: var(--border-radius);
 
     .preview-container {
-        margin: 0px 10px;
+        margin: 40px 10px;
     }
 }
 @media only screen and (min-width: 700px) {
     .print-designer-wrapper {
-        padding: 80px 0;
         align-items:center;
         .preview-container {
-            margin: 0px;
+            margin: 40px;
         }
     }
 }
