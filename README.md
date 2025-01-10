@@ -14,8 +14,8 @@
 
 <div>
     <picture>
-        <source media="(prefers-color-scheme: dark)" srcset="https://github.com/frappe/print_designer/assets/39730881/aa62d2e2-e25e-4803-afbc-d3eaf1e4840f">
-        <img width="1402" alt="Print Designer Screenshot" src="https://github.com/frappe/print_designer/assets/39730881/aa62d2e2-e25e-4803-afbc-d3eaf1e4840f">
+        <source media="(prefers-color-scheme: dark)" srcset="https://github.com/user-attachments/assets/b008b238-bd07-497b-ae1f-83d58600e0ca">
+        <img width="1402" alt="Print Designer Screenshot" src="https://github.com/user-attachments/assets/b008b238-bd07-497b-ae1f-83d58600e0ca">
     </picture>
 </div>
 
@@ -27,11 +27,11 @@
 Print Designer is an open-source designing tool that allows businesses to create dynamic and professional-looking print formats. If you are looking to design print formats that enhance your brand image and streamline operational efficiency, then give it a try.
 
 
-### The Story of Print Designer
+### Motivation
 
-"Frappe Framework and ERPNext have everything included, meaning you have all you need, including print format builder. This is easy to use, and you can easily create basic formats. If you need more customisable formats with complex layouts and alignment, you must create a custom format with code, which can take days or weeks.
+Frappe Framework and ERPNext have everything included, meaning you have all you need, including print format builder. This is easy to use, and you can easily create basic formats. If you need more customisable formats with complex layouts and alignment, you must create a custom format with code, which can take days or weeks.
 
-As everything at Frappe follows a UI-first approach, why not have a way to design complex formats from the UI without any coding? Having used Adobe Illustrator, Photoshop, XD, and Figma in the past, I wanted to create a tool that would allow users to have a very high level of freedom to customize it just the way they like it. It initially started as a side project. After gaining some initial traction, I started working on it full-time. Our vision is to enable users to create all kinds of complex print formats from invoices to product brochures If you are looking for a one-stop solution for this, we welcome you to try the Print Designer."
+As everything at Frappe follows a UI-first approach, why not have a way to design complex formats from the UI without any coding? Having used Adobe Illustrator, Photoshop, XD, and Figma in the past, I wanted to create a tool that would allow users to have a very high level of freedom to customize it just the way they like it. It initially started as a side project. After gaining some initial traction, I started working on it full-time. Our vision is to enable users to create all kinds of complex print formats from invoices to product brochures If you are looking for a one-stop solution for this, we welcome you to try the Print Designer.
 
 ### Key Features
 
@@ -165,9 +165,6 @@ bench browse print-designer.localhost --user Administrator
 - [Discuss Forum](https://discuss.frappe.io/c/print-designer/84)
 - [Documentation](https://docs.frappe.io/print_designer)
 
-## License
-
-[GNU Affero General Public License v3.0](license.txt)
 
 <br>
 <div align="center">
