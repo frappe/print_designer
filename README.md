@@ -1,109 +1,138 @@
-# Print Designer
-<div align="center" markdown="1">
+<div align="center">
 
-![ Print Designer Logo ](print_designer/public/images/print-designer-logo.svg)
+<a href="https://frappe.io/print-designer">
+    <img src="https://github.com/frappe/print_designer/blob/develop/print_designer/public/images/print-designer-logo.svg" height="80" alt="Print Designer Logo">
+</a>
 
+
+<h1>Print Designer</h1>
+
+**Frappe app to design print formats using interactive UI.**
+
+
+![GitHub release (latest by date)](https://img.shields.io/github/v/release/frappe/print_designer)
+
+<div>
+    <picture>
+        <source media="(prefers-color-scheme: dark)" srcset="https://github.com/user-attachments/assets/b008b238-bd07-497b-ae1f-83d58600e0ca">
+        <img width="1402" alt="Print Designer Screenshot" src="https://github.com/user-attachments/assets/b008b238-bd07-497b-ae1f-83d58600e0ca">
+    </picture>
 </div>
-<div align="center" markdown="1" >
 
-## Frappe app to design print formats using interactive UI.
-
-![](https://github.com/frappe/print_designer/assets/39730881/aa62d2e2-e25e-4803-afbc-d3eaf1e4840f)
-
+[Website](https://frappe.io/print-designer) - [Documentation](https://docs.frappe.io/print-designer)
 </div>
 
-## Features and How to Guides
-<details>
-<summary><h4>Create Print Format</h4></summary>
+## Print Designer
 
-#### Using Awesomebar
+Print Designer is an open-source designing tool that allows businesses to create dynamic and professional-looking print formats. If you are looking to design print formats that enhance your brand image and streamline operational efficiency, then give it a try.
 
-https://github.com/frappe/print_designer/assets/39730881/913649cf-84f6-4284-b373-0997aaa3e356
 
-#### Using Print Page
+### Motivation
 
-https://github.com/frappe/print_designer/assets/39730881/502a3e29-8bb5-4ec7-bfda-eaa85505acec
-</details>
-<details>
-<summary><h4>Static & Dynamic Image</h4></summary>
+Frappe Framework and ERPNext have everything included, meaning you have all you need, including print format builder. This is easy to use, and you can easily create basic formats. If you need more customisable formats with complex layouts and alignment, you must create a custom format with code, which can take days or weeks.
 
-#### Static Image
+As everything at Frappe follows a UI-first approach, why not have a way to design complex formats from the UI without any coding? Having used Adobe Illustrator, Photoshop, XD, and Figma in the past, I wanted to create a tool that would allow users to have a very high level of freedom to customize it just the way they like it. It initially started as a side project. After gaining some initial traction, I started working on it full-time. Our vision is to enable users to create all kinds of complex print formats from invoices to product brochures If you are looking for a one-stop solution for this, we welcome you to try the Print Designer.
 
-https://github.com/frappe/print_designer/assets/39730881/4d73d720-2de4-4d0a-9435-f924b8de3b7e
+### Key Features
 
-#### Dynamic Image
+- ✨ **Intuitive Visual Designer:** Make formats with intuitive visual interface and get realtime feedback.
+- 📱 **Dynamic Data Integration:** Add and automatically populate data to your print format from selected document and all of its linked documents.
+- 🛠️ **Table Editor:** Easily create and modify your table designs with visual feedback.
+- 🧑‍💻 **Scripting Capabilities:** Power users can add custom data or custom html elements.
+- 📄 **Multi Page:** Design multiple pages and create even more complex designs.
 
-https://github.com/frappe/print_designer/assets/39730881/c22df30b-9e91-4e1c-9a73-51d85c149412
+### Under the Hood
 
-</details>
-<details>
-<summary><h4>Static & Dynamic Text</h4></summary>
+- [Frappe Framework](https://github.com/frappe/frappe): A full-stack web application framework.
 
-#### Dynamic Text
 
-https://github.com/frappe/print_designer/assets/39730881/e1c5a970-8df4-443d-828f-a5513fad41df
+## Getting Started (Production)
 
-#### Static Text
-
-https://github.com/frappe/print_designer/assets/39730881/de629a8e-fbec-4449-8e03-f08346ffe460
-
-</details>
-<details>
-<summary><h4>Rectangle & Layouts</h4></summary>
-
-#### Rectangle
-
-https://github.com/frappe/print_designer/assets/39730881/cc3e64ce-285d-4a60-b249-a4b6dd4d2ce0
-
-</details>
-<details>
-<summary><h4>Child Table</h4></summary>
-
-https://github.com/frappe/print_designer/assets/39730881/b9cb5db7-1336-475c-9d82-d20c3a6a903e
-
-</details>
-
-## Installation
 > **Warning**
 >
 > Please note that print designer is only compatible with develop and V15 version of frappe framework.
-### Local
 
-To setup the repository locally follow the steps mentioned below:
+### Managed Hosting
 
-1. Install bench and setup a `frappe-bench` directory by following the [Installation Steps](https://frappeframework.com/docs/user/en/installation)
-2. Start the server by running 
-```
-bench start
-```
-3. In a separate terminal window, create a new site by running 
-```
-bench new-site print-designer.test
-```
-4. Map your site to localhost with the command 
-```
-bench --site print-designer.test add-to-hosts
-```
-5. Get the Print Designer app
-```
-bench get-app https://github.com/frappe/print_designer
-```
-6. Install the app on the site. 
-```
-bench --site print-designer.test install-app print_designer
-```
-7.  Open [http://print-designer.test:8000/](http://print-designer.test:8000/) in your browser and go through the setup wizard. 
+Get started with your personal or business site with a few clicks on Frappe Cloud - our official hosting service.
+<div>
+	<a href="https://frappecloud.com/marketplace/apps/print_designer" target="_blank">
+		<picture>
+			<source media="(prefers-color-scheme: dark)" srcset="https://frappe.io/files/try-on-fc-white.png">
+			<img src="https://frappe.io/files/try-on-fc-black.png" alt="Try on Frappe Cloud" height="28" />
+		</picture>
+	</a>
+</div>
 
-8.  After the setup is complete now open [http://print-designer.test:8000/app/print-designer/](http://print-designer.test:8000/app/print-designer/)
----
-## Contributions and Community
 
-There are many ways you can contribute even if you don't code:
+### Self Hosting
 
-1. You can start by giving a star to this repository!
-1. If you find any issues, even if it is a typo, you can [raise an issue](https://github.com/frappe/print_designer/issues/new) to inform us.
+Follow these steps to set up Print Designer in production:
 
----
+**Step 1**: Download the easy install script
+
+```bash
+wget https://frappe.io/easy-install.py
+```
+
+**Step 2**: Run the deployment command
+
+```bash
+python3 ./easy-install.py deploy \
+    --project=pd_prod_setup \
+    --email=email@example.com \
+    --image=ghcr.io/frappe/print_designer \
+    --version=stable \
+    --app=print_designer \
+    --sitename subdomain.domain.tld
+```
+
+Replace the following parameters with your values:
+- `email@example.com`: Your email address
+- `subdomain.domain.tld`: Your domain name where print designer will be hosted
+
+The script will set up a production-ready instance of Print Designer with all the necessary configurations in about 5 minutes.
+
+## Getting Started (Development)
+
+### Docker
+
+You need Docker, docker-compose and git setup on your machine. Refer [Docker documentation](https://docs.docker.com/). After that, run following command:
+
+**Step 1**: Setup folder and download the required files
+
+```bash
+mkdir frappe-pd && cd frappe-pd
+wget -O docker-compose.yml https://raw.githubusercontent.com/frappe/print_designer/develop/docker/docker-compose.yml
+wget -O init.sh https://raw.githubusercontent.com/frappe/print_designer/develop/docker/init.sh
+```
+
+**Step 2**: Run the container
+
+```bash
+docker compose up
+```
+
+Wait until the setup script creates a site and you see `Current Site set to print-designer.localhost` in the terminal. Once done, the site [http://print-designer.localhost:8000](http://print-designer.localhost:8000) should now be available.
+
+**Credentials:**
+Username: `Administrator`
+Password: `admin`
+
+## Getting Started (Development)
+
+### Local Setup
+
+1. [Setup Bench](https://docs.frappe.io/framework/user/en/installation).
+1. In the frappe-bench directory, run `bench start` and keep it running.
+1. Open a new terminal session and cd into `frappe-bench` directory and run following commands:
+```bash
+bench get-app print_designer
+bench new-site print-designer.localhost --install-app print_designer
+bench browse print-designer.localhost --user Administrator
+```
+1. Access the print designer page at `print-designer.localhost:8000/app/print-designer` in your web browser.
+
 
 ## FAQ
 1. Incorrect PDF Page Size
@@ -128,6 +157,21 @@ There are many ways you can contribute even if you don't code:
     - If error has `node-pre-gyp WARN Pre-built binaries not installable for canvas@x.x.x and node@x.x.x` it means that there aren't any pre-built binaries for your system so it will try to compile them
     - In order to do that you need `sudo apt-get update && sudo apt-get install build-essential libcairo2-dev libpango1.0-dev libjpeg-dev libgif-dev librsvg2-dev`
 
-## License
+<br>
 
-[GNU Affero General Public License v3.0](license.txt)
+## Links
+
+- [Telegram Public Group](https://t.me/+beFRbDSDEgtjYmY9)
+- [Discuss Forum](https://discuss.frappe.io/c/print-designer/84)
+- [Documentation](https://docs.frappe.io/print_designer)
+
+
+<br>
+<div align="center">
+	<a href="https://frappe.io" target="_blank">
+		<picture>
+			<source media="(prefers-color-scheme: dark)" srcset="https://frappe.io/files/Frappe-white.png">
+			<img src="https://frappe.io/files/Frappe-black.png" alt="Frappe Technologies" height="28"/>
+		</picture>
+	</a>
+</div>
