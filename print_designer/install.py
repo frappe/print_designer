@@ -119,17 +119,15 @@ def download_chromium():
 				os.chmod(exec_path, 0o755)  # Set executable permissions
 				click.echo(f"Chromium executable permissions set: {exec_path}")
 			else:
-				click.echo(
-					f"Chromium executable not found at {exec_path}", "Executable Permission Error"
-				)
+				click.echo(f"Chromium executable not found at {exec_path}")
 				raise RuntimeError(f"Chromium executable not found at {exec_path}")
 
 		click.echo(f"Chromium is ready to use at: {chromium_dir}")
 	except requests.RequestException as e:
-		click.echo(f"Failed to download Chromium: {e}", "Chromium Download Error")
+		click.echo(f"Failed to download Chromium: {e}")
 		raise RuntimeError(f"Failed to download Chromium: {e}")
 	except zipfile.BadZipFile as e:
-		click.echo(f"Failed to extract Chromium: {e}", "Chromium Extraction Error")
+		click.echo(f"Failed to extract Chromium: {e}")
 		raise RuntimeError(f"Failed to extract Chromium: {e}")
 	finally:
 		if os.path.exists(zip_path):
