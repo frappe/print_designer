@@ -1,6 +1,7 @@
 {% from 'print_designer/page/print_designer/jinja/macros/render.html' import render with context %}
 {% from 'print_designer/page/print_designer/jinja/macros/render_google_fonts.html' import render_google_fonts with context %}
 {% from 'print_designer/page/print_designer/jinja/macros/styles.html' import render_styles with context %}
+{% from 'print_designer/page/print_designer/jinja/macros/styles_old.html' import render_old_styles with context %}
 
 {{ render_google_fonts(settings) }}
 
@@ -14,7 +15,7 @@
             <div class="visible-pdf" style="height: {{ settings.page.marginTop }}px;"></div>
             <div class="hidden-pdf printview-header-margin" style="height: {{ settings.page.marginTop }}px;"></div>
             <div class="hidden-pdf">{% if pd_format.header.firstPage %}{{ render(pd_format.header.firstPage, send_to_jinja) }}{%endif%}</div>
-            <div id="firstPageHeader" style="display: none;">{% if pd_format.header.firstPage %}{{ render(pd_format.header.firstPage, send_to_jinja) }}{%endif%}</div>
+            <div id="firstPageHeader" style="display: block;">{% if pd_format.header.firstPage %}{{ render(pd_format.header.firstPage, send_to_jinja) }}{%endif%}</div>
             <div id="oddPageHeader" style="display: none;">{% if pd_format.header.oddPage %}{{ render(pd_format.header.oddPage, send_to_jinja) }}{%endif%}</div>
             <div id="evenPageHeader" style="display: none;">{% if pd_format.header.evenPage %}{{ render(pd_format.header.evenPage, send_to_jinja) }}{%endif%}</div>
             <div id="lastPageHeader" style="display: none;">{% if pd_format.header.lastPage %}{{ render(pd_format.header.lastPage, send_to_jinja) }}{%endif%}</div>
@@ -24,9 +25,9 @@
         {{ render(body.childrens, send_to_jinja) }}
     {%- endfor -%}
     <div id="footer-html">
-        <div style="width: 100%; position: relative; top:0px; left: 0px; height:{{ settings.page.footerHeightWithMargin }}px;">
+        <div style="width: 100%; position: relative; top:0px; left: 0px; height:{{ settings.page.footerHeightWithMargin }}px;" id="footer-render-container">
             <div class="hidden-pdf">{% if pd_format.footer.firstPage %}{{ render(pd_format.footer.firstPage, send_to_jinja) }}{%endif%}</div>
-            <div id="firstPageFooter" style="display: none;">{% if pd_format.footer.firstPage %}{{ render(pd_format.footer.firstPage, send_to_jinja) }}{%endif%}</div>
+            <div id="firstPageFooter" style="display: block;">{% if pd_format.footer.firstPage %}{{ render(pd_format.footer.firstPage, send_to_jinja) }}{%endif%}</div>
             <div id="oddPageFooter" style="display: none;">{% if pd_format.footer.oddPage %}{{ render(pd_format.footer.oddPage, send_to_jinja) }}{%endif%}</div>
             <div id="evenPageFooter" style="display: none;">{% if pd_format.footer.evenPage %}{{ render(pd_format.footer.evenPage, send_to_jinja) }}{%endif%}</div>
             <div id="lastPageFooter" style="display: none;">{% if pd_format.footer.lastPage %}{{ render(pd_format.footer.lastPage, send_to_jinja) }}{%endif%}</div>
@@ -34,4 +35,8 @@
     </div>
 </div>
 
-{{ render_styles(settings) }}
+{%- if new_pdf_backend -%}
+    {{ render_styles(settings) }}
+{%- else -%}
+    {{ render_old_styles(settings) }}
+{%- endif -%}

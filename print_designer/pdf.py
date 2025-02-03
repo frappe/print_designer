@@ -1,6 +1,7 @@
 import hashlib
 import html
 import json
+import time
 
 import frappe
 from frappe.monitor import add_data_to_monitor
@@ -9,11 +10,15 @@ from frappe.utils.jinja_globals import is_rtl
 from frappe.utils.pdf import pdf_body_html as fw_pdf_body_html
 
 
-def pdf_header_footer_html(soup, head, content, styles, html_id, css):
+def pdf_header_footer_html(soup, head, content, styles, html_id, css, new_pdf_backend):
 	if soup.find(id="__print_designer"):
+		if new_pdf_backend:
+			path = "print_designer/page/print_designer/jinja/header_footer.html"
+		else:
+			path = "print_designer/page/print_designer/jinja/header_footer_old.html"
 		try:
 			return frappe.render_template(
-				"print_designer/page/print_designer/jinja/header_footer.html",
+				path,
 				{
 					"head": head,
 					"content": content,
@@ -24,6 +29,7 @@ def pdf_header_footer_html(soup, head, content, styles, html_id, css):
 					"footerFonts": soup.find(id="footerFontsLinkTag"),
 					"lang": frappe.local.lang,
 					"layout_direction": "rtl" if is_rtl() else "ltr",
+					"new_pdf_backend": new_pdf_backend,
 				},
 			)
 		except Exception as e:
@@ -37,11 +43,23 @@ def pdf_header_footer_html(soup, head, content, styles, html_id, css):
 
 		if html_id == "header-html":
 			return pdf_header_html(
-				soup=soup, head=head, content=content, styles=styles, html_id=html_id, css=css
+				soup=soup,
+				head=head,
+				content=content,
+				styles=styles,
+				html_id=html_id,
+				css=css,
+				new_pdf_backend=new_pdf_backend,
 			)
 		elif html_id == "footer-html":
 			return pdf_footer_html(
-				soup=soup, head=head, content=content, styles=styles, html_id=html_id, css=css
+				soup=soup,
+				head=head,
+				content=content,
+				styles=styles,
+				html_id=html_id,
+				css=css,
+				new_pdf_backend=new_pdf_backend,
 			)
 
 
@@ -49,9 +67,6 @@ def pdf_body_html(print_format, jenv, args, template):
 	if print_format and print_format.print_designer and print_format.print_designer_body:
 		print_format_name = hashlib.md5(print_format.name.encode(), usedforsecurity=False).hexdigest()
 		add_data_to_monitor(print_designer=print_format_name, print_designer_action="download_pdf")
-		# DEPRECATED: remove this in few months added for backward compatibility incase user didn't update frappe framework.
-		if not frappe.get_hooks("get_print_format_template"):
-			template = get_print_format_template(jenv, print_format)
 
 		settings = json.loads(print_format.print_designer_settings)
 
@@ -61,6 +76,7 @@ def pdf_body_html(print_format, jenv, args, template):
 				"bodyElement": json.loads(print_format.print_designer_body),
 				"footerElement": json.loads(print_format.print_designer_footer),
 				"settings": settings,
+				"new_pdf_backend": bool(args.get("new_pdf_backend", print_format.new_pdf_backend)),
 			}
 		)
 
@@ -106,7 +122,7 @@ def is_older_schema(settings, current_version):
 		return False
 
 
-def get_print_format_template(jenv, print_format):
+def get_print_format_template(jenv, print_format, new_pdf_backend=False):
 	# if print format is created using print designer, then use print designer template
 	if print_format and print_format.print_designer and print_format.print_designer_body:
 		settings = json.loads(print_format.print_designer_settings)
@@ -118,3 +134,16 @@ def get_print_format_template(jenv, print_format):
 			return jenv.loader.get_source(
 				jenv, "print_designer/page/print_designer/jinja/print_format.html"
 			)[0]
+
+
+def measure_time(func, total={"time": 0}):
+	def wrapper(*args, **kwargs):
+		start_time = time.time()
+		result = func(*args, **kwargs)
+		end_time = time.time()
+		total["time"] += end_time - start_time
+		print(f"Function {func.__name__} took {end_time - start_time:.4f} seconds")
+		print(f"Total time: {total['time']:.4f}")
+		return result
+
+	return wrapper
