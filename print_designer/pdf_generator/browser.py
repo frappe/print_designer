@@ -18,7 +18,8 @@ from print_designer.print_designer.page.print_designer.print_designer import (
 class Browser:
 	def __init__(self, generator, print_format, html, options, output, new_pdf_backend=True):
 		self.is_print_designer = frappe.get_cached_value("Print Format", print_format, "print_designer")
-
+		self.browserID = frappe.utils.random_string(10)
+		generator.add_browser(self.browserID)
 		self.new_pdf_backend = new_pdf_backend
 		self.output = output
 		# sets soup from html
@@ -45,6 +46,7 @@ class Browser:
 			self.footer_pdf = self.footer_page.generate_pdf()
 			self.footer_page.close()
 		self.close()
+		generator.remove_browser(self.browserID)
 
 	def open(self, generator):
 		# start the CDP websocket connection to browser

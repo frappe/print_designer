@@ -18,6 +18,14 @@ class FrappePDFGenerator:
 
 	_instance = None
 
+	_browsers = []
+
+	def add_browser(self, browser):
+		self._browsers.append(browser)
+	
+	def remove_browser(self, browser):
+		self._browsers.remove(browser)
+
 	def __new__(cls):
 		# if instance or _chromium_process is not available create object else return current instance stored in cls._instance
 		if cls._instance is None or not cls._instance._chromium_process:
@@ -241,6 +249,11 @@ class FrappePDFGenerator:
 		"""
 		Close the headless Chromium browser.
 		"""
+		if self._browsers:
+			frappe.log(
+				"Cannot close Chromium as there are active browser instances."
+			)
+			return
 		if self._chromium_process:
 			self._chromium_process.terminate()
 		FrappePDFGenerator._instance = None
