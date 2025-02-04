@@ -66,9 +66,8 @@ const clone_and_update = (
 	type = null,
 	is_dynamic = true
 ) => {
-	console.log("Cloning and updating", selector, no_of_pages, print_designer);
-
 	const template = document.querySelector(selector);
+	let elements;
 	if (print_designer) {
 		elements = extract_elements(template, type);
 	}

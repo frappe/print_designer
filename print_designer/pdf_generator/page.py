@@ -3,10 +3,10 @@ import base64
 import time
 from io import BytesIO
 
+import urllib
+
 import frappe
 from pypdf import PdfReader
-
-from print_designer.pdf import measure_time
 
 
 class Page:
@@ -69,7 +69,7 @@ class Page:
 
 		# Start listening for requestPaused event
 		event = self.session.start_listener(
-			"Fetch.requestPaused", on_request_paused_event, self.session_id, self.target_id
+			"Fetch.requestPaused", on_request_paused_event, self.session_id, self.target_id, self.frame_id
 		)
 
 		# Enable request interception for the specified URL pattern
@@ -83,9 +83,52 @@ class Page:
 				return_future=True,
 			)
 			self.session.remove_listener("Fetch.requestPaused", event)
-			self.session.send("Fetch.disable")
 
 		return intercept_and_fulfill
+
+	def intercept_request_for_local_resources(self, url_pattern="*"):
+		"""Starts intercepting network requests for the given target_id and URL pattern."""
+		data = {}
+
+		def on_request_paused_event(future, response):
+			"""Callback for when a request is paused (intercepted)."""
+			params = response.get("params")
+			if params and params.get("requestId"):
+				data["request_id"] = params["requestId"]
+				url = params["request"]["url"]
+
+				if url.startswith(frappe.request.host_url):
+					path = url.replace(frappe.request.host_url, "").split("?v", 1)[0]
+					if path.startswith("assets/") or path.startswith("files/"):
+						path = urllib.parse.unquote(path)
+						if path.startswith("files/"):
+							path = frappe.utils.get_site_path("public", path)
+						
+						content = frappe.read_file(path, as_base64=True)
+						if content:
+							self.session.send(
+								"Fetch.fulfillRequest",
+								{
+									"requestId": data["request_id"],
+									"responseCode": 200, # actually hande the response code from the request
+									"body": content,
+								},
+								return_future=True,
+							)
+							return
+				self.session.send(
+					"Fetch.continueRequest",
+					{"requestId": data["request_id"]},
+					return_future=True,
+				)
+
+		# Start listening for requestPaused event
+		self.session.start_listener(
+			"Fetch.requestPaused", on_request_paused_event, self.session_id, self.target_id, self.frame_id
+		)
+
+		# Enable request interception for the specified URL pattern
+		self.session.send("Fetch.enable", {"patterns": [{"urlPattern": url_pattern}]})
 
 	def set_tab_url(self, url):
 		"""Navigate to a URL and fulfill the request with status code 200."""
@@ -128,6 +171,7 @@ class Page:
 	# if you face header Height to be incorrect as some external script is changing elements.
 	# networkIdle is most stable option but make it a lot slower so avoiding for now. enable if not stable
 	def set_content(self, html, wait_for=["load", "DOMContentLoaded"]):
+		self.intercept_request_for_local_resources()
 		wait_start = self.wait_for_load(wait_for=wait_for)
 		self.send("Page.setDocumentContent", {"frameId": self._ensure_frame_id(), "html": html})
 		self.wait_for_set_content = wait_start
@@ -216,6 +260,7 @@ class Page:
 		return PdfReader(BytesIO(pdf_data))
 
 	def close(self):
+		self.session.send("Fetch.disable")
 		result, error = self.send("Target.closeTarget", {"targetId": self.target_id})
 		if error:
 			raise RuntimeError(f"Error closing target: {error}")
