@@ -63,7 +63,7 @@ CUSTOM_FIELDS = {
 			"fieldname": "new_pdf_backend",
 			"fieldtype": "Check",
 			"label": "New PDF Backend ( Beta )",
-            "hidden": 1,
+            "hidden": 0,
             "insert_after": "disabled",
 		},
 	]
