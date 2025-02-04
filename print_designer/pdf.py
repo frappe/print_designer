@@ -136,14 +136,12 @@ def get_print_format_template(jenv, print_format, new_pdf_backend=False):
 			)[0]
 
 
-def measure_time(func, total={"time": 0}):
+def measure_time(func):
 	def wrapper(*args, **kwargs):
 		start_time = time.time()
 		result = func(*args, **kwargs)
 		end_time = time.time()
-		total["time"] += end_time - start_time
 		print(f"Function {func.__name__} took {end_time - start_time:.4f} seconds")
-		print(f"Total time: {total['time']:.4f}")
 		return result
 
 	return wrapper
