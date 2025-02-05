@@ -22,7 +22,7 @@ class FrappePDFGenerator:
 
 	def add_browser(self, browser):
 		self._browsers.append(browser)
-	
+
 	def remove_browser(self, browser):
 		self._browsers.remove(browser)
 
@@ -90,7 +90,7 @@ class FrappePDFGenerator:
 		chromium_dir = os.path.join(bench_path, "chromium")
 
 		if not os.path.exists(chromium_dir):
-			frappe.throw("Chromium is not downloaded. Please run the setup first.")
+			frappe.throw("Chromium is not downloaded. Please run the setup first.", FileNotFoundError)
 
 		platform_name = platform.system().lower()
 
@@ -103,7 +103,8 @@ class FrappePDFGenerator:
 		exec_path = Path(chromium_dir).joinpath(*executable_name)
 		if not exec_path.exists():
 			frappe.throw(
-				f"Chromium executable not found: {exec_path}. please run `bench setup-new-pdf-backend`"
+				f"Chromium executable not found: {exec_path}. please run bench setup-new-pdf-backend",
+				frappe.ExecutableNotFound,
 			)
 
 		return str(exec_path)
@@ -220,7 +221,7 @@ class FrappePDFGenerator:
 		other approch: if we choose port using find_available_port we can avoid this entirely and fetch_devtools_url() method.
 
 		NOTE:	1) in current approch output to stderr is pretty consistent.
-						2) other approch may seem reliable but it is slow compared to this in testing.
+		                                2) other approch may seem reliable but it is slow compared to this in testing.
 
 		TODO:
 		final approch can be decided later after testing in production.
@@ -250,9 +251,7 @@ class FrappePDFGenerator:
 		Close the headless Chromium browser.
 		"""
 		if self._browsers:
-			frappe.log(
-				"Cannot close Chromium as there are active browser instances."
-			)
+			frappe.log("Cannot close Chromium as there are active browser instances.")
 			return
 		if self._chromium_process:
 			self._chromium_process.terminate()

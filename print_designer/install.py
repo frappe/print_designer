@@ -52,11 +52,26 @@ def setup_chromium():
 	try:
 		executable = FrappePDFGenerator._find_chromium_executable()
 		click.echo(f"Chromium is already set up at {executable}")
-	except:
+	except FileNotFoundError:
 		download_chromium()
 		executable = FrappePDFGenerator._find_chromium_executable()
-
+	except frappe.ExecutableNotFound:
+		click.echo("Chromium file found but is not executable.")
+	except Exception as e:
+		click.echo(f"Failed to setup Chromium: {e}")
+		raise RuntimeError(f"Failed to setup Chromium: {e}")
 	return executable
+
+
+def make_chromium_executable(executable):
+	"""Make the Chromium executable."""
+	if os.path.exists(executable):
+		click.echo(f"Making Chromium executable: {executable}")
+		os.chmod(executable, 0o755)  # Set executable permissions
+		click.echo(f"Chromium executable permissions set: {executable}")
+	else:
+		click.echo(f"Chromium executable not found at {executable}")
+		raise frappe.ExecutableNotFound(f"Chromium executable not found at {executable}")
 
 
 def download_chromium():
@@ -109,18 +124,10 @@ def download_chromium():
 				if os.path.exists(executable_shell):
 					os.rename(executable_shell, os.path.join(renamed_dir, "headless_shell"))
 				else:
-					click.echo(f"Failed to rename executable. Expected chrome-headless-shell.")
+					click.echo("Failed to rename executable. Expected chrome-headless-shell.")
 			# Make the `headless_shell` executable
-			exec_path = os.path.join(
-				renamed_dir, executable_path[1]
-			)
-			if os.path.exists(exec_path):
-				click.echo(f"Making Chromium executable: {exec_path}")
-				os.chmod(exec_path, 0o755)  # Set executable permissions
-				click.echo(f"Chromium executable permissions set: {exec_path}")
-			else:
-				click.echo(f"Chromium executable not found at {exec_path}")
-				raise RuntimeError(f"Chromium executable not found at {exec_path}")
+			exec_path = os.path.join(renamed_dir, executable_path[1])
+			make_chromium_executable(exec_path)
 
 		click.echo(f"Chromium is ready to use at: {chromium_dir}")
 	except requests.RequestException as e:

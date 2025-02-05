@@ -1,9 +1,8 @@
 import asyncio
 import base64
 import time
-from io import BytesIO
-
 import urllib
+from io import BytesIO
 
 import frappe
 from pypdf import PdfReader
@@ -103,14 +102,14 @@ class Page:
 						path = urllib.parse.unquote(path)
 						if path.startswith("files/"):
 							path = frappe.utils.get_site_path("public", path)
-						
+
 						content = frappe.read_file(path, as_base64=True)
 						if content:
 							self.session.send(
 								"Fetch.fulfillRequest",
 								{
 									"requestId": data["request_id"],
-									"responseCode": 200, # actually hande the response code from the request
+									"responseCode": 200,  # actually hande the response code from the request
 									"body": content,
 								},
 								return_future=True,
@@ -170,7 +169,9 @@ class Page:
 	# set wait_for to networkIdle if pdf is not rendering correctly.
 	# if you face header Height to be incorrect as some external script is changing elements.
 	# networkIdle is most stable option but make it a lot slower so avoiding for now. enable if not stable
-	def set_content(self, html, wait_for=["load", "DOMContentLoaded"]):
+	def set_content(self, html, wait_for=None):
+		if not wait_for:
+			wait_for = ["load", "DOMContentLoaded"]
 		self.intercept_request_for_local_resources()
 		wait_start = self.wait_for_load(wait_for=wait_for)
 		self.send("Page.setDocumentContent", {"frameId": self._ensure_frame_id(), "html": html})
