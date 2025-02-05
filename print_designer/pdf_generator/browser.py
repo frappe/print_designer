@@ -34,18 +34,32 @@ class Browser:
 		self.setup_body_page()
 		# prepare options as per chrome for pdf
 		self.prepare_options_for_pdf()
+		# generate header and footer pages if they are not dynamic ( first, odd, even, last)
+		self.update_header_footer_page_pd()
+		# if header and footer are not dynamic start generating pdf for them (non-blocking)
+		self.try_async_header_footer_pdf()
 		# now wait for page to load as we need DOM to generate pdf
 		self.body_page.wait_for_set_content()
 		self.body_pdf = self.body_page.generate_pdf(raw=not self.header_page and not self.footer_page)
 		self.body_page.close()
 		self.update_header_footer_page()
+
 		if self.header_page:
-			self.header_pdf = self.header_page.generate_pdf()
+			if not self.is_header_dynamic:
+				self.header_pdf = self.header_page.get_pdf_from_stream(self.header_page.get_pdf_stream_id())
+			else:
+				self.header_pdf = self.header_page.generate_pdf()
 			self.header_page.close()
+
 		if self.footer_page:
-			self.footer_pdf = self.footer_page.generate_pdf()
+			if not self.is_footer_dynamic:
+				self.footer_pdf = self.footer_page.get_pdf_from_stream(self.footer_page.get_pdf_stream_id())
+			else:
+				self.footer_pdf = self.footer_page.generate_pdf()
 			self.footer_page.close()
+
 		self.close()
+
 		generator.remove_browser(self.browserID)
 
 	def open(self, generator):
@@ -105,7 +119,14 @@ class Browser:
 
 	def is_page_no_used(self, soup):
 		# Check if any of the classes exist
-		classes_to_check = ["page", "frompage", "topage", "page_info_page", "page_info_topage"]
+		classes_to_check = [
+			"page",
+			"frompage",
+			"topage",
+			"page_info_page",
+			"page_info_frompage",
+			"page_info_topage",
+		]
 
 		# Loop through the classes to check
 		for class_name in classes_to_check:
@@ -171,6 +192,12 @@ class Browser:
 		for html_id in ["header-html", "footer-html"]:
 			for tag in soup.find_all(id=html_id):
 				tag.extract()
+
+	def try_async_header_footer_pdf(self):
+		if self.header_page and not self.is_header_dynamic:
+			self.header_page.generate_pdf(wait_for_pdf=False)
+		if self.footer_page and not self.is_footer_dynamic:
+			self.footer_page.generate_pdf(wait_for_pdf=False)
 
 	def _get_converted_num(self, num_str, unit="px"):
 		parsed = parse_float_and_unit(num_str)
@@ -334,18 +361,36 @@ class Browser:
 		total_pages = len(self.body_pdf.pages)
 		# function is added to html from update_page_no.js
 		if self.header_page:
-			if self.is_header_dynamic or self.is_print_designer:
+			if self.is_header_dynamic:
 				self.header_page.evaluate(
-					f"clone_and_update('{ '#header-render-container' if self.is_print_designer else '.wrapper'}', {str(total_pages)}, {1 if self.is_print_designer else 0}, 'Header', {1 if self.is_header_dynamic else 0});",
+					f"clone_and_update('{ '#header-render-container' if self.is_print_designer else '.wrapper'}', {total_pages}, {1 if self.is_print_designer else 0}, 'Header', 1);",
 					await_promise=True,
 				)
 
 		if self.footer_page:
-			if self.is_footer_dynamic or self.is_print_designer:
+			if self.is_footer_dynamic:
 				self.footer_page.evaluate(
-					f"clone_and_update('{ '#footer-render-container' if self.is_print_designer else '.wrapper'}', {str(total_pages)}, {1 if self.is_print_designer else 0}, 'Footer', {1 if self.is_footer_dynamic else 0});",
+					f"clone_and_update('{ '#footer-render-container' if self.is_print_designer else '.wrapper'}', {total_pages}, {1 if self.is_print_designer else 0}, 'Footer', 1);",
 					await_promise=True,
 				)
+
+	def update_header_footer_page_pd(self):
+		if not self.is_print_designer:
+			return
+		if not self.header_page and not self.footer_page:
+			return
+		# function is added to html from update_page_no.js
+		if self.header_page and not self.is_header_dynamic:
+			self.header_page.evaluate(
+				"clone_and_update('#header-render-container', 0, 1, 'Header', 0);",
+				await_promise=True,
+			)
+
+		if self.footer_page and not self.is_footer_dynamic:
+			self.footer_page.evaluate(
+				"clone_and_update('#footer-render-container', 0, 1, 'Footer', 0);",
+				await_promise=True,
+			)
 
 	def get_rendered_header_footer(self, content, type, head, styles, css, new_pdf_backend=True):
 		html_id = f"{type}-html"

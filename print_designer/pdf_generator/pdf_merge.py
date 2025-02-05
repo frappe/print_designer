@@ -49,29 +49,37 @@ class PDFTransformer:
 			header_transform = body_height + footer_height
 			header_body_top = header_height + body_height + footer_height
 
+		if header and not self.is_header_dynamic:
+			for h in header.pages:
+				self._transform(h, header_body_top, header_transform)
+
 		for p in body.pages:
 			if header_body_top:
 				self._transform(p, header_body_top, body_transform)
 			if header:
-				if self.is_header_dynamic or p.page_number == 0:
+				if self.is_header_dynamic:
 					p.merge_page(self._transform(header.pages[p.page_number], header_body_top, header_transform))
 				elif self.is_print_designer:
-					if p.page_number == self.no_of_pages - 1:
-						p.merge_page(self._transform(header.pages[3], header_body_top, header_transform))
-					elif p.page_number % self.no_of_pages == 0:
-						p.merge_page(self._transform(header.pages[2], header_body_top, header_transform))
+					if p.page_number == 0:
+						p.merge_page(header.pages[0])
+					elif p.page_number == self.no_of_pages - 1:
+						p.merge_page(header.pages[3])
+					elif p.page_number % 2 == 0:
+						p.merge_page(header.pages[2])
 					else:
-						p.merge_page(self._transform(header.pages[1], header_body_top, header_transform))
+						p.merge_page(header.pages[1])
 				else:
 					p.merge_page(header.pages[0])
 
 			if footer:
-				if self.is_footer_dynamic or p.page_number == 0:
+				if self.is_footer_dynamic:
 					p.merge_page(footer.pages[p.page_number])
 				elif self.is_print_designer:
-					if p.page_number == self.no_of_pages - 1:
+					if p.page_number == 0:
+						p.merge_page(footer.pages[0])
+					elif p.page_number == self.no_of_pages - 1:
 						p.merge_page(footer.pages[3])
-					elif p.page_number % self.no_of_pages == 0:
+					elif p.page_number % 2 == 0:
 						p.merge_page(footer.pages[2])
 					else:
 						p.merge_page(footer.pages[1])

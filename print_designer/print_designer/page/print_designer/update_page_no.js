@@ -75,7 +75,8 @@ const clone_and_update = (
 	for (let i = 2; i <= (is_dynamic ? no_of_pages : 4); i++) {
 		let clone;
 		if (print_designer) {
-			if (i == no_of_pages) {
+			// print designer have different header and footer for even, odd and last page (4)
+			if (i == (is_dynamic ? no_of_pages : 4)) {
 				clone = elements.last?.cloneNode(true);
 			} else if (i % 2 == 0) {
 				clone = elements.even?.cloneNode(true);

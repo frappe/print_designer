@@ -166,8 +166,10 @@ class CDPSocketClient:
 		return event
 
 	def wait_for_event(self, event, timeout=3):
+		if type(event) is tuple:
+			event = event[1]
 		try:
-			self.loop.run_until_complete(asyncio.wait_for(event[1], timeout))
+			self.loop.run_until_complete(asyncio.wait_for(event, timeout))
 		except asyncio.TimeoutError:
 			frappe.log_error(title="Timeout waiting for event", message=f"{frappe.get_traceback()}")
 

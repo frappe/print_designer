@@ -140,7 +140,7 @@ class Page:
 		wait_and_fulfill()
 
 		def wait_for_navigate():
-			self.session.loop.run_until_complete(asyncio.wait_for(page_navigate, 3))
+			self.session.wait_for_event(page_navigate, 3)
 			wait_start()
 
 		self.wait_for_navigate = wait_for_navigate
@@ -225,20 +225,33 @@ class Page:
 			self.send("DOM.disable")
 		return height
 
-	def generate_pdf(self, raw=False):
+	def generate_pdf(self, wait_for_pdf=True, raw=False):
+		if not wait_for_pdf:
+			self.wait_for_pdf = self.send("Page.printToPDF", self.options, return_future=True)
+			return
+
 		result, error = self.send("Page.printToPDF", self.options)
 		if error:
 			raise RuntimeError(f"Error generating PDF: {error}")
 		if "stream" not in result:
 			raise ValueError("Stream handle not returned from Page.printToPDF")
+		return self.get_pdf_from_stream(result["stream"], raw)
 
-		stream_handle = result["stream"]
+	def get_pdf_stream_id(self):
+		# wait for task to complete
+		self.session.wait_for_event(self.wait_for_pdf)
+		# wait for event to complete
+		task = self.wait_for_pdf.result()
+		future = task.result()
+		stream_id = future["result"]["stream"]
+		return stream_id
+
+	def get_pdf_from_stream(self, stream_id, raw=False):
 		pdf_data = b""
 		offset = 0
-
 		while True:
 			chunk_result, error = self.send(
-				"IO.read", {"handle": stream_handle, "offset": offset, "size": 4096}
+				"IO.read", {"handle": stream_id, "offset": offset, "size": 4096}
 			)
 			if error:
 				raise RuntimeError(f"Error reading PDF chunk: {error}")
@@ -251,7 +264,7 @@ class Page:
 			if chunk_result.get("eof", False):
 				break
 
-		result, error = self.send("IO.close", {"handle": stream_handle})
+		result, error = self.send("IO.close", {"handle": stream_id})
 		if error:
 			raise RuntimeError(f"Error closing PDF stream: {error}")
 
