@@ -82,29 +82,27 @@ class FrappePDFGenerator:
 				self.start_chromium_process()
 
 	# also, called from install.py to download chromium.
-	@classmethod
-	def _find_chromium_executable(cls):
+	def _find_chromium_executable(self):
 		"""Finds the Chromium executable or raises an error if not found."""
 		bench_path = frappe.utils.get_bench_path()
 		"""Determine the path to the Chromium executable. chromium is downloaded by download_chromium in print_designer/install.py"""
 		chromium_dir = os.path.join(bench_path, "chromium")
 
 		if not os.path.exists(chromium_dir):
-			frappe.throw("Chromium is not downloaded. Please run the setup first.", FileNotFoundError)
+			frappe.throw("Chromium is not downloaded. Please run the setup first.")
 
 		platform_name = platform.system().lower()
 
 		if platform_name not in ["linux", "darwin", "windows"]:
 			frappe.throw(f"Unsupported platform: {platform_name}")
 
-		executable_name = cls.EXECUTABLE_PATHS.get(platform_name)
+		executable_name = self.EXECUTABLE_PATHS.get(platform_name)
 
 		# Construct the full path to the executable
 		exec_path = Path(chromium_dir).joinpath(*executable_name)
 		if not exec_path.exists():
 			frappe.throw(
-				f"Chromium executable not found: {exec_path}. please run bench setup-new-pdf-backend",
-				frappe.ExecutableNotFound,
+				f"Chromium executable not found: {exec_path}. please run bench setup-new-pdf-backend"
 			)
 
 		return str(exec_path)

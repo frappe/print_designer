@@ -1,5 +1,6 @@
 import os
 import platform
+import shutil
 import zipfile
 from pathlib import Path
 
@@ -50,13 +51,8 @@ def setup_chromium():
 	# Load Chromium version from common_site_config.json or use default
 
 	try:
-		executable = FrappePDFGenerator._find_chromium_executable()
+		executable = find_or_download_chromium_executable()
 		click.echo(f"Chromium is already set up at {executable}")
-	except FileNotFoundError:
-		download_chromium()
-		executable = FrappePDFGenerator._find_chromium_executable()
-	except frappe.ExecutableNotFound:
-		click.echo("Chromium file found but is not executable.")
 	except Exception as e:
 		click.echo(f"Failed to setup Chromium: {e}")
 		raise RuntimeError(f"Failed to setup Chromium: {e}")
@@ -66,12 +62,40 @@ def setup_chromium():
 def make_chromium_executable(executable):
 	"""Make the Chromium executable."""
 	if os.path.exists(executable):
+		# check if the file is executable
+		if os.access(executable, os.X_OK):
+			click.echo(f"Chromium executable is already executable: {executable}")
+			return
 		click.echo(f"Making Chromium executable: {executable}")
 		os.chmod(executable, 0o755)  # Set executable permissions
 		click.echo(f"Chromium executable permissions set: {executable}")
 	else:
-		click.echo(f"Chromium executable not found at {executable}")
-		raise frappe.ExecutableNotFound(f"Chromium executable not found at {executable}")
+		click.echo(f"Chromium executable not found: {executable}.")
+
+
+def find_or_download_chromium_executable():
+	"""Finds the Chromium executable or downloads if not found."""
+	bench_path = frappe.utils.get_bench_path()
+	"""Determine the path to the Chromium executable."""
+	chromium_dir = os.path.join(bench_path, "chromium")
+
+	platform_name = platform.system().lower()
+
+	if platform_name not in ["linux", "darwin", "windows"]:
+		click.echo(f"Unsupported platform: {platform_name}")
+
+	executable_name = FrappePDFGenerator.EXECUTABLE_PATHS.get(platform_name)
+
+	# Construct the full path to the executable
+	exec_path = Path(chromium_dir).joinpath(*executable_name)
+	if not exec_path.exists():
+		click.echo("Chromium is not available. downloading...")
+		download_chromium()
+
+	if not exec_path.exists():
+		click.echo("Error while downloading chrome")
+
+	return str(exec_path)
 
 
 def download_chromium():
@@ -82,11 +106,7 @@ def download_chromium():
 	# Remove old Chromium directory if it exists
 	if os.path.exists(chromium_dir):
 		click.echo("Removing old Chromium directory...")
-		for root, dirs, files in os.walk(chromium_dir, topdown=False):
-			for name in files:
-				os.remove(os.path.join(root, name))
-			for name in dirs:
-				os.rmdir(os.path.join(root, name))
+		shutil.rmtree(chromium_dir, ignore_errors=True)
 
 	os.makedirs(chromium_dir, exist_ok=True)
 
@@ -96,11 +116,16 @@ def download_chromium():
 
 	try:
 		click.echo(f"Downloading Chromium from {download_url}...")
-		with requests.get(download_url, stream=True, timeout=(10, 60)) as r:
+		# playwright's requires a user agent
+		headers = {"User-Agent": "Wget/1.21.1"}
+		with requests.get(download_url, stream=True, timeout=(10, 60), headers=headers) as r:
 			r.raise_for_status()  # Raise an error for bad status codes
+			total_size = int(r.headers.get("content-length", 0))  # Get total file size
+			bar = click.progressbar(length=total_size, label="Downloading Chromium")
 			with open(zip_path, "wb") as f:
 				for chunk in r.iter_content(chunk_size=65536):
 					f.write(chunk)
+					bar.update(len(chunk))
 
 		click.echo("Extracting Chromium...")
 		with zipfile.ZipFile(zip_path, "r") as zip_ref:
@@ -130,6 +155,12 @@ def download_chromium():
 			make_chromium_executable(exec_path)
 
 		click.echo(f"Chromium is ready to use at: {chromium_dir}")
+	except requests.Timeout:
+		click.echo("Download timed out. Check your internet connection.")
+		raise RuntimeError("Download timed out.")
+	except requests.ConnectionError:
+		click.echo("Failed to connect to Chromium download server.")
+		raise RuntimeError("Connection error.")
 	except requests.RequestException as e:
 		click.echo(f"Failed to download Chromium: {e}")
 		raise RuntimeError(f"Failed to download Chromium: {e}")
@@ -185,15 +216,17 @@ def get_chromium_download_url():
 
 	platform_key = calculate_platform()
 
-	version = "133.0.6943.16"
-	playwright_build_version = "1155"
+	version = "133.0.6943.35"
+	playwright_build_version = "1157"
 
 	base_url = "https://storage.googleapis.com/chrome-for-testing-public/"
 	playwright_base_url = "https://cdn.playwright.dev/dbazure/download/playwright/builds/chromium/"
 
 	# Overwrite with values from common_site_config.json ( escape hatch )
 	version = common_config.get("chromium_version", version)
-	playwright_build_version = common_config.get("playwright_chromium_version", version)
+	playwright_build_version = common_config.get(
+		"playwright_chromium_version", playwright_build_version
+	)
 	# make sure that you have all required flavours at correct urls
 	base_url = common_config.get("chromium_download_base_url", base_url)
 	playwright_base_url = common_config.get(
@@ -263,15 +296,15 @@ def calculate_platform():
 		return "<unknown>"
 
 	# Handle other platforms
-	if system == "linux" and arch == "x86_64":
+	elif system == "linux" and arch == "x86_64":
 		return "linux64"
-	if system == "darwin" and arch == "arm64":
+	elif system == "darwin" and arch == "arm64":
 		return "mac-arm64"
-	if system == "darwin" and arch == "x86_64":
+	elif system == "darwin" and arch == "x86_64":
 		return "mac-x64"
-	if system == "windows" and arch == "x86":
+	elif system == "windows" and arch == "x86":
 		return "win32"
-	if system == "windows" and arch == "x86_64":
+	elif system == "windows" and arch == "x86_64":
 		return "win64"
 
 	return "<unknown>"
