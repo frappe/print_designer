@@ -70,7 +70,7 @@ def make_chromium_executable(executable):
 		os.chmod(executable, 0o755)  # Set executable permissions
 		click.echo(f"Chromium executable permissions set: {executable}")
 	else:
-		click.echo(f"Chromium executable not found: {executable}.")
+		raise RuntimeError(f"Chromium executable not found: {executable}.")
 
 
 def find_or_download_chromium_executable():
@@ -131,6 +131,10 @@ def download_chromium():
 		with zipfile.ZipFile(zip_path, "r") as zip_ref:
 			zip_ref.extractall(chromium_dir)
 
+		if os.path.exists(zip_path):
+			os.remove(zip_path)
+
+		# There should be only one directory
 		# Ensure the correct directory is renamed
 		extracted = os.listdir(chromium_dir)[0]
 		executable_path = FrappePDFGenerator.EXECUTABLE_PATHS[platform.system().lower()]
@@ -143,13 +147,13 @@ def download_chromium():
 				click.echo(f"Renaming {extracted_dir} to {renamed_dir}")
 				os.rename(extracted_dir, renamed_dir)
 			else:
-				click.echo(f"Failed to rename extracted directory. Expected {chrome_folder_name}.")
+				raise RuntimeError(f"Failed to rename extracted directory. Expected {chrome_folder_name}.")
 			if os.path.exists(renamed_dir):
 				executable_shell = os.path.join(renamed_dir, "chrome-headless-shell")
 				if os.path.exists(executable_shell):
 					os.rename(executable_shell, os.path.join(renamed_dir, "headless_shell"))
 				else:
-					click.echo("Failed to rename executable. Expected chrome-headless-shell.")
+					raise RuntimeError("Failed to rename executable. Expected chrome-headless-shell.")
 			# Make the `headless_shell` executable
 			exec_path = os.path.join(renamed_dir, executable_path[1])
 			make_chromium_executable(exec_path)
@@ -167,9 +171,6 @@ def download_chromium():
 	except zipfile.BadZipFile as e:
 		click.echo(f"Failed to extract Chromium: {e}")
 		raise RuntimeError(f"Failed to extract Chromium: {e}")
-	finally:
-		if os.path.exists(zip_path):
-			os.remove(zip_path)
 
 
 def get_chromium_download_url():

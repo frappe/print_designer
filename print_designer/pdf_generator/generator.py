@@ -117,7 +117,7 @@ class FrappePDFGenerator:
 			frappe.throw(f"Chromium not executable at {self._chromium_path}")
 		return True
 
-	def start_chromium_process(self, debug=True):
+	def start_chromium_process(self, debug=False):
 		"""
 		Launches Chromium in headless mode with robust logging and error handling.
 		chrome switches
