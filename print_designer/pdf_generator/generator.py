@@ -117,8 +117,12 @@ class FrappePDFGenerator:
 			frappe.throw(f"Chromium not executable at {self._chromium_path}")
 		return True
 
-	def start_chromium_process(self, debug=False):
-		"""Launches Chromium in headless mode with robust logging and error handling."""
+	def start_chromium_process(self, debug=True):
+		"""
+		Launches Chromium in headless mode with robust logging and error handling.
+		chrome switches
+		https://peter.sh/experiments/chromium-command-line-switches/
+		"""
 		try:
 			if debug:
 				command_args = [
