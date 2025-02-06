@@ -7,6 +7,11 @@ from io import BytesIO
 import frappe
 from pypdf import PdfReader
 
+"""
+CDP commands documentation can be found here.
+https://chromedevtools.github.io/devtools-protocol/
+"""
+
 
 class Page:
 	def __init__(self, session, target_id, page_type):
@@ -225,7 +230,52 @@ class Page:
 			self.send("DOM.disable")
 		return height
 
+	def add_page_size_css(self):
+
+		width = str(self.options["paperWidth"]) + "in"
+		height = str(self.options["paperHeight"]) + "in"
+		marginLeft = str(self.options["marginLeft"]) + "in"
+		marginRight = str(self.options["marginRight"]) + "in"
+		marginTop = str(self.options["marginTop"]) + "in"
+		marginBottom = str(self.options["marginBottom"]) + "in"
+
+		# Enable DOM and CSS agents
+		result, error = self.send("DOM.enable")
+		if error:
+			raise RuntimeError(f"Error enabling DOM: {error}")
+
+		result, error = self.send("CSS.enable")
+		if error:
+			raise RuntimeError(f"Error enabling CSS: {error}")
+
+		# Create a new stylesheet
+		result, error = self.send("CSS.createStyleSheet", {"frameId": self._ensure_frame_id()})
+		if error:
+			raise RuntimeError(f"Error creating stylesheet: {error}")
+
+		style_sheet_id = result["styleSheetId"]
+
+		# Define the CSS rule for the page size
+		css_rule = f"""
+			@page {{
+				size: {width} {height};
+				margin: {marginTop} {marginRight} {marginBottom} {marginLeft};
+			}}
+		"""
+
+		# Apply the CSS rule to the created stylesheet
+		result, error = self.send(
+			"CSS.setStyleSheetText", {"styleSheetId": style_sheet_id, "text": css_rule}
+		)
+
+		if error:
+			raise RuntimeError(f"Error setting stylesheet text: {error}")
+
+		self.send("CSS.disable")
+		self.send("DOM.disable")
+
 	def generate_pdf(self, wait_for_pdf=True, raw=False):
+		self.add_page_size_css()
 		if not wait_for_pdf:
 			self.wait_for_pdf = self.send("Page.printToPDF", self.options, return_future=True)
 			return

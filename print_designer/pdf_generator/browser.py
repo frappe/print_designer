@@ -255,7 +255,7 @@ class Browser:
 			"marginLeft": 0,
 			"marginRight": 0,
 			"landscape": options.get("orientation", "Portrait") == "Landscape",
-			"preferCSSPageSize": options.get("page-size-found", False),
+			"preferCSSPageSize": False,
 			"pageRanges": options.get("page-ranges", ""),
 			# Experimental
 			"generateTaggedPDF": options.get("generate-tagged-pdf", False),
