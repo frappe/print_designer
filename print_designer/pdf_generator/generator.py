@@ -122,6 +122,9 @@ class FrappePDFGenerator:
 		Launches Chromium in headless mode with robust logging and error handling.
 		chrome switches
 		https://peter.sh/experiments/chromium-command-line-switches/
+
+		NOTE: dbus issue in docker
+		  https://source.chromium.org/chromium/chromium/src/+/main:content/app/content_main.cc;l=229-241?q=DBUS_SESSION_BUS_ADDRESS&ss=chromium
 		"""
 		try:
 			if debug:
@@ -141,6 +144,7 @@ class FrappePDFGenerator:
 					self._chromium_path,
 					# 0 will automatically select a random open port from the ephemeral port range.
 					"--remote-debugging-port=0",
+					"--disable-gpu",  # GPU is not available in production environment.
 					"--disable-field-trial-config",
 					"--disable-background-networking",
 					"--disable-background-timer-throttling",
@@ -223,7 +227,7 @@ class FrappePDFGenerator:
 		other approch: if we choose port using find_available_port we can avoid this entirely and fetch_devtools_url() method.
 
 		NOTE:	1) in current approch output to stderr is pretty consistent.
-		                                2) other approch may seem reliable but it is slow compared to this in testing.
+		                2) other approch may seem reliable but it is slow compared to this in testing.
 
 		TODO:
 		final approch can be decided later after testing in production.
@@ -241,8 +245,6 @@ class FrappePDFGenerator:
 				if url_start != -1:
 					self._devtools_url = line[url_start:].strip()
 					break
-
-			time.sleep(0.1)
 
 		if not self._devtools_url:
 			self._chromium_process.terminate()
