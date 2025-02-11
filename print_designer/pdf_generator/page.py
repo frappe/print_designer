@@ -107,14 +107,18 @@ class Page:
 						path = urllib.parse.unquote(path)
 						if path.startswith("files/"):
 							path = frappe.utils.get_site_path("public", path)
-
 						content = frappe.read_file(path, as_base64=True)
+						response_headers = []
+						# write logic to handle all file types as required
+						if path.endswith(".svg"):
+							response_headers.append({"name": "Content-Type", "value": "image/svg+xml"})
 						if content:
 							self.session.send(
 								"Fetch.fulfillRequest",
 								{
 									"requestId": data["request_id"],
 									"responseCode": 200,  # actually hande the response code from the request
+									"responseHeaders": response_headers,
 									"body": content,
 								},
 								return_future=True,
