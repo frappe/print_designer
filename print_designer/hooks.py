@@ -93,11 +93,11 @@ pdf_footer_html = "print_designer.pdf.pdf_header_footer_html"
 get_print_format_template = "print_designer.pdf.get_print_format_template"
 
 
-before_request = ["print_designer.new_backend.before_request"]
+before_request = ["print_designer.pdf_generator.pdf.before_request"]
 
-after_request = ["print_designer.new_backend.after_request"]
+after_request = ["print_designer.pdf_generator.pdf.after_request"]
 
-new_pdf_backend = "print_designer.new_backend.get_pdf"
+chrome_pdf_generator = "print_designer.pdf_generator.pdf.get_pdf"
 # Desk Notifications
 # ------------------
 # See frappe.core.notifications.get_notification_config

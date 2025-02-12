@@ -10,9 +10,9 @@ from frappe.utils.jinja_globals import is_rtl
 from frappe.utils.pdf import pdf_body_html as fw_pdf_body_html
 
 
-def pdf_header_footer_html(soup, head, content, styles, html_id, css, new_pdf_backend):
+def pdf_header_footer_html(soup, head, content, styles, html_id, css):
 	if soup.find(id="__print_designer"):
-		if new_pdf_backend:
+		if frappe.form_dict.get("chrome_pdf_generator", False):
 			path = "print_designer/page/print_designer/jinja/header_footer.html"
 		else:
 			path = "print_designer/page/print_designer/jinja/header_footer_old.html"
@@ -29,7 +29,6 @@ def pdf_header_footer_html(soup, head, content, styles, html_id, css, new_pdf_ba
 					"footerFonts": soup.find(id="footerFontsLinkTag"),
 					"lang": frappe.local.lang,
 					"layout_direction": "rtl" if is_rtl() else "ltr",
-					"new_pdf_backend": new_pdf_backend,
 				},
 			)
 		except Exception as e:
@@ -49,7 +48,6 @@ def pdf_header_footer_html(soup, head, content, styles, html_id, css, new_pdf_ba
 				styles=styles,
 				html_id=html_id,
 				css=css,
-				new_pdf_backend=new_pdf_backend,
 			)
 		elif html_id == "footer-html":
 			return pdf_footer_html(
@@ -59,7 +57,6 @@ def pdf_header_footer_html(soup, head, content, styles, html_id, css, new_pdf_ba
 				styles=styles,
 				html_id=html_id,
 				css=css,
-				new_pdf_backend=new_pdf_backend,
 			)
 
 
@@ -76,7 +73,7 @@ def pdf_body_html(print_format, jenv, args, template):
 				"bodyElement": json.loads(print_format.print_designer_body),
 				"footerElement": json.loads(print_format.print_designer_footer),
 				"settings": settings,
-				"new_pdf_backend": bool(args.get("new_pdf_backend", print_format.new_pdf_backend)),
+				"chrome_pdf_generator": frappe.form_dict.get("chrome_pdf_generator", False),
 			}
 		)
 
@@ -122,7 +119,7 @@ def is_older_schema(settings, current_version):
 		return False
 
 
-def get_print_format_template(jenv, print_format, new_pdf_backend=False):
+def get_print_format_template(jenv, print_format):
 	# if print format is created using print designer, then use print designer template
 	if print_format and print_format.print_designer and print_format.print_designer_body:
 		settings = json.loads(print_format.print_designer_settings)

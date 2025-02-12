@@ -7,6 +7,8 @@ from pathlib import Path
 import frappe
 import requests
 
+# TODO: close browser when worker is killed.
+
 
 class FrappePDFGenerator:
 

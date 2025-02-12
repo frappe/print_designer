@@ -60,9 +60,9 @@ CUSTOM_FIELDS = {
 		},
 		{
 			"default": "0",
-			"fieldname": "new_pdf_backend",
+			"fieldname": "chrome_pdf_generator",
 			"fieldtype": "Check",
-			"label": "New PDF Backend ( Beta )",
+			"label": "Use Chrome PDF Generator",
 			"hidden": 0,
 			"insert_after": "disabled",
 		},

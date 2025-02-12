@@ -16,11 +16,10 @@ from print_designer.print_designer.page.print_designer.print_designer import (
 
 # initialize the CDPSession to communicate with the browser
 class Browser:
-	def __init__(self, generator, print_format, html, options, output, new_pdf_backend=True):
+	def __init__(self, generator, print_format, html, options, output):
 		self.is_print_designer = frappe.get_cached_value("Print Format", print_format, "print_designer")
 		self.browserID = frappe.utils.random_string(10)
 		generator.add_browser(self.browserID)
-		self.new_pdf_backend = new_pdf_backend
 		self.output = output
 		# sets soup from html
 		self.set_html(html)
@@ -392,7 +391,7 @@ class Browser:
 				await_promise=True,
 			)
 
-	def get_rendered_header_footer(self, content, type, head, styles, css, new_pdf_backend=True):
+	def get_rendered_header_footer(self, content, type, head, styles, css):
 		html_id = f"{type}-html"
 		content = content.extract()
 		toggle_visible_pdf(content)
@@ -406,7 +405,6 @@ class Browser:
 			styles=styles,
 			html_id=html_id,
 			css=css,
-			new_pdf_backend=new_pdf_backend,
 		)
 
 	def _open_header_footer_pages(self):
