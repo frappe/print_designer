@@ -94,14 +94,8 @@ class Browser:
 
 		NOTE: In theory this will make it faster but more importantly use less cpu, ram etc.
 		"""
-		result, error = self.session.send(
-			"Target.createTarget", {"url": "", "browserContextId": self.browser_context_id}
-		)
-		if error:
-			frappe.log_error(title="Error creating new page:", message=f"{error}")
-		target_id = result["targetId"]
 
-		page = Page(self.session, target_id, page_type)
+		page = Page(self.session, self.browser_context_id, page_type)
 		page.is_print_designer = self.is_print_designer
 
 		return page

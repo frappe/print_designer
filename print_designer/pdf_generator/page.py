@@ -14,12 +14,18 @@ https://chromedevtools.github.io/devtools-protocol/
 
 
 class Page:
-	def __init__(self, session, target_id, page_type):
+	def __init__(self, session, browser_context_id, page_type):
 		self.session = session
-		self.target_id = target_id
+		result, error = self.session.send(
+			"Target.createTarget", {"url": "", "browserContextId": browser_context_id}
+		)
+		if error:
+			frappe.log_error(title="Error creating new page:", message=f"{error}")
+
+		self.target_id = result["targetId"]
 		self.type = page_type
 		result, error = self.session.send(
-			"Target.attachToTarget", {"targetId": target_id, "flatten": True}
+			"Target.attachToTarget", {"targetId": self.target_id, "flatten": True}
 		)
 		if error:
 			raise RuntimeError(f"Error attaching to target: {error}")
