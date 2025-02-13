@@ -58,13 +58,5 @@ CUSTOM_FIELDS = {
 			"default": "print_designer",
 			"insert_after": "standard",
 		},
-		{
-			"default": "0",
-			"fieldname": "chrome_pdf_generator",
-			"fieldtype": "Check",
-			"label": "Use Chrome PDF Generator",
-			"hidden": 0,
-			"insert_after": "disabled",
-		},
 	]
 }
