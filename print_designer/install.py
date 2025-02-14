@@ -3,12 +3,14 @@ import platform
 import shutil
 import zipfile
 from pathlib import Path
+from typing import Literal
 
 import click
 import frappe
 import requests
 from frappe.config import get_common_site_config
 from frappe.custom.doctype.custom_field.custom_field import create_custom_fields
+from frappe.custom.doctype.property_setter.property_setter import make_property_setter
 
 from print_designer.custom_fields import CUSTOM_FIELDS
 from print_designer.default_formats import install_default_formats, on_print_designer_install
@@ -38,6 +40,7 @@ def before_install():
 def after_install():
 	create_custom_fields(CUSTOM_FIELDS, ignore_validate=True)
 	on_print_designer_install()
+	add_pdf_generator_option()
 	# TODO: we should call setup_chromium here ?
 
 
@@ -309,3 +312,27 @@ def calculate_platform():
 		return "win64"
 
 	return "<unknown>"
+
+
+def add_pdf_generator_option():
+	set_pdf_generator_option("add")
+
+
+def set_pdf_generator_option(action: Literal["add", "remove"]):
+	options = (frappe.get_meta("Print Format").get_field("pdf_generator").options).split("\n")
+
+	if action == "add":
+		if "chrome" not in options:
+			options.append("chrome")
+	elif action == "remove":
+		if "chrome" in options:
+			options.remove("chrome")
+
+	make_property_setter(
+		"Print Format",
+		"pdf_generator",
+		"options",
+		"\n".join(options),
+		"Text",
+		validate_fields_for_doctype=False,
+	)
