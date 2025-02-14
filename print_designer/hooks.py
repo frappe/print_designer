@@ -97,7 +97,7 @@ before_request = ["print_designer.pdf_generator.pdf.before_request"]
 
 after_request = ["print_designer.pdf_generator.pdf.after_request"]
 
-chrome_pdf_generator = "print_designer.pdf_generator.pdf.get_pdf"
+pdf_generator = "print_designer.pdf_generator.pdf.get_pdf"
 # Desk Notifications
 # ------------------
 # See frappe.core.notifications.get_notification_config

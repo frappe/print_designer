@@ -41,7 +41,7 @@
     {%- endif -%}
 </div>
 
-{%- if chrome_pdf_generator -%}
+{%- if pdf_generator == "chrome" -%}
     {{ render_styles(settings) }}
 {%- else -%}
     {{ render_old_styles(settings) }}

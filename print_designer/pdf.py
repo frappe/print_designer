@@ -12,7 +12,7 @@ from frappe.utils.pdf import pdf_body_html as fw_pdf_body_html
 
 def pdf_header_footer_html(soup, head, content, styles, html_id, css):
 	if soup.find(id="__print_designer"):
-		if frappe.form_dict.get("chrome_pdf_generator", False):
+		if frappe.form_dict.get("pdf_generator", "wkhtmltopdf") != "chrome":
 			path = "print_designer/page/print_designer/jinja/header_footer.html"
 		else:
 			path = "print_designer/page/print_designer/jinja/header_footer_old.html"
@@ -40,6 +40,11 @@ def pdf_header_footer_html(soup, head, content, styles, html_id, css):
 	else:
 		from frappe.utils.pdf import pdf_footer_html, pdf_header_html
 
+		# same default path is defined in fw pdf_header_html function if no path is passed it will use default path
+		path = "templates/print_formats/pdf_header_footer.html"
+		if frappe.local.form_dict.get("pdf_generator", "wkhtmltopdf") == "chrome":
+			path = "print_designer/pdf_generator/framework fromats/pdf_header_footer_chrome.html"
+
 		if html_id == "header-html":
 			return pdf_header_html(
 				soup=soup,
@@ -48,6 +53,7 @@ def pdf_header_footer_html(soup, head, content, styles, html_id, css):
 				styles=styles,
 				html_id=html_id,
 				css=css,
+				path=path,
 			)
 		elif html_id == "footer-html":
 			return pdf_footer_html(
@@ -57,6 +63,7 @@ def pdf_header_footer_html(soup, head, content, styles, html_id, css):
 				styles=styles,
 				html_id=html_id,
 				css=css,
+				path=path,
 			)
 
 
@@ -73,7 +80,7 @@ def pdf_body_html(print_format, jenv, args, template):
 				"bodyElement": json.loads(print_format.print_designer_body),
 				"footerElement": json.loads(print_format.print_designer_footer),
 				"settings": settings,
-				"chrome_pdf_generator": frappe.form_dict.get("chrome_pdf_generator", False),
+				"pdf_generator": frappe.form_dict.get("pdf_generator", "wkhtmltopdf"),
 			}
 		)
 
