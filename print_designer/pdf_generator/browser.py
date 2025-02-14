@@ -15,11 +15,10 @@ from print_designer.print_designer.page.print_designer.print_designer import (
 
 
 class Browser:
-	def __init__(self, generator, print_format, html, options, output):
+	def __init__(self, generator, print_format, html, options):
 		self.is_print_designer = frappe.get_cached_value("Print Format", print_format, "print_designer")
 		self.browserID = frappe.utils.random_string(10)
 		generator.add_browser(self.browserID)
-		self.output = output
 		# sets soup from html
 		self.set_html(html)
 		# sets wkhtmltopdf options

@@ -13,7 +13,7 @@ class PDFTransformer:
 		if not self.header_pdf and not self.footer_pdf:
 			return
 		self.no_of_pages = len(self.body_pdf.pages)
-		self.writer = None
+		self.encrypt_password = self.browser.options.get("password", None)
 		# if not header / footer then return body pdf
 
 	def _set_header_pdf(self):
@@ -28,7 +28,7 @@ class PDFTransformer:
 			self.footer_pdf = self.browser.footer_pdf
 			self.is_footer_dynamic = self.browser.is_footer_dynamic
 
-	def transform_pdf(self):
+	def transform_pdf(self, output=None):
 		header = self.header_pdf
 		body = self.body_pdf
 		footer = self.footer_pdf
@@ -36,7 +36,6 @@ class PDFTransformer:
 		if not header and not footer:
 			return body
 
-		writer = PdfWriter()
 		body_height = body.pages[0].mediabox.top
 		body_transform = header_height = footer_height = header_body_top = 0
 
@@ -86,7 +85,15 @@ class PDFTransformer:
 				else:
 					p.merge_page(footer.pages[0])
 
+		if output:
+			output.append_pages_from_reader(body)
+			return output
+
+		writer = PdfWriter()
 		writer.append_pages_from_reader(body)
+		if self.encrypt_password:
+			writer.encrypt(self.encrypt_password)
+
 		return self.get_file_data_from_writer(writer)
 
 	def _transform(self, page, page_top, ty):
