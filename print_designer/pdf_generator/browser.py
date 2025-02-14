@@ -340,9 +340,13 @@ class Browser:
 			header_with_spacing_top_margin + footer_with_bottom_margin
 		)
 
-		# matching scaling of old formats #backwards-compatibility ( scale 1 is better in my opinion)
-		if not self.is_print_designer:
-			self.body_page.options["scale"] = 1.45
+		"""
+		matching scale for some old formats is 1.46 #backwards-compatibility ( scale 1 is better in my opinion)
+		If we face issues in custom formats then only we should enable this.
+		"""
+		# if not self.is_print_designer:
+		# 	self.body_page.options["scale"] = 1.45
+
 		self.body_page.options["paperHeight"] = convert_uom(body_height, "px", "in", only_number=True)
 
 	def get_rendered_header_footer(self, content, type, head, styles, css):

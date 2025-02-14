@@ -83,7 +83,6 @@ class FrappePDFGenerator:
 			if not self._devtools_url:
 				self.start_chromium_process()
 
-	# also, called from install.py to download chromium.
 	def _find_chromium_executable(self):
 		"""Finds the Chromium executable or raises an error if not found."""
 		bench_path = frappe.utils.get_bench_path()
