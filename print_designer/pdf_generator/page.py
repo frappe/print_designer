@@ -34,6 +34,7 @@ class Page:
 		self.frame_id = None
 		self.get_frame_id_on_demand()
 		self.set_media_emulation("print")
+		self.set_cookies()
 
 	# TODO: make send to return future and don't wait for it by default.
 	def send(self, method, params=None, return_future=False):
@@ -64,6 +65,25 @@ class Page:
 	def set_media_emulation(self, media_type: str = "print"):
 		"""Set media emulation for the page."""
 		return self.send("Emulation.setEmulatedMedia", {"media": media_type})
+
+	def set_cookies(self):
+		if frappe.session and frappe.session.sid and hasattr(frappe.local, "request"):
+			domain = frappe.utils.get_host_name().split(":", 1)[0]
+			cookie = {
+				"name": "sid",
+				"value": frappe.session.sid,
+				"domain": domain,
+				"sameSite": "Strict",
+			}
+			result, error = self.send("Network.enable")
+			if error:
+				raise RuntimeError(f"Error enabling network: {error}")
+			result, error = self.send("Network.setCookie", cookie)
+			if error:
+				raise RuntimeError(f"Error setting cookie: {error}")
+			result, error = self.send("Network.disable")
+			if error:
+				raise RuntimeError(f"Error disabling network: {error}")
 
 	def intercept_request_and_fulfill(self, url_pattern):
 		"""Starts intercepting network requests for the given target_id and URL pattern."""
