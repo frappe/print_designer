@@ -9,13 +9,17 @@ from print_designer.pdf_generator.pdf_merge import PDFTransformer
 
 def before_request():
 	if frappe.request.path == "/api/method/frappe.utils.print_format.download_pdf":
-		chrome_pdf_generator = frappe.request.args.get(
-			"chrome_pdf_generator",
-			frappe.get_cached_value(
-				"Print Format", frappe.request.args.get("format"), "chrome_pdf_generator"
-			),
+		frappe.local.form_dict.chrome_pdf_generator = bool(
+			cint(
+				frappe.request.args.get(
+					"chrome_pdf_generator",
+					frappe.get_cached_value(
+						"Print Format", frappe.request.args.get("format"), "chrome_pdf_generator"
+					),
+				)
+			)
 		)
-		if bool(cint(chrome_pdf_generator)):
+		if frappe.local.form_dict.chrome_pdf_generator:
 			# Initialize the browser
 			FrappePDFGenerator()
 			return
