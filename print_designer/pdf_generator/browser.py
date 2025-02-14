@@ -14,7 +14,6 @@ from print_designer.print_designer.page.print_designer.print_designer import (
 )
 
 
-# initialize the CDPSession to communicate with the browser
 class Browser:
 	def __init__(self, generator, print_format, html, options, output):
 		self.is_print_designer = frappe.get_cached_value("Print Format", print_format, "print_designer")
@@ -62,11 +61,10 @@ class Browser:
 		generator.remove_browser(self.browserID)
 
 	def open(self, generator):
-		# start the CDP websocket connection to browser
 		# checking because if we share browser accross request _devtools_url will already be set for subsequent requests.
 		if not generator._devtools_url:
 			generator._set_devtools_url()
-
+		# start the CDP websocket connection to browser
 		self.session = CDPSocketClient(generator._devtools_url)
 
 		self.session.connect()
@@ -348,6 +346,22 @@ class Browser:
 			self.body_page.options["scale"] = 1.45
 		self.body_page.options["paperHeight"] = convert_uom(body_height, "px", "in", only_number=True)
 
+	def get_rendered_header_footer(self, content, type, head, styles, css):
+		html_id = f"{type}-html"
+		content = content.extract()
+		toggle_visible_pdf(content)
+		id_map = {"header": "pdf_header_html", "footer": "pdf_footer_html"}
+		hook_func = frappe.get_hooks(id_map.get(type))
+		return frappe.call(
+			hook_func[-1],
+			soup=self.soup,
+			head=head,
+			content=content,
+			styles=styles,
+			html_id=html_id,
+			css=css,
+		)
+
 	def update_header_footer_page(self):
 		if not self.header_page and not self.footer_page:
 			return
@@ -384,22 +398,6 @@ class Browser:
 				"clone_and_update('#footer-render-container', 0, 1, 'Footer', 0);",
 				await_promise=True,
 			)
-
-	def get_rendered_header_footer(self, content, type, head, styles, css):
-		html_id = f"{type}-html"
-		content = content.extract()
-		toggle_visible_pdf(content)
-		id_map = {"header": "pdf_header_html", "footer": "pdf_footer_html"}
-		hook_func = frappe.get_hooks(id_map.get(type))
-		return frappe.call(
-			hook_func[-1],
-			soup=self.soup,
-			head=head,
-			content=content,
-			styles=styles,
-			html_id=html_id,
-			css=css,
-		)
 
 	def _open_header_footer_pages(self):
 		self.header_page = None
