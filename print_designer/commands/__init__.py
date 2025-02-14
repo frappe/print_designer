@@ -1,11 +1,11 @@
 import click
 
 
-@click.command("setup-new-pdf-backend")
-def setup_new_backend():
+@click.command("setup-chrome", help="setup chrome (server-side) for pdf generation")
+def setup_chorme():
 	from print_designer.install import setup_chromium
 
 	setup_chromium()
 
 
-commands = [setup_new_backend]
+commands = [setup_chorme]
