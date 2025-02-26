@@ -121,6 +121,12 @@ frappe.ui.form.PrintView = class PrintView extends frappe.ui.form.PrintView {
 		let page_settings = print_designer_settings.page;
 		let canvasContainer = document.getElementById("preview-container");
 		const wrapperContainer = document.getElementsByClassName("print-designer-wrapper")[0];
+		if (!canvasContainer) {
+			$(wrapperContainer).empty();
+			canvasContainer = document.createElement("div");
+			canvasContainer.id = "preview-container";
+			wrapperContainer.appendChild(canvasContainer);
+		}
 		canvasContainer.style.minHeight = page_settings.height + "px";
 		canvasContainer.style.width = page_settings.width + "px";
 		canvasContainer.innerHTML = `${frappe.render_template("print_skeleton_loading")}`;
