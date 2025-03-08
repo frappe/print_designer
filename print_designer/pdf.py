@@ -1,6 +1,7 @@
 import hashlib
 import html
 import json
+import time
 
 import frappe
 from frappe.monitor import add_data_to_monitor
@@ -11,9 +12,13 @@ from frappe.utils.pdf import pdf_body_html as fw_pdf_body_html
 
 def pdf_header_footer_html(soup, head, content, styles, html_id, css):
 	if soup.find(id="__print_designer"):
+		if frappe.form_dict.get("pdf_generator", "wkhtmltopdf") != "chrome":
+			path = "print_designer/page/print_designer/jinja/header_footer.html"
+		else:
+			path = "print_designer/page/print_designer/jinja/header_footer_old.html"
 		try:
 			return frappe.render_template(
-				"print_designer/page/print_designer/jinja/header_footer.html",
+				path,
 				{
 					"head": head,
 					"content": content,
@@ -35,13 +40,30 @@ def pdf_header_footer_html(soup, head, content, styles, html_id, css):
 	else:
 		from frappe.utils.pdf import pdf_footer_html, pdf_header_html
 
+		# same default path is defined in fw pdf_header_html function if no path is passed it will use default path
+		path = "templates/print_formats/pdf_header_footer.html"
+		if frappe.local.form_dict.get("pdf_generator", "wkhtmltopdf") == "chrome":
+			path = "print_designer/pdf_generator/framework fromats/pdf_header_footer_chrome.html"
+
 		if html_id == "header-html":
 			return pdf_header_html(
-				soup=soup, head=head, content=content, styles=styles, html_id=html_id, css=css
+				soup=soup,
+				head=head,
+				content=content,
+				styles=styles,
+				html_id=html_id,
+				css=css,
+				path=path,
 			)
 		elif html_id == "footer-html":
 			return pdf_footer_html(
-				soup=soup, head=head, content=content, styles=styles, html_id=html_id, css=css
+				soup=soup,
+				head=head,
+				content=content,
+				styles=styles,
+				html_id=html_id,
+				css=css,
+				path=path,
 			)
 
 
@@ -49,9 +71,6 @@ def pdf_body_html(print_format, jenv, args, template):
 	if print_format and print_format.print_designer and print_format.print_designer_body:
 		print_format_name = hashlib.md5(print_format.name.encode(), usedforsecurity=False).hexdigest()
 		add_data_to_monitor(print_designer=print_format_name, print_designer_action="download_pdf")
-		# DEPRECATED: remove this in few months added for backward compatibility incase user didn't update frappe framework.
-		if not frappe.get_hooks("get_print_format_template"):
-			template = get_print_format_template(jenv, print_format)
 
 		settings = json.loads(print_format.print_designer_settings)
 
@@ -61,6 +80,7 @@ def pdf_body_html(print_format, jenv, args, template):
 				"bodyElement": json.loads(print_format.print_designer_body),
 				"footerElement": json.loads(print_format.print_designer_footer),
 				"settings": settings,
+				"pdf_generator": frappe.form_dict.get("pdf_generator", "wkhtmltopdf"),
 			}
 		)
 
@@ -118,3 +138,14 @@ def get_print_format_template(jenv, print_format):
 			return jenv.loader.get_source(
 				jenv, "print_designer/page/print_designer/jinja/print_format.html"
 			)[0]
+
+
+def measure_time(func):
+	def wrapper(*args, **kwargs):
+		start_time = time.time()
+		result = func(*args, **kwargs)
+		end_time = time.time()
+		print(f"Function {func.__name__} took {end_time - start_time:.4f} seconds")
+		return result
+
+	return wrapper

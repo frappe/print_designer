@@ -7,7 +7,6 @@
     "@interactjs/auto-start": "^1.10.17",
     "@interactjs/interact": "^1.10.17",
     "@interactjs/modifiers": "^1.10.17",
-    "html2canvas": "^1.4.1",
-    "pdfjs-dist": "v3.4.120"
+    "html2canvas": "^1.4.1"
   }
 }

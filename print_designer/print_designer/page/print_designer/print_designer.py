@@ -1,3 +1,4 @@
+import re
 from typing import Literal
 
 import frappe
@@ -145,11 +146,25 @@ def convert_css(css_obj):
 	return string_css
 
 
+def parse_float_and_unit(input_text, default_unit="px"):
+	if isinstance(input_text, (int, float)):
+		return {"value": input_text, "unit": default_unit}
+	if not isinstance(input_text, str):
+		return
+
+	number = float(re.search(r"[+-]?([0-9]*[.])?[0-9]+", input_text).group())
+	valid_units = [r"px", r"mm", r"cm", r"in"]
+	unit = [match.group() for rx in valid_units if (match := re.search(rx, input_text))]
+
+	return {"value": number, "unit": unit[0] if len(unit) == 1 else default_unit}
+
+
 @frappe.whitelist()
 def convert_uom(
 	number: float,
 	from_uom: Literal["px", "mm", "cm", "in"] = "px",
 	to_uom: Literal["px", "mm", "cm", "in"] = "px",
+	only_number: bool = False,
 ) -> float:
 	unit_values = {
 		"px": 1,
@@ -190,6 +205,8 @@ def convert_uom(
 	converstion_factor = (
 		{"from_px": from_px, "from_mm": from_mm, "from_cm": from_cm, "from_in": from_in},
 	)
+	if only_number:
+		return round(number * converstion_factor[0][f"from_{from_uom}"][0][f"to_{to_uom}"], 3)
 	return (
 		f"{round(number * converstion_factor[0][f'from_{from_uom}'][0][f'to_{to_uom}'], 3)}{to_uom}"
 	)
@@ -245,7 +262,6 @@ def get_barcode(
 			if not height:
 				self._root.removeAttribute("height")
 			else:
-				print(height)
 				self._root.setAttribute("height", height)
 
 			self._root.setAttribute("viewBox", f"0 0 {vw * 3.7795275591} {vh * 3.7795275591}")

@@ -32,8 +32,6 @@ frappe.pages["print"].on_page_load = function (wrapper) {
 frappe.ui.form.PrintView = class PrintView extends frappe.ui.form.PrintView {
 	constructor(wrapper) {
 		super(wrapper);
-		this.pdfDoc = null;
-		this.pdfDocumentTask = null;
 	}
 	make() {
 		super.make();
@@ -67,7 +65,7 @@ frappe.ui.form.PrintView = class PrintView extends frappe.ui.form.PrintView {
 				},
 			},
 			parent: this.header_prepend_container,
-			// only_input: true,
+			only_input: true,
 			render_input: true,
 		});
 		this.toolbar_language_selector = frappe.ui.form.make_control({
@@ -103,24 +101,34 @@ frappe.ui.form.PrintView = class PrintView extends frappe.ui.form.PrintView {
 			}
 		});
 	}
-	async designer_pdf(print_format) {
-		if (typeof pdfjsLib == "undefined") {
-			await frappe.require(
-				["assets/print_designer/js/pdf.min.js", "pdf.worker.bundle.js"],
-				() => {
-					pdfjsLib.GlobalWorkerOptions.workerSrc =
-						frappe.boot.assets_json["pdf.worker.bundle.js"];
-				}
-			);
+	createPdfEl(url, wrapperContainer) {
+		const mainSectionWidth =
+			document.getElementsByClassName("main-section")[0].offsetWidth + "px";
+
+		let pdfEl = document.getElementById("pd-pdf-viewer");
+		if (!pdfEl) {
+			pdfEl = document.createElement("object");
+			pdfEl.id = "pd-pdf-viewer";
+			pdfEl.type = "application/pdf";
+			wrapperContainer.appendChild(pdfEl);
 		}
-		let me = this;
+		pdfEl.style.height = "0px";
+
+		pdfEl.data = url;
+
+		pdfEl.style.width = mainSectionWidth;
+
+		return pdfEl;
+	}
+	async designer_pdf(print_format) {
 		let print_designer_settings = JSON.parse(print_format.print_designer_settings);
 		let page_settings = print_designer_settings.page;
 		let canvasContainer = document.getElementById("preview-container");
+		canvasContainer.style.display = "block";
+		const wrapperContainer = document.getElementsByClassName("print-designer-wrapper")[0];
 		canvasContainer.style.minHeight = page_settings.height + "px";
 		canvasContainer.style.width = page_settings.width + "px";
 		canvasContainer.innerHTML = `${frappe.render_template("print_skeleton_loading")}`;
-		canvasContainer.style.backgroundColor = "white";
 		let params = new URLSearchParams({
 			doctype: this.frm.doc.doctype,
 			name: this.frm.doc.name,
@@ -131,137 +139,40 @@ frappe.ui.form.PrintView = class PrintView extends frappe.ui.form.PrintView {
 			window.location.origin
 		}/api/method/frappe.utils.print_format.download_pdf?${params.toString()}`;
 
-		/**
-		 * Asynchronously downloads PDF.
-		 */
-		try {
-			this.pdfDocumentTask && this.pdfDocumentTask.destroy();
-			this.pdfDocumentTask = await pdfjsLib.getDocument(url);
-			this.pdfDoc = await this.pdfDocumentTask.promise;
-
-			// Initial/first page rendering
-			canvasContainer.innerHTML = "";
-			canvasContainer.style.backgroundColor = "transparent";
-			for (let pageno = 1; pageno <= this.pdfDoc.numPages; pageno++) {
-				await renderPage(this.pdfDoc, pageno);
-			}
-			this.pdf_download_btn.prop("disabled", false);
-			if (frappe.route_options.trigger_print) {
-				this.printit();
-			}
-			this.print_btn.prop("disabled", false);
-		} catch (err) {
-			console.error(err);
-			frappe.msgprint({
-				title: __("Unable to generate PDF"),
-				message: `There was error while generating PDF. Please check the error log for more details.`,
-				indicator: "red",
-				primary_action: {
-					label: "Open Error Log",
-					action(values) {
-						frappe.set_route("List", "Error Log", {
-							doctype: "Error Log",
-							reference_doctype: "Print Format",
-						});
-					},
+		const pdfEl = this.createPdfEl(url, wrapperContainer);
+		const onError = () => {
+			this.print_wrapper.find(".print-designer-wrapper").hide();
+			this.inner_msg.show();
+			this.full_page_btn.show();
+			this.pdf_btn.show();
+			this.letterhead_selector.show();
+			this.sidebar_dynamic_section.show();
+			this.print_btn.show();
+			this.sidebar.show();
+			this.toolbar_print_format_selector.$wrapper.hide();
+			this.toolbar_language_selector.$wrapper.hide();
+			super.preview();
+			frappe.show_alert(
+				{
+					message: __("Error Generating PDF..."),
+					indicator: "red",
 				},
-			});
-		}
-		/**
-		 * Get page info from document, resize canvas accordingly, and render page.
-		 * @param num Page number.
-		 */
-		async function renderPage(pdfDoc, num) {
-			// Using promise to fetch the page
-			let page = await pdfDoc.getPage(num);
-			let canvasContainer = document.getElementById("preview-container");
-			let canvas = document.createElement("canvas");
-			let textLayer = document.createElement("div");
-			textLayer.classList.add("textLayer");
-			textLayer.style.position = "absolute";
-			textLayer.style.left = 0;
-			textLayer.style.top = 0;
-			textLayer.style.right = 0;
-			textLayer.style.bottom = 0;
-			textLayer.style.overflow = "hidden";
-			textLayer.style.opacity = 0.2;
-			textLayer.style.lineHeight = 1.0;
-			canvas.style.marginTop = "6px";
-			canvasContainer.appendChild(canvas);
-			canvasContainer.appendChild(textLayer);
-			let ctx = canvas.getContext("2d");
-			let viewport = page.getViewport({ scale: 1 });
-			let scale = (page_settings.width / viewport.width) * window.devicePixelRatio * 1.5;
-			document.documentElement.style.setProperty(
-				"--scale-factor",
-				page_settings.width / viewport.width
+				10
 			);
-			let scaledViewport = page.getViewport({ scale: scale });
-			canvas.style.height = page_settings.height + "px";
-			canvas.style.width = page_settings.width + "px";
-			canvas.height = scaledViewport.height;
-			canvas.width = scaledViewport.width;
-
-			// Render PDF page into canvas context
-			let renderContext = {
-				canvasContext: ctx,
-				viewport: scaledViewport,
-				intent: "print",
-			};
-			await page.render(renderContext);
-			let textContent = await page.getTextContent();
-			// Assign CSS to the textLayer element
-			textLayer.style.left = canvas.offsetLeft + "px";
-			textLayer.style.top = canvas.offsetTop + "px";
-			textLayer.style.height = canvas.offsetHeight + "px";
-			textLayer.style.width = canvas.offsetWidth + "px";
-
-			// Pass the data to the method for rendering of text over the pdf canvas.
-			pdfjsLib.renderTextLayer({
-				textContentSource: textContent,
-				container: textLayer,
-				viewport: scaledViewport,
-				textDivs: [],
-			});
-		}
+		};
+		const onPdfLoad = () => {
+			canvasContainer.style.display = "none";
+			pdfEl.style.display = "block";
+			pdfEl.style.height = "calc(100vh - var(--page-head-height) - var(--navbar-height))";
+		};
+		pdfEl.addEventListener("load", onPdfLoad);
+		pdfEl.addEventListener("error", onError);
 	}
 	printit() {
 		let me = this;
 		// Enable Network Printing
 		if (parseInt(this.print_settings.enable_print_server)) {
 			super.printit();
-			return;
-		}
-		if (this.get_print_format().print_designer) {
-			if (!this.pdfDoc) return;
-			this.pdfDoc.getData().then((arrBuff) => {
-				let file = new Blob([arrBuff], { type: "application/pdf" });
-				let fileUrl = URL.createObjectURL(file);
-				let iframe;
-				let iframeAvailable = document.getElementById("blob-print-iframe");
-				if (!iframeAvailable) {
-					iframe = document.createElement("iframe");
-					iframe.id = "blob-print-iframe";
-					iframe.style.display = "none";
-					iframe.src = fileUrl;
-					document.body.appendChild(iframe);
-					iframe.onload = () => {
-						setTimeout(() => {
-							iframe.focus();
-							iframe.contentWindow.print();
-							if (frappe.route_options.trigger_print) {
-								setTimeout(function () {
-									window.close();
-								}, 5000);
-							}
-						}, 1);
-					};
-				} else {
-					iframeAvailable.src = fileUrl;
-				}
-				// in case the Blob uses a lot of memory
-				setTimeout(() => URL.revokeObjectURL(fileUrl), 7000);
-			});
 			return;
 		}
 		super.printit();
@@ -284,9 +195,7 @@ frappe.ui.form.PrintView = class PrintView extends frappe.ui.form.PrintView {
 			this.designer_pdf(print_format);
 			this.full_page_btn.hide();
 			this.pdf_btn.hide();
-			this.pdf_download_btn.prop("disabled", true);
-			this.print_btn.prop("disabled", true);
-			this.pdf_download_btn.show();
+			this.print_btn.hide();
 			this.letterhead_selector.hide();
 			this.sidebar_dynamic_section.hide();
 			this.sidebar.hide();
@@ -294,16 +203,13 @@ frappe.ui.form.PrintView = class PrintView extends frappe.ui.form.PrintView {
 			this.toolbar_language_selector.$wrapper.show();
 			return;
 		}
-		this.pdfDocumentTask && this.pdfDocumentTask.destroy();
 		this.print_wrapper.find(".print-designer-wrapper").hide();
 		this.inner_msg.show();
 		this.full_page_btn.show();
 		this.pdf_btn.show();
-		this.pdf_download_btn.hide();
+		this.print_btn.show();
 		this.letterhead_selector.show();
 		this.sidebar_dynamic_section.show();
-		this.pdf_download_btn.prop("disabled", false);
-		this.print_btn.prop("disabled", false);
 		this.sidebar.show();
 		this.toolbar_print_format_selector.$wrapper.hide();
 		this.toolbar_language_selector.$wrapper.hide();
@@ -332,11 +238,6 @@ frappe.ui.form.PrintView = class PrintView extends frappe.ui.form.PrintView {
 			icon: "refresh",
 		});
 
-		this.pdf_download_btn = this.page
-			.add_button(__("Download PDF"), () => this.download_pdf(), {
-				icon: "small-file",
-			})
-			.hide();
 		this.page.add_action_icon(
 			"file",
 			() => {

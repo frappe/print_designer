@@ -7,6 +7,8 @@ app_description = "Frappe App to Design Print Formats using interactive UI."
 app_email = "hello@frappe.io"
 app_license = "AGPLv3"
 
+develop_version = "1.x.x-develop"
+
 # Includes in <head>
 # ------------------
 
@@ -89,6 +91,13 @@ pdf_body_html = "print_designer.pdf.pdf_body_html"
 pdf_footer_html = "print_designer.pdf.pdf_header_footer_html"
 
 get_print_format_template = "print_designer.pdf.get_print_format_template"
+
+
+before_request = ["print_designer.pdf_generator.pdf.before_request"]
+
+after_request = ["print_designer.pdf_generator.pdf.after_request"]
+
+pdf_generator = "print_designer.pdf_generator.pdf.get_pdf"
 # Desk Notifications
 # ------------------
 # See frappe.core.notifications.get_notification_config
