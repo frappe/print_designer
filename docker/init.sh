@@ -37,5 +37,4 @@ bench --site print-designer.localhost set-config developer_mode 1
 bench --site print-designer.localhost clear-cache
 bench --site print-designer.localhost set-config mute_emails 1
 bench use print-designer.localhost
-
 bench start

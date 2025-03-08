@@ -102,12 +102,13 @@ frappe.ui.form.PrintView = class PrintView extends frappe.ui.form.PrintView {
 		});
 	}
 	createPdfEl(url, wrapperContainer) {
-		const mainSectionWidth = document.getElementsByClassName("main-section")[0].offsetWidth + "px";
-		const pdfEl = document.createElement('object');
+		const mainSectionWidth =
+			document.getElementsByClassName("main-section")[0].offsetWidth + "px";
+		const pdfEl = document.createElement("object");
 
-		pdfEl.id = 'pdf';
-		pdfEl.type = 'application/pdf';
-		pdfEl.style.height = '0px';
+		pdfEl.id = "pdf";
+		pdfEl.type = "application/pdf";
+		pdfEl.style.height = "0px";
 
 		pdfEl.data = url;
 
@@ -133,7 +134,7 @@ frappe.ui.form.PrintView = class PrintView extends frappe.ui.form.PrintView {
 		let url = `${
 			window.location.origin
 		}/api/method/frappe.utils.print_format.download_pdf?${params.toString()}`;
-		
+
 		const pdfEl = this.createPdfEl(url, wrapperContainer);
 		const onError = () => {
 			this.print_wrapper.find(".print-designer-wrapper").hide();
@@ -155,12 +156,10 @@ frappe.ui.form.PrintView = class PrintView extends frappe.ui.form.PrintView {
 				10
 			);
 		};
-		;
-		
 		const onPdfLoad = () => {
 			canvasContainer.remove();
 			pdfEl.style.display = "block";
-			pdfEl.style.height = 'calc(100vh - var(--page-head-height) - var(--navbar-height))';
+			pdfEl.style.height = "calc(100vh - var(--page-head-height) - var(--navbar-height))";
 		};
 		pdfEl.addEventListener("load", onPdfLoad);
 		pdfEl.addEventListener("error", onError);
