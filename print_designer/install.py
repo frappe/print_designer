@@ -8,7 +8,6 @@ from typing import Literal
 import click
 import frappe
 import requests
-from frappe.config import get_common_site_config
 from frappe.custom.doctype.custom_field.custom_field import create_custom_fields
 from frappe.custom.doctype.property_setter.property_setter import make_property_setter
 
@@ -178,7 +177,7 @@ def download_chromium():
 
 def get_chromium_download_url():
 	# Avoid this unless it is going to run on a single type of platform and you have the correct binary hosted.
-	common_config = get_common_site_config()
+	common_config = frappe.get_common_site_config()
 
 	chrome_download_url = common_config.get("chromium_download_url", None)
 
