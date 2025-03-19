@@ -922,7 +922,7 @@ export const createPropertiesPanel = () => {
 							fieldtype: "Select",
 							requiredData: [MainStore.getCurrentElementsValues[0]],
 							propertyName: "tableLayout",
-							isStyle: true,
+							isStyle: false,
 							options: () => [
 								{ label: "Auto", value: "auto" },
 								{ label: "Fixed", value: "fixed" },

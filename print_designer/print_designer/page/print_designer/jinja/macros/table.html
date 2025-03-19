@@ -3,7 +3,7 @@
     {%- if settings.get("schema_version") == "1.1.0" -%}
         {%- set heightType = "auto" if element.get("isDynamicHeight", False) else "fixed" -%}
     {%- endif -%}
-    <table style="position:{%- if heightType != 'fixed' -%}relative{% else %}absolute{%- endif -%}; {%- if heightType == 'fixed' -%}top: {%- else -%}margin-top: {%- endif -%}{{ element.startY }}px; left:{{ element.startX }}px; width:{{ element.width }}px;{%- if heightType != 'fixed' and heightType != 'auto' -%}{%- if heightType == 'auto-min-height' -%}min-{%- endif -%}height:{{ element.height }}px;{%- endif -%} max-width:{{ element.width }}px; {{convert_css(element.style)}}" class="table-container printTable {{ element.classes | join(' ') }}">
+    <table style="position:{%- if heightType != 'fixed' -%}relative{% else %}absolute{%- endif -%}; {%- if heightType == 'fixed' -%}top: {%- else -%}margin-top: {%- endif -%}{{ element.startY }}px; left:{{ element.startX }}px; width:{{ element.width }}px;{%- if heightType != 'fixed' and heightType != 'auto' -%}{%- if heightType == 'auto-min-height' -%}min-{%- endif -%}height:{{ element.height }}px;{%- endif -%} max-width:{{ element.width }}px; table-layout:{{ element.tableLayout }}" class="table-container printTable {{ element.classes | join(' ') }}">
             <thead>
             {% if element.columns %}
                 <tr>
