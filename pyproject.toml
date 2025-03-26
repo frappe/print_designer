@@ -30,3 +30,38 @@ force_grid_wrap = 0
 use_parentheses = true
 ensure_newline_before_comments = true
 indent = "\t"
+
+[deploy.dependencies.apt]
+packages = [
+    "fonts-liberation",
+    "libatk-bridge2.0-0",
+    "libatk1.0-0",
+    "libatspi2.0-0",
+    "libgbm1",
+    "libgtk-3-0",
+    "libnspr4",
+    "libnss3",
+    "xdg-utils",
+    "libvulkan1",
+    "libxcomposite1",
+    "libxdamage1",
+    "libxfixes3",
+    "libxkbcommon0",
+    "libxrandr2",
+]
+# already installed
+# "ca-certificates",
+# "libasound2",
+# "libc6",
+# "libcairo2",
+# "libcups2",
+# "libdbus-1-3",
+# "libexpat1",
+# "libglib2.0-0",
+# "libpango-1.0-0",
+# "wget",
+# "libudev1",
+# "libx11-6",
+# "libxcb1",
+# "libxext6",
+# "libcurl3-gnutls",
