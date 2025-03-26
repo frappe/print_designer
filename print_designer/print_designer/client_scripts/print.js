@@ -195,6 +195,7 @@ frappe.ui.form.PrintView = class PrintView extends frappe.ui.form.PrintView {
 			this.designer_pdf(print_format);
 			this.full_page_btn.hide();
 			this.pdf_btn.hide();
+			this.page.add_menu_item("Download PDF", () => this.render_pdf());
 			this.print_btn.hide();
 			this.letterhead_selector.hide();
 			this.sidebar_dynamic_section.hide();
