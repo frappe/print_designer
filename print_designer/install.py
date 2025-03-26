@@ -40,7 +40,8 @@ def after_install():
 	create_custom_fields(CUSTOM_FIELDS, ignore_validate=True)
 	on_print_designer_install()
 	add_pdf_generator_option()
-	# TODO: we should call setup_chromium here ?
+	# TODO: move to get-app command ( not that much harmful as it will check if it is already installed )
+	setup_chromium()
 
 
 def after_app_install(app):
