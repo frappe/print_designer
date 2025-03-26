@@ -7,8 +7,6 @@ app_description = "Frappe App to Design Print Formats using interactive UI."
 app_email = "hello@frappe.io"
 app_license = "AGPLv3"
 
-develop_version = "1.x.x-develop"
-
 # Includes in <head>
 # ------------------
 
