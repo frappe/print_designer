@@ -120,7 +120,7 @@ const getMarginContainerStyle = computed(() => {
 onMounted(() => {
 	// TODO: Refactor this as per the new store structure
 	ElementStore.$subscribe((mutation, state) => {
-		if (!(mutation?.events)) return;
+		if (!mutation?.events) return;
 		if (
 			(mutation.events.type === "set" && mutation.events.key == "Elements") ||
 			(mutation.events.type === "add" && mutation.events.newValue.parent?.type == "page")

@@ -1,4 +1,4 @@
-{% macro render_styles(settings) %}
+{% macro render_old_styles(settings) %}
 <style>
     .print-format {
         box-sizing: border-box;
@@ -7,8 +7,8 @@
         dpi: {{settings.PDFPrintDPI or 96}}mm;
         page-width: {{convert_uom(number=settings.page.width, to_uom="mm")}};
         page-height: {{convert_uom(number=settings.page.height, to_uom="mm")}};
-        margin-top:{{convert_uom(number=settings.page.marginTop, to_uom='mm')}};
-        margin-bottom:{{convert_uom(number=settings.page.marginBottom, to_uom='mm')}};
+        margin-top:{{convert_uom(number=settings.page.headerHeightWithMargin or settings.page.marginTop, to_uom='mm')}};
+        margin-bottom:{{convert_uom(number=settings.page.footerHeightWithMargin or settings.page.marginBottom, to_uom='mm')}};
         margin-left:{{convert_uom(number=settings.page.marginLeft, to_uom='mm')}};
         margin-right:{{convert_uom(number=settings.page.marginRight, to_uom='mm')}};
     }
