@@ -8,17 +8,18 @@ const replaceText = (parentEL, className, text) => {
 
 const update_page_no = (clone, i, no_of_pages, print_designer) => {
 	const dateObj = new Date();
-	replaceText(clone, "page", i);
-	replaceText(clone, "topage", no_of_pages);
-	replaceText(clone, "date", dateObj.toLocaleDateString());
-	replaceText(clone, "isodate", dateObj.toISOString());
-	replaceText(clone, "time", dateObj.toLocaleTimeString());
 	if (print_designer) {
 		replaceText(clone, "page_info_page", i);
 		replaceText(clone, "page_info_topage", no_of_pages);
 		replaceText(clone, "page_info_date", dateObj.toLocaleDateString());
 		replaceText(clone, "page_info_isodate", dateObj.toISOString());
 		replaceText(clone, "page_info_time", dateObj.toLocaleTimeString());
+	} else {
+		replaceText(clone, "page", i);
+		replaceText(clone, "topage", no_of_pages);
+		replaceText(clone, "date", dateObj.toLocaleDateString());
+		replaceText(clone, "isodate", dateObj.toISOString());
+		replaceText(clone, "time", dateObj.toLocaleTimeString());
 	}
 };
 

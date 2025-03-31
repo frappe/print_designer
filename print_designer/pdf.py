@@ -12,7 +12,7 @@ from frappe.utils.pdf import pdf_body_html as fw_pdf_body_html
 
 def pdf_header_footer_html(soup, head, content, styles, html_id, css):
 	if soup.find(id="__print_designer"):
-		if frappe.form_dict.get("pdf_generator", "wkhtmltopdf") != "chrome":
+		if frappe.form_dict.get("pdf_generator", "wkhtmltopdf") == "chrome":
 			path = "print_designer/page/print_designer/jinja/header_footer.html"
 		else:
 			path = "print_designer/page/print_designer/jinja/header_footer_old.html"
