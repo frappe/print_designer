@@ -104,7 +104,7 @@ def find_or_download_chromium_executable():
 def download_chromium():
 	bench_path = frappe.utils.get_bench_path()
 	"""Download and extract Chromium for the specific version at the bench level."""
-	chromium_dir = os.path.join(bench_path, "chromium")
+	chromium_dir = os.path.join(bench_path, "sites", "print_designer_chromium")
 
 	# Remove old Chromium directory if it exists
 	if os.path.exists(chromium_dir):
