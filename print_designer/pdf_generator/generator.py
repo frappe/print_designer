@@ -87,7 +87,7 @@ class FrappePDFGenerator:
 		"""Finds the Chromium executable or raises an error if not found."""
 		bench_path = frappe.utils.get_bench_path()
 		"""Determine the path to the Chromium executable. chromium is downloaded by download_chromium in print_designer/install.py"""
-		chromium_dir = os.path.join(bench_path, "chromium")
+		chromium_dir = os.path.join(bench_path, "sites", "print_designer_chromium")
 
 		if not os.path.exists(chromium_dir):
 			frappe.throw("Chromium is not downloaded. Please run the setup first.")
