@@ -7,6 +7,9 @@
     "@interactjs/auto-start": "^1.10.17",
     "@interactjs/interact": "^1.10.17",
     "@interactjs/modifiers": "^1.10.17",
+    "@myriaddreamin/typst-ts-web-compiler": "^0.6.0",
+    "@myriaddreamin/typst.ts": "^0.6.0",
+    "@myriaddreamin/typst.vue3": "^0.6.0",
     "html2canvas": "^1.4.1"
   }
 }

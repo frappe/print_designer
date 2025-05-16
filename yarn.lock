@@ -56,6 +56,31 @@
   resolved "https://registry.yarnpkg.com/@interactjs/utils/-/utils-1.10.17.tgz#4e50edfd0935843ad914ddf478fc060359af0760"
   integrity sha512-sZAW08CkqgvqRjUIaLRjScjObcCzN9D75yekLA21EClYAZIhi4A+GEt2z/WqOCOksTaEPLYmQyhkpXcboc0LhQ==
 
+"@myriaddreamin/typst-ts-renderer@0.6.0":
+  version "0.6.0"
+  resolved "https://registry.yarnpkg.com/@myriaddreamin/typst-ts-renderer/-/typst-ts-renderer-0.6.0.tgz#2fef4d9f2b7afa73668fb7ccec40233a02444511"
+  integrity sha512-56Mids4E5Ob6LeEeXDedvmsVnEWnLmc1qeUOeUSruL/zI3S9QXleF/c3Os1FXwJmLuCFbWTEIq8Quh2cXlnxKw==
+
+"@myriaddreamin/typst-ts-web-compiler@^0.6.0":
+  version "0.6.0"
+  resolved "https://registry.yarnpkg.com/@myriaddreamin/typst-ts-web-compiler/-/typst-ts-web-compiler-0.6.0.tgz#4f66f434eaeac48812b1e152a3792906e3ff002b"
+  integrity sha512-P/eIJ5RnfElj0NYzn5PI296t/IwWtgqUyyTMi5Jm5X3V5kZfskkH+LI7mSQe8tEyxwgCvxbxvFe5adinA3K8Gg==
+
+"@myriaddreamin/typst.ts@0.6.0", "@myriaddreamin/typst.ts@^0.6.0":
+  version "0.6.0"
+  resolved "https://registry.yarnpkg.com/@myriaddreamin/typst.ts/-/typst.ts-0.6.0.tgz#cb3d2dab8e33a203448f5fda438e33e2180b0da7"
+  integrity sha512-IUpetG0NyF2H6eXRm4j+NsbanJHIvyrffHEijqYb6q128sLWQgT1FYJS+h7dtjXmrBEfnIl1mI80DyfDR6kB/w==
+  dependencies:
+    idb "^7.1.1"
+
+"@myriaddreamin/typst.vue3@^0.6.0":
+  version "0.6.0"
+  resolved "https://registry.yarnpkg.com/@myriaddreamin/typst.vue3/-/typst.vue3-0.6.0.tgz#b8f02ee6dd4cba3f2a77f35e816ebf0b53caecbb"
+  integrity sha512-WG2bPBUNtZlpRyUFPEjGgYM3ZD4osvVEAKDIISN2nxcMpDr4Zx+yi8PrunU0+coeiES0Kzvm8oMawkKMhrU5ug==
+  dependencies:
+    "@myriaddreamin/typst-ts-renderer" "0.6.0"
+    "@myriaddreamin/typst.ts" "0.6.0"
+
 base64-arraybuffer@^1.0.2:
   version "1.0.2"
   resolved "https://registry.yarnpkg.com/base64-arraybuffer/-/base64-arraybuffer-1.0.2.tgz#1c37589a7c4b0746e34bd1feb951da2df01c1bdc"
@@ -75,6 +100,11 @@ html2canvas@^1.4.1:
   dependencies:
     css-line-break "^2.1.0"
     text-segmentation "^1.0.3"
+
+idb@^7.1.1:
+  version "7.1.1"
+  resolved "https://registry.yarnpkg.com/idb/-/idb-7.1.1.tgz#d910ded866d32c7ced9befc5bfdf36f572ced72b"
+  integrity sha512-gchesWBzyvGHRO9W8tzUWFDycow5gwjvFKfyV9FF32Y7F50yZMp7mP+T2mJIWFx49zicqyC4uefHM17o6xKIVQ==
 
 text-segmentation@^1.0.3:
   version "1.0.3"
