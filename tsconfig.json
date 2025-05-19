@@ -1,0 +1,15 @@
+{
+  "compilerOptions": {
+    "target": "ESNext",
+    "module": "ESNext",
+    "moduleResolution": "Node",
+    "strict": true,
+    "baseUrl": "./print_designer/public/js/typst",
+    "paths": {
+      "@typst/*": ["*"]
+    },
+    "outDir": "./print_designer/public/dist/js"
+  },
+  "include": ["./print_designer/public/js/typst/**/*"],
+  "exclude": ["node_modules"]
+}
