@@ -114,21 +114,30 @@ def get_data_from_main_template(string, doctype, docname=None, settings=None):
 
 @frappe.whitelist(allow_guest=False)
 def get_image_docfields():
-	docfield = frappe.qb.DocType("DocField")
-	image_docfields = (
-		frappe.qb.from_(docfield)
-		.select(
-			docfield.name,
-			docfield.parent,
-			docfield.fieldname,
-			docfield.fieldtype,
-			docfield.label,
-			docfield.options,
-		)
-		.where((docfield.fieldtype == "Image") | (docfield.fieldtype == "Attach Image"))
-		.orderby(docfield.parent)
-	).run(as_dict=True)
-	return image_docfields
+    def fetch_image_fields(table_name, parent_field_name):
+        table = frappe.qb.DocType(table_name)
+        return (
+            frappe.qb.from_(table)
+            .select(
+                table.name,
+                getattr(table, parent_field_name).as_("parent"),
+                table.fieldname,
+                table.fieldtype,
+                table.label,
+                table.options,
+            )
+            .where(table.fieldtype.isin(["Image", "Attach Image"]))
+            .orderby(getattr(table, parent_field_name))
+            .run(as_dict=True)
+        )
+
+    # Fetch standard image fields
+    standard_fields = fetch_image_fields("DocField", "parent")
+
+    # Fetch custom image fields
+    custom_fields = fetch_image_fields("Custom Field", "dt")
+
+    return standard_fields + custom_fields
 
 
 @frappe.whitelist()
