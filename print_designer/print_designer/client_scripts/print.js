@@ -102,9 +102,6 @@ frappe.ui.form.PrintView = class PrintView extends frappe.ui.form.PrintView {
 		});
 	}
 	createPdfEl(url, wrapperContainer) {
-		const mainSectionWidth =
-			document.getElementsByClassName("main-section")[0].offsetWidth + "px";
-
 		let pdfEl = document.getElementById("pd-pdf-viewer");
 		if (!pdfEl) {
 			pdfEl = document.createElement("object");
@@ -115,8 +112,7 @@ frappe.ui.form.PrintView = class PrintView extends frappe.ui.form.PrintView {
 		pdfEl.style.height = "0px";
 
 		pdfEl.data = url;
-
-		pdfEl.style.width = mainSectionWidth;
+		pdfEl.style.width = "100%";
 
 		return pdfEl;
 	}
