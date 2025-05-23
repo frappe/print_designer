@@ -6,6 +6,9 @@ graph TD
     C -->|Compile to PDF| D["PDF Blob"]
     D -->|Return Final PDF| E["Output to Client"]
 ```
+
+## Class Diagram
+
 ```mermaid
 classDiagram
 
@@ -36,6 +39,8 @@ classDiagram
     TypstEngine --> PDFOutput
     PDFOutput --> Client
 ```
+
+## Sequence Diagram
 
 ```mermaid
 sequenceDiagram
