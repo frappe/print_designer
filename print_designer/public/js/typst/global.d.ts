@@ -1,8 +1,9 @@
-export {}; // makes this a module
+import type { TypstDocumentBuilder } from "./typst_converter/TypstDocumentBuilder";
+import type { convertToTypst } from "./typst_exporter";
 
 declare global {
-  interface Window {
-    convertToTypst: any;
-    TypstDocumentBuilder: any;
-  }
+	interface Window {
+		convertToTypst: typeof convertToTypst;
+		TypstDocumentBuilder: typeof TypstDocumentBuilder;
+	}
 }

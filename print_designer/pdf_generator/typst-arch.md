@@ -1,3 +1,5 @@
+# Architecture of PDF generation using Typst.
+
 ## Overview
 ```mermaid
 graph TD
@@ -8,7 +10,6 @@ graph TD
 ```
 
 ## Class Diagram
-
 ```mermaid
 classDiagram
 
@@ -41,7 +42,6 @@ classDiagram
 ```
 
 ## Sequence Diagram
-
 ```mermaid
 sequenceDiagram
     autonumber
