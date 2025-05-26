@@ -1,8 +1,3 @@
-<<<<<<< HEAD
-// apps/print_designer/print_designer/public/js/typst/typst_converter/utils/text.ts
-
-=======
->>>>>>> 2630548 (Recovered!)
 export function cssTextAlignToTypst(value: string): string {
 	switch (value) {
 		case "left":

@@ -1,24 +1,4 @@
 import type { TextElement } from "@typst/typst_converter/types";
-<<<<<<< HEAD
-import { indent } from "@typst/typst_converter/utils/indent"; // or the correct path
-
-export function renderText(el: TextElement) {
-	const style = el.style || {};
-	const leading = style.lineHeight ? `, leading: ${style.lineHeight}` : "";
-	const dynamicLines = (el.dynamicContent || [])
-		.map((dc) => {
-			if (dc.is_static || dc.print_hide) return null;
-			const label = (dc.label || "").trim().replace(/:$/, "");
-			const field = dc.fieldname?.trim();
-			if (!field) return null;
-			const labelPrefix = label ? `${label}: ` : "";
-			return `${labelPrefix}{{ ${field} }}`;
-		})
-		.filter(Boolean)
-		.join("\\\\\n");
-	return `#align(left)[\n#text[\n${indent(dynamicLines)}\n]${leading}\n]`;
-}
-=======
 import { indent } from "@typst/typst_converter/utils/indent";
 import { toPt } from "@typst/typst_converter/utils/size";
 import { textOrTableStyleToTypst } from "@typst/typst_converter/core/style";
@@ -73,4 +53,3 @@ ${indent(typstText)}
   ]
 ]`;
 }
->>>>>>> 2630548 (Recovered!)

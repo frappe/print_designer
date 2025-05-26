@@ -38,10 +38,6 @@ export interface ElementBase {
 	style?: StyleObject;
 }
 
-<<<<<<< HEAD
-// Text element (for both static/dynamic text)
-export interface TextElement extends ElementBase {
-=======
 interface PositionedElement {
 	pageX?: number | string;
 	pageY?: number | string;
@@ -49,9 +45,9 @@ interface PositionedElement {
 	height?: number | string;
 }
 
+
 // Text element (for both static/dynamic text)
 export interface TextElement extends ElementBase, PositionedElement {
->>>>>>> 2630548 (Recovered!)
 	type: "text";
 	dynamicContent?: Array<{
 		is_static?: boolean;
@@ -62,11 +58,7 @@ export interface TextElement extends ElementBase, PositionedElement {
 }
 
 // Rectangle element (for box, container, etc.)
-<<<<<<< HEAD
 export interface RectangleElement extends ElementBase {
-=======
-export interface RectangleElement extends ElementBase, PositionedElement {
->>>>>>> 2630548 (Recovered!)
 	type: "rectangle";
 	width?: number | string;
 	height?: number | string;
@@ -74,11 +66,7 @@ export interface RectangleElement extends ElementBase, PositionedElement {
 	pageY?: number | string;
 }
 
-<<<<<<< HEAD
-// (Add more element interfaces later as needed)
-export type Element = TextElement | RectangleElement; // | TableElement | ImageElement | etc.
-=======
-export interface ImageElement extends ElementBase, PositionedElement {
+export interface ImageElement extends ElementBase {
 	type: "image";
 	image?: {
 		name?: string;
@@ -100,7 +88,6 @@ export interface ImageElement extends ElementBase, PositionedElement {
 
 // (Add more element interfaces later as needed)
 export type Element = TextElement | RectangleElement | ImageElement; // | TableElement | etc.
->>>>>>> 2630548 (Recovered!)
 
 // Page settings interface
 export interface PageSettings {
