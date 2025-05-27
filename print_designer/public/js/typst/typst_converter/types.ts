@@ -38,16 +38,8 @@ export interface ElementBase {
 	style?: StyleObject;
 }
 
-interface PositionedElement {
-	pageX?: number | string;
-	pageY?: number | string;
-	width?: number | string;
-	height?: number | string;
-}
-
-
 // Text element (for both static/dynamic text)
-export interface TextElement extends ElementBase, PositionedElement {
+export interface TextElement extends ElementBase {
 	type: "text";
 	dynamicContent?: Array<{
 		is_static?: boolean;
