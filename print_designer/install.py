@@ -50,7 +50,7 @@ def after_app_install(app):
 		install_default_formats(app)
 
 
-@filelock("print_designer_chromium_setup", timeout=60)
+@filelock("print_designer_chromium_setup", timeout=60, is_global=True)
 def setup_chromium():
 	"""Setup Chromium at the bench level."""
 	# Load Chromium version from common_site_config.json or use default
