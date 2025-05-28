@@ -7,6 +7,7 @@ from typing import Literal
 
 import click
 import frappe
+from frappe.monitor import filelock
 import requests
 from frappe.custom.doctype.custom_field.custom_field import create_custom_fields
 from frappe.custom.doctype.property_setter.property_setter import make_property_setter
@@ -49,6 +50,7 @@ def after_app_install(app):
 		install_default_formats(app)
 
 
+@filelock("print_designer_chromium_setup", timeout=1, is_global=True)
 def setup_chromium():
 	"""Setup Chromium at the bench level."""
 	# Load Chromium version from common_site_config.json or use default
