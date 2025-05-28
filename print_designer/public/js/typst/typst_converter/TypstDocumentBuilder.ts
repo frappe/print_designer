@@ -1,33 +1,52 @@
-import {
-	renderPageSettings,
-} from "@typst/typst_converter/core/page";
-import type {
-	Layout,
-	Settings,
-} from "@typst/typst_converter/types";
+import { renderPageSettings } from "@typst/typst_converter/core/page";
+import type { Settings } from "@typst/typst_converter/types";
+
+type PageMargin = {
+	top: number;
+	bottom: number;
+	left: number;
+	right: number;
+};
 
 export class TypstDocumentBuilder {
-	layout: Layout;
 	settings: Settings;
+	pageMargin: PageMargin;
+	headerHeight: number;
+	footerHeight: number;
+	pageSize: string;
 
-	constructor(layout: Layout, settings: Settings) {
-		this.layout = layout;
+	constructor(settings: Settings) {
+		if (settings.page) {
+			settings.page.margin = {
+				top: settings.page.marginTop ?? 0,
+				bottom: settings.page.marginBottom ?? 0,
+				left: settings.page.marginLeft ?? 0,
+				right: settings.page.marginRight ?? 0,
+			};
+		}
 		this.settings = settings;
+		this.pageSize = settings.currentPageSize?.toLowerCase() || "a4";
+		this.pageMargin = this.extractMargin(settings.page?.margin || {});
+		this.headerHeight = settings.page?.headerHeight || 0;
+		this.footerHeight = settings.page?.footerHeight || 0;
 	}
 
-	/** Public API: Build Typst code */
+	protected extractMargin(rawMargin: Partial<PageMargin>): PageMargin {
+		return {
+			top: rawMargin.top || 0,
+			bottom: rawMargin.bottom || 0,
+			left: rawMargin.left || 0,
+			right: rawMargin.right || 0,
+		};
+	}
+
 	build(): string {
 		const header = this.renderFileInfo();
 		const pageSetup = renderPageSettings(this.settings);
-
-		return [
-			header,
-			pageSetup,
-			"[]" // empty page content placeholder
-		].join("\n\n");
+		const body = "[]";
+		return [header, pageSetup, body].join("\n\n");
 	}
 
-	/** Internal: Renders doc header (comments) */
 	protected renderFileInfo(): string {
 		return [
 			`// Document: ${this.settings.currentDoc || ""}`,

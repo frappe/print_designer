@@ -6,36 +6,16 @@ export const STANDARD_SIZES = {
 	// Add more as needed
 };
 
-export function toMm(px: number | string): string {
-	const value = typeof px === "string" ? Number.parseFloat(px) : px;
-	return `${((value * 25.4) / 96).toFixed(2)}mm`;
+
+export function toMm(value: number | string): string {
+  const px = typeof value === "string" ? parseFloat(value) : value;
+  const mm = (px * 25.4) / 96;
+  return `${mm.toFixed(2)}mm`;
 }
 
-export function toPt(px: number | string): string {
-	let value: number;
-	if (typeof px === "string") {
-		value = px.endsWith("px") ? Number.parseFloat(px) : Number.parseFloat(px);
-	} else {
-		value = px;
-	}
-	return `${(value / 1.333).toFixed(2)}pt`;
-}
 
-// If you want parseCssSize here as well:
-export function parseCssSize(
-	value: number | string | undefined,
-	defaultUnit = "mm",
-): string {
-	if (value === undefined || value === "0" || value === "0px")
-		return `0${defaultUnit}`;
-	if (typeof value === "number") return value + defaultUnit;
-	if (
-		typeof value === "string" &&
-		(value.endsWith("mm") || value.endsWith("in") || value.endsWith("pt"))
-	)
-		return value;
-	if (typeof value === "string" && value.endsWith("px")) {
-		return toMm(Number.parseFloat(value));
-	}
-	return toMm(Number.parseFloat(value));
+export function toPt(value: number | string): string {
+  const px = typeof value === "string" ? parseFloat(value) : value;
+  const pt = (px * 72) / 96;
+  return `${pt.toFixed(2)}pt`;
 }

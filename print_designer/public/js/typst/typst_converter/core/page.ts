@@ -1,57 +1,37 @@
-import { renderElement } from "@typst/typst_converter/core/elements/element";
-import type { Page } from "@typst/typst_converter/types";
+import { toMm } from "@typst/typst_converter/utils/size";
 import type { Settings } from "@typst/typst_converter/types";
-import { cssColorWithOpacityToTypstHex } from "@typst/typst_converter/utils/color";
-import { STANDARD_SIZES, toMm, toPt } from "@typst/typst_converter/utils/size";
 
-type StandardSizeKey = keyof typeof STANDARD_SIZES;
-
-export function renderPage(page: Page) {
-	return page.childrens.map(renderElement).join("\n\n");
-}
-
-function isStandardSizeKey(key: string): key is StandardSizeKey {
-	return Object.keys(STANDARD_SIZES).includes(key);
-}
-
-export function renderPageSettings(settings: Settings) {
-	const page = settings.page || {};
-	const keyCandidate = page.key || settings.currentPageSize || "A4";
+export function renderPageSettings(settings: Settings): string {
+	const page = settings.page;
+	if (!page) return "Page Empty";
 
 	const lines: string[] = [];
-	if (isStandardSizeKey(keyCandidate)) {
-		lines.push(`paper: "${keyCandidate.toLowerCase()}",`);
-	} else {
-		lines.push(
-			`width: ${toMm(page.width || 210)},`,
-			`height: ${toMm(page.height || 297)},`,
-		);
-	}
 
-	const orientation = page.orientation || "portrait";
+	// 1. Paper size by key only (e.g. "a4", "letter")
+	lines.push(`paper: "${settings.currentPageSize?.toLowerCase() || "a4"}",`);
+
+	// 2. Orientation
+	const orientation = page.orientation ?? "portrait";
 	lines.push(`flipped: ${orientation === "landscape" ? "true" : "false"},`);
 
+	// 3. Margins
 	lines.push(
 		`margin: (
-      top: ${toMm(page.marginTop || 0)},
-      bottom: ${toMm(page.marginBottom || 0)},
-      left: ${toMm(page.marginLeft || 0)},
-      right: ${toMm(page.marginRight || 0)}
-    ),`,
+		top: ${toMm(page?.margin?.top ?? 0)},
+		bottom: ${toMm(page?.marginBottom ?? 0)},
+		left: ${toMm(page?.marginLeft ?? 0)},
+		right: ${toMm(page?.marginRight ?? 0)}
+	),`
 	);
-	if (page.backgroundImage) {
-		lines.push(
-			`background: image("${page.backgroundImage}", width: ${toMm(page.width ?? 210)}, height: ${toMm(page.height ?? 297)}, fit: cover),`,
-		);
-	}
-	if (page.backgroundColor) {
-		lines.push(
-			`fill: rgb("${cssColorWithOpacityToTypstHex(page.backgroundColor, page.opacity)}"),`,
-		);
+
+	// 4. Header and footer boxes
+	if (page.headerHeight) {
+		lines.push(`header: [\n  #box(height: ${toMm(page.headerHeight)})[Header Placeholder]\n],`);
 	}
 
-	if (page.header) lines.push(`header: ${page.header},`);
-	if (page.footer) lines.push(`footer: ${page.footer},`);
+	if (page.footerHeight) {
+		lines.push(`footer: [\n  #box(height: ${toMm(page.footerHeight)})[Footer Placeholder]\n],`);
+	}
 
 	return `#set page(
   ${lines.filter(Boolean).join("\n  ")}
