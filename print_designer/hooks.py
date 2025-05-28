@@ -139,23 +139,23 @@ pd_standard_format_folder = "default_templates"
 # Scheduled Tasks
 # ---------------
 
-# scheduler_events = {
-# 	"all": [
-# 		"print_designer.tasks.all"
-# 	],
-# 	"daily": [
-# 		"print_designer.tasks.daily"
-# 	],
+scheduler_events = {
+	"all": [
+		"print_designer.install.setup_chromium",
+	],
+	# "daily": [
+	# 	"print_designer.tasks.daily"
+	# ],
 # 	"hourly": [
 # 		"print_designer.tasks.hourly"
 # 	],
-# 	"weekly": [
-# 		"print_designer.tasks.weekly"
-# 	],
-# 	"monthly": [
-# 		"print_designer.tasks.monthly"
-# 	],
-# }
+	# "weekly": [
+	# 	"print_designer.tasks.weekly"
+	# ],
+	# "monthly": [
+	# 	"print_designer.tasks.monthly"
+	# ],
+}
 
 # Testing
 # -------
