@@ -1,5 +1,6 @@
 import { renderPageSettings } from "@typst/typst_converter/core/page";
 import type { Settings } from "@typst/typst_converter/types";
+import { renderGlobalStyles } from "@typst/typst_converter/core/global_styles";
 
 type PageMargin = {
 	top: number;
@@ -23,6 +24,7 @@ export class TypstDocumentBuilder {
 				left: settings.page.marginLeft ?? 0,
 				right: settings.page.marginRight ?? 0,
 			};
+			settings.page.backgroundImage = "";
 		}
 		this.settings = settings;
 		this.pageSize = settings.currentPageSize?.toLowerCase() || "a4";
@@ -41,10 +43,11 @@ export class TypstDocumentBuilder {
 	}
 
 	build(): string {
-		const header = this.renderFileInfo();
+		const fileInfo = this.renderFileInfo();
 		const pageSetup = renderPageSettings(this.settings);
+		const globalStyles = renderGlobalStyles(this.settings || {});
 		const body = "[]";
-		return [header, pageSetup, body].join("\n\n");
+		return [fileInfo, pageSetup, globalStyles, body].join("\n\n");
 	}
 
 	protected renderFileInfo(): string {

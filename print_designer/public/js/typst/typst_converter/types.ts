@@ -21,6 +21,20 @@ export interface PageSettings {
   opacity?: number;
 }
 
+export interface GlobalStyleBlock {
+  style: Record<string, unknown>;
+  [key: string]: unknown;
+}
+
+export interface GlobalStyles {
+  staticText?: GlobalStyleBlock;
+  dynamicText?: GlobalStyleBlock;
+  rectangle?: GlobalStyleBlock;
+  image?: GlobalStyleBlock;
+  barcode?: GlobalStyleBlock;
+  table?: GlobalStyleBlock;
+}
+
 export interface Settings {
   page?: PageSettings;
   currentPageSize?: string;
@@ -28,4 +42,5 @@ export interface Settings {
   footer?: unknown[];
   currentDoc?: string;
   schema_version?: string;
+  globalStyles?: GlobalStyles;
 }
