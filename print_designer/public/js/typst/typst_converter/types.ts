@@ -44,3 +44,9 @@ export interface Settings {
   schema_version?: string;
   globalStyles?: GlobalStyles;
 }
+export interface PaddingValues {
+  paddingTop?: string;
+  paddingRight?: string;
+  paddingBottom?: string;
+  paddingLeft?: string;
+}

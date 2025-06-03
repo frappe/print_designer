@@ -14,8 +14,18 @@ export function toMm(value: number | string): string {
 }
 
 
-export function toPt(value: number | string): string {
-  const px = typeof value === "string" ? parseFloat(value) : value;
-  const pt = (px * 72) / 96;
-  return `${pt.toFixed(2)}pt`;
+export function toPt(value?: string | number): string {
+	if (typeof value === "number") return `${value.toFixed(2)}pt`;
+
+	if (typeof value === "string") {
+		let parsed = parseFloat(value);
+		if (!isNaN(parsed)) {
+			if (value.endsWith("px")) {
+				parsed *= 0.75;
+			}
+			return `${parsed.toFixed(2)}pt`;
+		}
+	}
+
+	return "0pt";
 }

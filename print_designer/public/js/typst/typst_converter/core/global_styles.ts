@@ -5,8 +5,17 @@ import {
 	translateFontWeight,
 	sanitizeFontFamily,
 } from "@typst/typst_converter/utils/text";
-import { extractStroke, extractOpacity } from "@typst/typst_converter/utils/block";
+import {
+	extractOpacity,
+	extractStroke,
+	formatPadding,
+	formatInset,
+	extractPaddingFromStyle,
+} from "@typst/typst_converter/utils/block";
 import { toTypstHex } from "@typst/typst_converter/utils/color";
+import type { PaddingValues } from "@typst/typst_converter/types";
+
+
 
 export function renderGlobalStyles(settings: Settings): string {
 	const blocks: string[] = [];
@@ -19,7 +28,7 @@ export function renderGlobalStyles(settings: Settings): string {
 		dynamicText: globalStyles.dynamicText,
 		image: globalStyles.image,
 		barcode: globalStyles.barcode,
-		// table: globalStyles.table,
+		table: globalStyles.table,
 	};
 
 	for (const [key, styleBlock] of Object.entries(definitions)) {
@@ -41,6 +50,8 @@ function renderGlobalStyleDefinition(
 	let rendered = "";
 	if (name === "image") {
 		rendered = renderImageBlock(style, body);
+	} else if (name === "table") {
+		rendered = renderTableBlock(style, body);
 	} else if (name === "barcode") {
 		rendered = renderBarcodeBlock(style, body);
 	} else {
@@ -48,7 +59,9 @@ function renderGlobalStyleDefinition(
 	}
 
 	if (!rendered.trim()) return "";
-	return `#let ${name}(body) = {\n${rendered}\n}`;
+
+	const globalName = name === "table" ? "tableGlobal" : name;
+	return `#let ${globalName}(body) = {\n${rendered}\n}`;
 }
 
 function renderTextBlock(
@@ -78,6 +91,9 @@ function renderTextBlock(
 
 	const stroke = extractStroke(style);
 	if (stroke) blockAttrs.push(stroke);
+
+	const inset = formatInset(extractPaddingFromStyle(style));
+	if (inset) blockAttrs.push(inset);
 
 	/**
 	 * Text attributes rendering
@@ -239,4 +255,45 @@ function renderBarcodeBlock(
 	barcodeLines.push("  )");
 
 	return barcodeLines.join("\n");
+}
+
+// global_style.ts
+
+
+export function renderTableBlock(
+	style: Record<string, unknown>,
+	body: string
+): string {
+	const tableAttrs: string[] = [];
+
+	const opacity = extractOpacity(style);
+	const fill = toTypstHex("block", style.backgroundColor as string, opacity ?? undefined);
+	if (fill) tableAttrs.push(`fill: ${fill}`);
+
+	const stroke = extractStroke(style);
+	if (stroke) tableAttrs.push(stroke);
+
+	const padding = formatPadding(extractPaddingFromStyle(style));
+	if (padding) tableAttrs.push(padding);
+
+	// Typst default align is left, we still emit it for consistency
+	const align = "left";
+
+	if (!tableAttrs.length && align === "left") {
+		return "";
+	}
+
+	const tableLines: string[] = [];
+
+	tableLines.push(`  set align(${align})`);
+	tableLines.push("  block(");
+
+	if (tableAttrs.length) {
+		tableLines.push(`    ${tableAttrs.join(",\n    ")},`);
+	}
+
+	tableLines.push(`    ${body}`);
+	tableLines.push("  )");
+
+	return tableLines.join("\n");
 }
