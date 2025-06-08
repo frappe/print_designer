@@ -60,7 +60,7 @@ export function extractParAttributes(style: Record<string, unknown>): string[] {
 export function sanitizeFontFamily(input: string): string | undefined {
 	const fontList = input
 		.split(",")
-		.map(f => f.trim().replace(/^["']|["']$/g, "")) // Remove quotes
+		.map(f => f.trim().replace(/^["']|["']$/g, "")) // Remove surrounding quotes
 		.filter(name =>
 			name &&
 			!["sans-serif", "serif", "monospace"].includes(name.toLowerCase())
@@ -72,8 +72,18 @@ export function sanitizeFontFamily(input: string): string | undefined {
 	const uniqueFonts = [...new Set(fontList)];
 
 	if (uniqueFonts.length) {
-		return uniqueFonts.join(", ");
+		const fontTuple = uniqueFonts.map(name => `"${name}"`).join(", ");
+		return `(${fontTuple})`;
 	}
 
 	return;
+}
+
+// typst_converter/utils/text.ts
+export function escapeText(text: string): string {
+  return text
+    .replace(/\\/g, "\\\\")
+    .replace(/\[/g, "\\[")
+    .replace(/\]/g, "\\]")
+    .replace(/"/g, '\\"');
 }

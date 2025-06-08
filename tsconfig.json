@@ -8,7 +8,8 @@
     "paths": {
       "@typst/*": ["*"]
     },
-    "outDir": "./print_designer/public/dist/js"
+    "outDir": "./print_designer/public/dist/js",
+    "types": ["node", "vitest"]
   },
   "include": ["./print_designer/public/js/typst/**/*"],
   "exclude": ["node_modules"]

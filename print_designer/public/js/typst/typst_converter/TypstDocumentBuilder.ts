@@ -1,6 +1,7 @@
 import { renderPageSettings } from "@typst/typst_converter/core/page";
-import type { Settings } from "@typst/typst_converter/types";
+import type { Settings, BodyNode } from "@typst/typst_converter/types";
 import { renderGlobalStyles } from "@typst/typst_converter/core/global_styles";
+import { renderBodyToTypst, flattenPrintDesignerToBodyNodes } from "@typst/typst_converter/renderers/body";
 
 type PageMargin = {
 	top: number;
@@ -11,12 +12,13 @@ type PageMargin = {
 
 export class TypstDocumentBuilder {
 	settings: Settings;
+	rawBody: any[];
 	pageMargin: PageMargin;
 	headerHeight: number;
 	footerHeight: number;
 	pageSize: string;
 
-	constructor(settings: Settings) {
+	constructor(settings: Settings, body: any[]) {
 		if (settings.page) {
 			settings.page.margin = {
 				top: settings.page.marginTop ?? 0,
@@ -27,6 +29,7 @@ export class TypstDocumentBuilder {
 			settings.page.backgroundImage = "";
 		}
 		this.settings = settings;
+		this.rawBody = Array.isArray(body) ? body : [];
 		this.pageSize = settings.currentPageSize?.toLowerCase() || "a4";
 		this.pageMargin = this.extractMargin(settings.page?.margin || {});
 		this.headerHeight = settings.page?.headerHeight || 0;
@@ -43,12 +46,13 @@ export class TypstDocumentBuilder {
 	}
 
 	build(): string {
-		const fileInfo = this.renderFileInfo();
-		const pageSetup = renderPageSettings(this.settings);
-		const globalStyles = renderGlobalStyles(this.settings || {});
-		const body = "[]";
-		return [fileInfo, pageSetup, globalStyles, body].join("\n\n");
-	}
+	const fileInfo = this.renderFileInfo();
+	const pageSetup = renderPageSettings(this.settings);
+	const globalStyles = renderGlobalStyles(this.settings || {});
+	const bodyNodes: BodyNode[] = flattenPrintDesignerToBodyNodes(this.rawBody);
+	const bodyTypst = renderBodyToTypst(bodyNodes, this.settings);
+	return [fileInfo, pageSetup, globalStyles, bodyTypst].join("\n\n");
+}
 
 	protected renderFileInfo(): string {
 		return [

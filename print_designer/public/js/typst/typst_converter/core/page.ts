@@ -1,5 +1,7 @@
 import { toMm } from "@typst/typst_converter/utils/size";
 import type { Settings } from "@typst/typst_converter/types";
+import type { PageMargin } from "@typst/typst_converter/types";
+
 
 export function renderPageSettings(settings: Settings): string {
 	const page = settings.page;
@@ -15,14 +17,7 @@ export function renderPageSettings(settings: Settings): string {
 	lines.push(`flipped: ${orientation === "landscape" ? "true" : "false"},`);
 
 	// 3. Margins
-	lines.push(
-		`margin: (
-		top: ${toMm(page?.margin?.top ?? 0)},
-		bottom: ${toMm(page?.marginBottom ?? 0)},
-		left: ${toMm(page?.marginLeft ?? 0)},
-		right: ${toMm(page?.marginRight ?? 0)}
-	),`
-	);
+	lines.push(formatMargin(page.margin));
 
 	// 4. Header and footer boxes
 	if (page.headerHeight) {
@@ -36,4 +31,24 @@ export function renderPageSettings(settings: Settings): string {
 	return `#set page(
   ${lines.filter(Boolean).join("\n  ")}
 )`;
+}
+
+export function formatMargin(margin?: PageMargin): string {
+	if (!margin) return "margin: (top: 0mm, right: 0mm, bottom: 0mm, left: 0mm)";
+
+	const top = toMm(margin.top || 0);
+	const right = toMm(margin.right || 0);
+	const bottom = toMm(margin.bottom || 0);
+	const left = toMm(margin.left || 0);
+
+	if (top === right && right === bottom && bottom === left) {
+		return `margin: ${top},`;
+	}
+
+	return `margin: (
+    top: ${top},
+    bottom: ${bottom},
+    left: ${left},
+    right: ${right}
+  ),`;
 }

@@ -100,7 +100,7 @@ function renderTextBlock(
 	 */
 	const font = sanitizeFontFamily(style.fontFamily as string);
 	if (font) {
-		textAttrs.push(`font: "${font}"`);
+		textAttrs.push(`font: ${font}`);
 	}
 
 	if (typeof style.fontSize === "string" && style.fontSize.endsWith("px")) {
@@ -257,7 +257,6 @@ function renderBarcodeBlock(
 	return barcodeLines.join("\n");
 }
 
-// global_style.ts
 
 
 export function renderTableBlock(

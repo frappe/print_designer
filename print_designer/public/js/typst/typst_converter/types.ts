@@ -50,3 +50,19 @@ export interface PaddingValues {
   paddingBottom?: string;
   paddingLeft?: string;
 }
+
+export interface BodyNodePosition {
+  x: string;
+  y: string;
+  width: string;
+  height: string;
+}
+
+export type BodyNode = {
+  type: string;
+  label?: string;
+  value?: string | null;
+  styleName?: string;
+  fieldname?: string;
+  position?: BodyNodePosition;
+};
