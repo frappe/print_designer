@@ -5,7 +5,7 @@ import subprocess
 
 def generate_typst_pdf(
 	print_format: str,
-	html: Optional[str] = None,
+	typst_code: Optional[str] = None,
 	options: Optional[dict] = None,
 	output: Optional[str] = None,
 ) -> bytes:

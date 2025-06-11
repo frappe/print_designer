@@ -12,5 +12,8 @@
     "types": ["node", "vitest"]
   },
   "include": ["./print_designer/public/js/typst/**/*"],
-  "exclude": ["node_modules"]
+  "exclude": ["node_modules"],
+  "build": {
+    "target": "esnext",
+  }
 }
