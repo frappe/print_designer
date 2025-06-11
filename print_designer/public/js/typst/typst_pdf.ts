@@ -56,8 +56,6 @@ function hijackPrintButton(retries = 20) {
 				});
 
 				if (matchingFormats.length === 0) {
-					// fallback
-					console.log("❎ No Typst-compatible print format found. Falling back.");
 					window.cur_frm.print_doc();
 					return;
 				}
