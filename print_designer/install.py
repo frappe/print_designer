@@ -12,7 +12,10 @@ from frappe.custom.doctype.custom_field.custom_field import create_custom_fields
 from frappe.custom.doctype.property_setter.property_setter import make_property_setter
 
 from print_designer.custom_fields import CUSTOM_FIELDS
-from print_designer.default_formats import install_default_formats, on_print_designer_install
+from print_designer.default_formats import (
+	install_default_formats,
+	on_print_designer_install,
+)
 from print_designer.pdf_generator.generator import FrappePDFGenerator
 
 
@@ -121,7 +124,9 @@ def download_chromium():
 		click.echo(f"Downloading Chromium from {download_url}...")
 		# playwright's requires a user agent
 		headers = {"User-Agent": "Wget/1.21.1"}
-		with requests.get(download_url, stream=True, timeout=(10, 60), headers=headers) as r:
+		with requests.get(
+			download_url, stream=True, timeout=(10, 60), headers=headers
+		) as r:
 			r.raise_for_status()  # Raise an error for bad status codes
 			total_size = int(r.headers.get("content-length", 0))  # Get total file size
 			bar = click.progressbar(length=total_size, label="Downloading Chromium")
@@ -150,13 +155,19 @@ def download_chromium():
 				click.echo(f"Renaming {extracted_dir} to {renamed_dir}")
 				os.rename(extracted_dir, renamed_dir)
 			else:
-				raise RuntimeError(f"Failed to rename extracted directory. Expected {chrome_folder_name}.")
+				raise RuntimeError(
+					f"Failed to rename extracted directory. Expected {chrome_folder_name}."
+				)
 			if os.path.exists(renamed_dir):
 				executable_shell = os.path.join(renamed_dir, "chrome-headless-shell")
 				if os.path.exists(executable_shell):
-					os.rename(executable_shell, os.path.join(renamed_dir, "headless_shell"))
+					os.rename(
+						executable_shell, os.path.join(renamed_dir, "headless_shell")
+					)
 				else:
-					raise RuntimeError("Failed to rename executable. Expected chrome-headless-shell.")
+					raise RuntimeError(
+						"Failed to rename executable. Expected chrome-headless-shell."
+					)
 			# Make the `headless_shell` executable
 			exec_path = os.path.join(renamed_dir, executable_path[1])
 			make_chromium_executable(exec_path)
@@ -224,7 +235,9 @@ def get_chromium_download_url():
 	playwright_build_version = "1157"
 
 	base_url = "https://storage.googleapis.com/chrome-for-testing-public/"
-	playwright_base_url = "https://cdn.playwright.dev/dbazure/download/playwright/builds/chromium/"
+	playwright_base_url = (
+		"https://cdn.playwright.dev/dbazure/download/playwright/builds/chromium/"
+	)
 
 	# Overwrite with values from common_site_config.json ( escape hatch )
 	version = common_config.get("chromium_version", version)
@@ -315,18 +328,27 @@ def calculate_platform():
 
 
 def add_pdf_generator_option():
-	set_pdf_generator_option("add")
+	set_pdf_generator_option("add", ["chrome", "typst"])
 
 
-def set_pdf_generator_option(action: Literal["add", "remove"]):
-	options = (frappe.get_meta("Print Format").get_field("pdf_generator").options).split("\n")
+def set_pdf_generator_option(
+	action: Literal["add", "remove"], generators: list[str] = ["chrome"]
+):
+	options = (
+		frappe.get_meta("Print Format").get_field("pdf_generator").options
+	).split("\n")
 
-	if action == "add":
-		if "chrome" not in options:
-			options.append("chrome")
-	elif action == "remove":
-		if "chrome" in options:
-			options.remove("chrome")
+	for generator in generators:
+		if action == "add" and generator not in options:
+			options.append(generator)
+		elif action == "remove" and generator in options:
+			options.remove(generator)
+	# if action == "add":
+	# 	if "chrome" not in options:
+	# 		options.append("chrome")
+	# elif action == "remove":
+	# 	if "chrome" in options:
+	# 		options.remove("chrome")
 
 	make_property_setter(
 		"Print Format",

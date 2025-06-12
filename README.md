@@ -4,6 +4,7 @@
     <img src="https://github.com/frappe/print_designer/blob/develop/print_designer/public/images/print-designer-logo.svg" height="80" alt="Print Designer Logo">
 </a>
 
+#### A fork to include Typst engine using WASM for a DTP experience in printed documents.
 
 <h1>Print Designer</h1>
 

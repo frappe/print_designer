@@ -13,8 +13,10 @@ develop_version = "1.x.x-develop"
 # ------------------
 
 # include js, css files in header of desk.html
-# app_include_js = ""
-
+##
+# Added by agatho-daemon for Typst integration
+##
+app_include_js = ["typst_main.bundle.ts"]
 
 # include js, css files in header of web template
 # web_include_css = "/assets/print_designer/css/print_designer.css"
