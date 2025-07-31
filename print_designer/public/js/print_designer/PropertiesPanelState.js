@@ -1477,4 +1477,42 @@ export const createPropertiesPanel = () => {
 			],
 		],
 	});
+	MainStore.propertiesPanel.push({
+		title: "Image Settings",
+		sectionCondtional: () =>
+			(!MainStore.getCurrentElementsId.length && MainStore.activeControl === "image") ||
+			(MainStore.getCurrentElementsId.length === 1 &&
+				MainStore.getCurrentElementsValues[0].type === "image"),
+		fields: [
+			{
+				label: "Image Fit",
+				name: "imageFit",
+				isLabelled: true,
+				condtional: null,
+				frappeControl: (ref, name) => {
+					const MainStore = useMainStore();
+					makeFeild({
+						name: name,
+						ref: ref,
+						fieldtype: "Select",
+						requiredData: [
+							MainStore.getCurrentElementsValues[0] ||
+								MainStore.globalStyles["image"],
+						],
+						options: () => [
+							{ label: "Contain (fit within bounds)", value: "contain" },
+							{ label: "Cover (fill entire area)", value: "cover" },
+						],
+						reactiveObject: () => {
+							return (
+								MainStore.getCurrentElementsValues[0] ||
+								MainStore.globalStyles["image"]
+							);
+						},
+						propertyName: "imageFit",
+					});
+				},
+			},
+		],
+	});
 };

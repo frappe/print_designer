@@ -4,26 +4,26 @@
 
 "@interactjs/actions@^1.10.17":
   version "1.10.17"
-  resolved "https://registry.yarnpkg.com/@interactjs/actions/-/actions-1.10.17.tgz#e09ebe0b38296728587d2d20a8161f82a5b5cd43"
+  resolved "https://registry.npmjs.org/@interactjs/actions/-/actions-1.10.17.tgz"
   integrity sha512-wyB1ZqpaZy5gmz6VDqK9KWh98xKnFgL7VyLvxHODFi9V0IYX4HJAAOBlhtfze0D1R1f1cY+gqPDK+dLaHMlE+w==
   optionalDependencies:
     "@interactjs/interact" "1.10.17"
 
 "@interactjs/auto-start@^1.10.17":
   version "1.10.17"
-  resolved "https://registry.yarnpkg.com/@interactjs/auto-start/-/auto-start-1.10.17.tgz#9cc15ebb271159c09193a235b0323701f47f45d8"
+  resolved "https://registry.npmjs.org/@interactjs/auto-start/-/auto-start-1.10.17.tgz"
   integrity sha512-qYVxhAbYnwxjD/NLEegUoAST7WASJ4VmWNjsyWRx/js5Op+I4E2zteARIeZGgrutcGIXMCcQzhCMgE3PjOpbpw==
   optionalDependencies:
     "@interactjs/interact" "1.10.17"
 
 "@interactjs/core@1.10.17":
   version "1.10.17"
-  resolved "https://registry.yarnpkg.com/@interactjs/core/-/core-1.10.17.tgz#f222f8409ca883ccb406cc5fea929f22c81a5d08"
+  resolved "https://registry.npmjs.org/@interactjs/core/-/core-1.10.17.tgz"
   integrity sha512-rL9w+83HDRuXub8Ezqs+97CYLl/ne7bLT/sAeduUWaxYhsW9iOqBoob9JnkkCZOaOsYizWI1EWy0+fNc5ibtLQ==
 
-"@interactjs/interact@1.10.17", "@interactjs/interact@^1.10.17":
+"@interactjs/interact@^1.10.17", "@interactjs/interact@1.10.17":
   version "1.10.17"
-  resolved "https://registry.yarnpkg.com/@interactjs/interact/-/interact-1.10.17.tgz#6b7f5048737e9bc273517edd562baa4f0544d192"
+  resolved "https://registry.npmjs.org/@interactjs/interact/-/interact-1.10.17.tgz"
   integrity sha512-NyKsf8EFudvdahBjPz1Gt5QnynVwa/2LUfBc2/w8QOnOBiyzUm0HLloJSaB8a50QbQkSWN243/Lgpd8GTMQvuQ==
   dependencies:
     "@interactjs/core" "1.10.17"
@@ -32,7 +32,7 @@
 
 "@interactjs/modifiers@^1.10.17":
   version "1.10.17"
-  resolved "https://registry.yarnpkg.com/@interactjs/modifiers/-/modifiers-1.10.17.tgz#709cef244bf6675f74605ac67921495989c920c2"
+  resolved "https://registry.npmjs.org/@interactjs/modifiers/-/modifiers-1.10.17.tgz"
   integrity sha512-Dxw8kv9VBIxnhNvQncR6CKAGMzKXczLvuAUIdSPFYtyerX/XiDulJUqhR+jVKNp/WjF1DvdBxWo0kGGLbM84LQ==
   dependencies:
     "@interactjs/snappers" "1.10.17"
@@ -41,36 +41,36 @@
 
 "@interactjs/snappers@1.10.17":
   version "1.10.17"
-  resolved "https://registry.yarnpkg.com/@interactjs/snappers/-/snappers-1.10.17.tgz#98678d05782bf9614572e7a39b85e88116933645"
+  resolved "https://registry.npmjs.org/@interactjs/snappers/-/snappers-1.10.17.tgz"
   integrity sha512-m753DGsNOts797e3zDT6wqELoc+BlpIC1w+TyMyISRxU6n1RlS8Q6LHBGgwAgV79LHLaahv/a5haFF9H1VG0FQ==
   optionalDependencies:
     "@interactjs/interact" "1.10.17"
 
 "@interactjs/types@1.10.17":
   version "1.10.17"
-  resolved "https://registry.yarnpkg.com/@interactjs/types/-/types-1.10.17.tgz#1649de06d9ead790c81ecece76736b852bdfc77e"
+  resolved "https://registry.npmjs.org/@interactjs/types/-/types-1.10.17.tgz"
   integrity sha512-X2JpoM7xUw0p9Me0tMaI0HNfcF/Hd07ZZlzpnpEMpGerUZOLoyeThrV9P+CrBHxZrluWJrigJbcdqXliFd0YMA==
 
 "@interactjs/utils@1.10.17":
   version "1.10.17"
-  resolved "https://registry.yarnpkg.com/@interactjs/utils/-/utils-1.10.17.tgz#4e50edfd0935843ad914ddf478fc060359af0760"
+  resolved "https://registry.npmjs.org/@interactjs/utils/-/utils-1.10.17.tgz"
   integrity sha512-sZAW08CkqgvqRjUIaLRjScjObcCzN9D75yekLA21EClYAZIhi4A+GEt2z/WqOCOksTaEPLYmQyhkpXcboc0LhQ==
 
 base64-arraybuffer@^1.0.2:
   version "1.0.2"
-  resolved "https://registry.yarnpkg.com/base64-arraybuffer/-/base64-arraybuffer-1.0.2.tgz#1c37589a7c4b0746e34bd1feb951da2df01c1bdc"
+  resolved "https://registry.npmjs.org/base64-arraybuffer/-/base64-arraybuffer-1.0.2.tgz"
   integrity sha512-I3yl4r9QB5ZRY3XuJVEPfc2XhZO6YweFPI+UovAzn+8/hb3oJ6lnysaFcjVpkCPfVWFUDvoZ8kmVDP7WyRtYtQ==
 
 css-line-break@^2.1.0:
   version "2.1.0"
-  resolved "https://registry.yarnpkg.com/css-line-break/-/css-line-break-2.1.0.tgz#bfef660dfa6f5397ea54116bb3cb4873edbc4fa0"
+  resolved "https://registry.npmjs.org/css-line-break/-/css-line-break-2.1.0.tgz"
   integrity sha512-FHcKFCZcAha3LwfVBhCQbW2nCNbkZXn7KVUJcsT5/P8YmfsVja0FMPJr0B903j/E69HUphKiV9iQArX8SDYA4w==
   dependencies:
     utrie "^1.0.2"
 
 html2canvas@^1.4.1:
   version "1.4.1"
-  resolved "https://registry.yarnpkg.com/html2canvas/-/html2canvas-1.4.1.tgz#7cef1888311b5011d507794a066041b14669a543"
+  resolved "https://registry.npmjs.org/html2canvas/-/html2canvas-1.4.1.tgz"
   integrity sha512-fPU6BHNpsyIhr8yyMpTLLxAbkaK8ArIBcmZIRiBLiDhjeqvXolaEmDGmELFuX9I4xDcaKKcJl+TKZLqruBbmWA==
   dependencies:
     css-line-break "^2.1.0"
@@ -78,14 +78,14 @@ html2canvas@^1.4.1:
 
 text-segmentation@^1.0.3:
   version "1.0.3"
-  resolved "https://registry.yarnpkg.com/text-segmentation/-/text-segmentation-1.0.3.tgz#52a388159efffe746b24a63ba311b6ac9f2d7943"
+  resolved "https://registry.npmjs.org/text-segmentation/-/text-segmentation-1.0.3.tgz"
   integrity sha512-iOiPUo/BGnZ6+54OsWxZidGCsdU8YbE4PSpdPinp7DeMtUJNJBoJ/ouUSTJjHkh1KntHaltHl/gDs2FC4i5+Nw==
   dependencies:
     utrie "^1.0.2"
 
 utrie@^1.0.2:
   version "1.0.2"
-  resolved "https://registry.yarnpkg.com/utrie/-/utrie-1.0.2.tgz#d42fe44de9bc0119c25de7f564a6ed1b2c87a645"
+  resolved "https://registry.npmjs.org/utrie/-/utrie-1.0.2.tgz"
   integrity sha512-1MLa5ouZiOmQzUbjbu9VmjLzn1QLXBhwpUa7kdLUQK+KQ5KA9I1vk5U4YHe/X2Ch7PYnJfWuWT+VbuxbGwljhw==
   dependencies:
     base64-arraybuffer "^1.0.2"
