@@ -1510,6 +1510,10 @@ export const createPropertiesPanel = () => {
 							);
 						},
 						propertyName: "imageFit",
+						formatValue: (object, property, isStyle) => {
+							if (!object) return "contain";
+							return object[property] || "contain";
+						},
 					});
 				},
 			},
