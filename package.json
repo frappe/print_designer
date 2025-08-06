@@ -7,6 +7,21 @@
     "@interactjs/auto-start": "^1.10.17",
     "@interactjs/interact": "^1.10.17",
     "@interactjs/modifiers": "^1.10.17",
-    "html2canvas": "^1.4.1"
+    "@myriaddreamin/typst-ts-web-compiler": "^0.6.0",
+    "@myriaddreamin/typst.ts": "^0.6.0",
+    "@myriaddreamin/typst.vue3": "^0.6.0",
+    "html2canvas": "^1.4.1",
+    "vue": "^3.4.31"
+  },
+  "devDependencies": {
+    "@interactjs/core": "1.10.17",
+    "@interactjs/utils": "1.10.17",
+    "@types/node": "^22.15.30",
+    "@vitest/ui": "^3.2.2",
+    "jsdom": "^26.1.0",
+    "vitest": "^3.2.2"
+  },
+  "scripts": {
+    "test": "vitest"
   }
 }
