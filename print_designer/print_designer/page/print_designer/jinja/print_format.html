@@ -32,10 +32,10 @@
     <div id="footer-html">
         <div style="width: 100%; position: relative; top:0px; left: 0px; height:{{ settings.page.footerHeightWithMargin }}px;" id="footer-render-container">
             <div class="hidden-pdf">{% if pd_format.footer.firstPage %}{{ render(pd_format.footer.firstPage, send_to_jinja) }}{%endif%}</div>
-            <div id="firstPageFooter" style="display: block;">{% if pd_format.footer.firstPage %}{{ render(pd_format.footer.firstPage, send_to_jinja) }}{%endif%}</div>
-            <div id="oddPageFooter" style="display: none;">{% if pd_format.footer.oddPage %}{{ render(pd_format.footer.oddPage, send_to_jinja) }}{%endif%}</div>
-            <div id="evenPageFooter" style="display: none;">{% if pd_format.footer.evenPage %}{{ render(pd_format.footer.evenPage, send_to_jinja) }}{%endif%}</div>
-            <div id="lastPageFooter" style="display: none;">{% if pd_format.footer.lastPage %}{{ render(pd_format.footer.lastPage, send_to_jinja) }}{%endif%}</div>
+            <div class="visible-pdf" id="firstPageFooter" style="display: block;">{% if pd_format.footer.firstPage %}{{ render(pd_format.footer.firstPage, send_to_jinja) }}{%endif%}</div>
+            <div class="visible-pdf" id="oddPageFooter" style="display: none;">{% if pd_format.footer.oddPage %}{{ render(pd_format.footer.oddPage, send_to_jinja) }}{%endif%}</div>
+            <div class="visible-pdf" id="evenPageFooter" style="display: none;">{% if pd_format.footer.evenPage %}{{ render(pd_format.footer.evenPage, send_to_jinja) }}{%endif%}</div>
+            <div class="visible-pdf" id="lastPageFooter" style="display: none;">{% if pd_format.footer.lastPage %}{{ render(pd_format.footer.lastPage, send_to_jinja) }}{%endif%}</div>
         </div>
     </div>
     {%- endif -%}
