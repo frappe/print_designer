@@ -8,7 +8,7 @@ from print_designer.pdf_generator.pdf_merge import PDFTransformer
 
 
 def before_request():
-	if frappe.request.path == "/api/method/frappe.utils.print_format.download_pdf":
+	if frappe.request.path == "/api/method/frappe.utils.print_format.download_pdf" or frappe.request.path == "/printview":
 		frappe.local.form_dict.pdf_generator = (
 			frappe.request.args.get(
 				"pdf_generator",
@@ -16,10 +16,10 @@ def before_request():
 			)
 			or "wkhtmltopdf"
 		)
-		if frappe.local.form_dict.pdf_generator == "chrome":
-			# Initialize the browser
-			FrappePDFGenerator()
-			return
+	if frappe.request.path == "/api/method/frappe.utils.print_format.download_pdf" and frappe.local.form_dict.pdf_generator == "chrome":
+		# Initialize the browser
+		FrappePDFGenerator()
+		return
 
 
 def after_request():

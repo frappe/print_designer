@@ -918,6 +918,16 @@ export const useElementStore = defineStore("ElementStore", {
 			} else {
 				wrapper.heightType = "fixed";
 			}
+			if (
+				(childElements.length == 1 && childElements[0].style.breakInside == "avoid") ||
+				childElements.some(
+					(el) =>
+						["row", "column"].includes(el.layoutType) &&
+						el.style.breakInside == "avoid"
+				)
+			) {
+				wrapper.breakInside = "avoid";
+			}
 		},
 		createColumnWrapperElement(dimension, currentColumn, parent) {
 			const coordinates = {
@@ -966,6 +976,14 @@ export const useElementStore = defineStore("ElementStore", {
 				wrapper.heightType = "auto";
 			} else {
 				wrapper.heightType = "fixed";
+			}
+			if (
+				(childElements.length == 1 && childElements[0].style.breakInside == "avoid") ||
+				childElements.some(
+					(el) => ["row", "column"].includes(el.layoutType) && el.style.breakInside == "avoid"
+				)
+			) {
+				wrapper.breakInside = "avoid";
 			}
 		},
 		async printFormatCopyOnOlderSchema(objectToSave) {
