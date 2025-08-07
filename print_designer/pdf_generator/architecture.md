@@ -151,7 +151,7 @@ sequenceDiagram
         HPage->>HPage: set_media_emulation()
         HPage->>CDP: send("Emulation.setEmulatedMedia")
         HPage-->>Browser: HeaderPage Initised
-        Browser->>HPage: header_page.set_tab_url(frappe.request.host_url)
+        Browser->>HPage: header_page.set_tab_url(get_host_url())
         HPage->>HPage: intercept_request_and_fulfill()
         HPage->>CDP: send("Page.navigate")
         HPage-->>Browser: returns without waiting
@@ -171,7 +171,7 @@ sequenceDiagram
         FPage->>FPage: set_media_emulation()
         FPage->>CDP: send("Emulation.setEmulatedMedia")
         FPage-->>Browser: FooterPage Initised
-        Browser->>FPage: footer_page.set_tab_url(frappe.request.host_url)
+        Browser->>FPage: footer_page.set_tab_url(get_host_url())
         FPage->>FPage: intercept_request_and_fulfill()
         FPage->>CDP: send("Page.navigate")
         FPage-->>Browser: returns without waiting
@@ -244,7 +244,7 @@ sequenceDiagram
     BPage->>BPage: set_media_emulation()
     BPage->>CDP: send("Emulation.setEmulatedMedia")
     BPage-->>Browser: BodyPage Initised
-    Browser->>BPage: body_page.set_tab_url(frappe.request.host_url)
+    Browser->>BPage: body_page.set_tab_url(get_host_url())
     BPage->>BPage: intercept_request_and_fulfill()
     BPage->>CDP: send("Page.navigate")
     BPage-->>Browser: returns without waiting
