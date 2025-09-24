@@ -256,6 +256,7 @@ export const useElementStore = defineStore("ElementStore", {
 
 			objectToSave.print_designer_settings = JSON.stringify(settingsForSave);
 			objectToSave.print_designer_after_table = null;
+			objectToSave.pdf_generator = "chrome";
 			objectToSave.css = css;
 			if (MainStore.isOlderSchema("1.3.0")) {
 				await this.printFormatCopyOnOlderSchema(objectToSave);
