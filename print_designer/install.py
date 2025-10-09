@@ -40,8 +40,6 @@ def before_install():
 def after_install():
 	create_custom_fields(CUSTOM_FIELDS, ignore_validate=True)
 	on_print_designer_install()
-	add_pdf_generator_option()
-	# TODO: move to get-app command ( not that much harmful as it will check if it is already installed )
 	setup_chromium()
 
 
@@ -61,6 +59,9 @@ def setup_chromium():
 	except Exception as e:
 		click.echo(f"Failed to setup Chromium: {e}")
 		raise RuntimeError(f"Failed to setup Chromium: {e}")
+
+	add_pdf_generator_option()
+
 	return executable
 
 
@@ -322,6 +323,9 @@ def add_pdf_generator_option():
 
 def set_pdf_generator_option(action: Literal["add", "remove"]):
 	options = (frappe.get_meta("Print Format").get_field("pdf_generator").options).split("\n")
+
+	if "chrome" in options and action == "add":
+		return
 
 	if action == "add":
 		if "chrome" not in options:
