@@ -48,10 +48,10 @@ packages = [
     "libxfixes3",
     "libxkbcommon0",
     "libxrandr2",
+    "libasound2",
 ]
 # already installed
 # "ca-certificates",
-# "libasound2",
 # "libc6",
 # "libcairo2",
 # "libcups2",
