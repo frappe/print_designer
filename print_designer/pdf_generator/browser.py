@@ -5,7 +5,7 @@ from bs4 import BeautifulSoup
 from frappe.utils.pdf import get_print_format_styles as get_styles_print_format_class
 from frappe.utils.pdf import toggle_visible_pdf
 
-from print_designer.pdf import measure_time
+from print_designer.pdf import get_host_url, measure_time
 from print_designer.pdf_generator.cdp_connection import CDPSocketClient
 from print_designer.pdf_generator.page import Page
 from print_designer.print_designer.page.print_designer.print_designer import (
@@ -99,7 +99,7 @@ class Browser:
 
 	def setup_body_page(self):
 		self.body_page = self.new_page("body")
-		self.body_page.set_tab_url(frappe.request.host_url)
+		self.body_page.set_tab_url(get_host_url())
 		self.body_page.wait_for_navigate()
 		self.body_page.set_content(str(self.soup))
 
@@ -409,11 +409,11 @@ class Browser:
 		# It sends CDP command to the browser to open a new tab.
 		if header_content := self.soup.find(id="header-html"):
 			self.header_page = self.new_page("header")
-			self.header_page.set_tab_url(frappe.request.host_url)
+			self.header_page.set_tab_url(get_host_url())
 
 		if footer_content := self.soup.find(id="footer-html"):
 			self.footer_page = self.new_page("footer")
-			self.footer_page.set_tab_url(frappe.request.host_url)
+			self.footer_page.set_tab_url(get_host_url())
 
 		self.header_content = header_content
 		self.footer_content = footer_content
