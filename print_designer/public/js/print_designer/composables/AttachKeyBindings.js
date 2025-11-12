@@ -1,11 +1,13 @@
 import { onMounted, onUnmounted } from "vue";
 import { useMainStore } from "../store/MainStore";
 import { useElementStore } from "../store/ElementStore";
+import { useHistoryStore } from "../store/HistoryStore";
 import { checkUpdateElementOverlapping, deleteCurrentElements } from "../utils";
 
 export function useAttachKeyBindings() {
 	const MainStore = useMainStore();
 	const ElementStore = useElementStore();
+	const HistoryStore = useHistoryStore();
 	function updateStartXY(axis, value) {
 		MainStore.getCurrentElementsValues.forEach((element) => {
 			let restrict;
@@ -64,6 +66,15 @@ export function useAttachKeyBindings() {
 			} else if (!e.repeat && ["l", "L"].indexOf(e.key) != -1) {
 				e.preventDefault();
 				MainStore.isLayerPanelEnabled = !MainStore.isLayerPanelEnabled;
+			} else if (!e.repeat && ["z", "Z"].indexOf(e.key) != -1) {
+				e.preventDefault();
+				if (e.shiftKey) {
+					// Ctrl+Shift+Z = Redo
+					HistoryStore.redo();
+				} else {
+					// Ctrl+Z = Undo
+					HistoryStore.undo();
+				}
 			}
 		}
 		if (

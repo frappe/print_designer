@@ -522,6 +522,14 @@ export const updateDynamicData = async () => {
 export const deleteCurrentElements = () => {
 	const MainStore = useMainStore();
 	const ElementStore = useElementStore();
+	
+	// Importer le système d'historique dynamiquement pour éviter la dépendance circulaire
+	import("./store/HistoryStore").then(({ useHistoryStore }) => {
+		const HistoryStore = useHistoryStore();
+		// Sauvegarder l'état avant suppression
+		HistoryStore.saveState('before_delete');
+	}).catch(console.error);
+	
 	if (MainStore.getCurrentElementsValues.length === 1) {
 		let curobj = MainStore.getCurrentElementsValues[0];
 		deleteDynamicReferance(curobj);
@@ -539,6 +547,14 @@ export const deleteCurrentElements = () => {
 		delete MainStore.currentElements[element];
 	});
 	checkUpdateElementOverlapping();
+	
+	// Sauvegarder l'état après suppression
+	setTimeout(() => {
+		import("./store/HistoryStore").then(({ useHistoryStore }) => {
+			const HistoryStore = useHistoryStore();
+			HistoryStore.saveState('after_delete');
+		}).catch(console.error);
+	}, 100);
 };
 
 export const cloneElement = () => {

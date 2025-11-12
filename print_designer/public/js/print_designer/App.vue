@@ -47,6 +47,8 @@
 <script setup>
 import { computed, onMounted, watchEffect } from "vue";
 import { useMainStore } from "./store/MainStore";
+import { useElementStore } from "./store/ElementStore";
+import { useHistoryStore } from "./store/HistoryStore";
 import AppHeader from "./components/layout/AppHeader.vue";
 import AppToolbar from "./components/layout/AppToolbar.vue";
 import AppCanvas from "./components/layout/AppCanvas.vue";
@@ -61,6 +63,8 @@ const props = defineProps({
 	},
 });
 const MainStore = useMainStore();
+const ElementStore = useElementStore();
+const HistoryStore = useHistoryStore();
 
 const toolbarClasses = computed(() => {
 	return [
