@@ -1,18 +1,21 @@
 {% macro render_styles(settings) %}
 <style>
-    /* === ISOLATION CSS POUR PRINT DESIGNER === */
-    #__print_designer {
+    /* === RESET GLOBAL COMPLET POUR PRINT DESIGNER === */
+    body #__print_designer,
+    .print-format-container #__print_designer,
+    .modal-body #__print_designer,
+    .frappe-control #__print_designer {
         all: initial !important;
-        font-family: initial !important;
-        font-size: initial !important;
-        line-height: initial !important;
-        color: initial !important;
-        background: initial !important;
+        font-family: Arial, Helvetica, sans-serif !important;
+        font-size: 12px !important;
+        line-height: 1.0 !important;
+        color: #000000 !important;
+        background: #ffffff !important;
         margin: 0 !important;
         padding: 0 !important;
         border: none !important;
         outline: none !important;
-        text-align: initial !important;
+        text-align: left !important;
         text-decoration: none !important;
         text-transform: none !important;
         vertical-align: baseline !important;
@@ -23,13 +26,45 @@
         position: relative !important;
         display: block !important;
         width: 100% !important;
+        min-height: auto !important;
+        max-width: none !important;
+        overflow: visible !important;
+        transform: none !important;
     }
     
     /* Réinitialisation pour tous les enfants du print designer */
-    #__print_designer * {
+    body #__print_designer *,
+    .print-format-container #__print_designer *,
+    .modal-body #__print_designer *,
+    .frappe-control #__print_designer * {
         all: unset !important;
         display: revert !important;
         box-sizing: border-box !important;
+    }
+    
+    /* === PROTECTION CONTRE BOOTSTRAP ET FRAPPE === */
+    /* Reset des classes Bootstrap/Frappe communes */
+    #__print_designer .container,
+    #__print_designer .row,
+    #__print_designer .col,
+    #__print_designer .col-xs-12,
+    #__print_designer .col-sm-12,
+    #__print_designer .col-md-12,
+    #__print_designer .col-lg-12,
+    #__print_designer .form-control,
+    #__print_designer .form-group,
+    #__print_designer .btn,
+    #__print_designer .table-responsive {
+        all: unset !important;
+        display: revert !important;
+        box-sizing: border-box !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        width: auto !important;
+        height: auto !important;
+        position: static !important;
+        float: none !important;
+        clear: none !important;
     }
     
     /* Styles spécifiques au print format */
@@ -82,9 +117,16 @@
         z-index: auto !important;
     }
     
-    /* Tables avec styles isolés */
-    #__print_designer .table,
-    #__print_designer table {
+    /* === PROTECTION SPÉCIALE POUR LES TABLES === */
+    /* Tables avec isolation totale contre Bootstrap */
+    body #__print_designer .table,
+    body #__print_designer table,
+    .print-format-container #__print_designer .table,
+    .print-format-container #__print_designer table,
+    .modal-body #__print_designer .table,
+    .modal-body #__print_designer table {
+        all: unset !important;
+        display: table !important;
         margin: 0 !important;
         padding: 0 !important;
         border-collapse: collapse !important;
@@ -96,6 +138,31 @@
         font-size: inherit !important;
         line-height: inherit !important;
         color: inherit !important;
+        text-align: left !important;
+        vertical-align: top !important;
+        border: none !important;
+        outline: none !important;
+        box-shadow: none !important;
+        transform: none !important;
+        position: static !important;
+        float: none !important;
+        clear: none !important;
+    }
+    
+    /* Protection pour tbody, thead, tfoot */
+    #__print_designer tbody,
+    #__print_designer thead,
+    #__print_designer tfoot {
+        all: unset !important;
+        display: table-row-group !important;
+    }
+    
+    #__print_designer thead {
+        display: table-header-group !important;
+    }
+    
+    #__print_designer tfoot {
+        display: table-footer-group !important;
     }
     
     /* Paragraphes et textes isolés */
@@ -130,20 +197,48 @@
         border-right-style: solid !important;
     }
     
-    /* Headers et cellules isolées */
-    #__print_designer th,
-    #__print_designer td {
+    /* === PROTECTION MAXIMALE POUR CELLULES === */
+    /* Headers et cellules avec reset complet */
+    body #__print_designer tr,
+    body #__print_designer th,
+    body #__print_designer td,
+    .print-format-container #__print_designer tr,
+    .print-format-container #__print_designer th,
+    .print-format-container #__print_designer td,
+    .modal-body #__print_designer tr,
+    .modal-body #__print_designer th,
+    .modal-body #__print_designer td {
+        all: unset !important;
         margin: 0 !important;
-        padding: inherit !important;
-        border: inherit !important;
-        background: inherit !important;
+        padding: 0 !important;
+        border: none !important;
+        background: transparent !important;
         font-family: inherit !important;
         font-size: inherit !important;
         line-height: inherit !important;
         color: inherit !important;
-        text-align: inherit !important;
-        vertical-align: inherit !important;
-        white-space: inherit !important;
+        text-align: left !important;
+        vertical-align: top !important;
+        white-space: normal !important;
+        box-shadow: none !important;
+        outline: none !important;
+        transform: none !important;
+        position: static !important;
+        float: none !important;
+        clear: none !important;
+        width: auto !important;
+        height: auto !important;
+        min-width: 0 !important;
+        max-width: none !important;
+    }
+    
+    #__print_designer tr {
+        display: table-row !important;
+    }
+    
+    #__print_designer th,
+    #__print_designer td {
+        display: table-cell !important;
     }
     .flexDynamicText .baseSpanTag {
 		 display: block;
