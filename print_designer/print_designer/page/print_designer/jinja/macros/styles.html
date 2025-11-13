@@ -1,16 +1,54 @@
 {% macro render_styles(settings) %}
 <style>
+    /* === ISOLATION CSS POUR PRINT DESIGNER === */
+    #__print_designer {
+        all: initial !important;
+        font-family: initial !important;
+        font-size: initial !important;
+        line-height: initial !important;
+        color: initial !important;
+        background: initial !important;
+        margin: 0 !important;
+        padding: 0 !important;
+        border: none !important;
+        outline: none !important;
+        text-align: initial !important;
+        text-decoration: none !important;
+        text-transform: none !important;
+        vertical-align: baseline !important;
+        white-space: normal !important;
+        word-spacing: normal !important;
+        letter-spacing: normal !important;
+        box-sizing: border-box !important;
+        position: relative !important;
+        display: block !important;
+        width: 100% !important;
+    }
+    
+    /* Réinitialisation pour tous les enfants du print designer */
+    #__print_designer * {
+        all: unset !important;
+        display: revert !important;
+        box-sizing: border-box !important;
+    }
+    
+    /* Styles spécifiques au print format */
     .print-format {
-        box-sizing: border-box;
-        padding: 0in;
+        box-sizing: border-box !important;
+        padding: 0in !important;
         max-width: {{convert_uom(number=settings.page.width, to_uom="mm")}} !important;
-        dpi: {{settings.PDFPrintDPI or 96}}mm;
-        page-width: {{convert_uom(number=settings.page.width, to_uom="mm")}};
-        page-height: {{convert_uom(number=settings.page.height, to_uom="mm")}};
-        margin-top:{{convert_uom(number=settings.page.marginTop, to_uom='mm')}};
-        margin-bottom:{{convert_uom(number=settings.page.marginBottom, to_uom='mm')}};
-        margin-left:{{convert_uom(number=settings.page.marginLeft, to_uom='mm')}};
-        margin-right:{{convert_uom(number=settings.page.marginRight, to_uom='mm')}};
+        dpi: {{settings.PDFPrintDPI or 96}}mm !important;
+        page-width: {{convert_uom(number=settings.page.width, to_uom="mm")}} !important;
+        page-height: {{convert_uom(number=settings.page.height, to_uom="mm")}} !important;
+        margin-top:{{convert_uom(number=settings.page.marginTop, to_uom='mm')}} !important;
+        margin-bottom:{{convert_uom(number=settings.page.marginBottom, to_uom='mm')}} !important;
+        margin-left:{{convert_uom(number=settings.page.marginLeft, to_uom='mm')}} !important;
+        margin-right:{{convert_uom(number=settings.page.marginRight, to_uom='mm')}} !important;
+        font-family: Arial, sans-serif !important;
+        font-size: 12px !important;
+        line-height: 1.2 !important;
+        color: #000000 !important;
+        background: #ffffff !important;
     }
     @media screen {
         #__print_designer {
@@ -34,32 +72,78 @@
             display: none;
         }
     }
-    .print-designer-container {
-        position: absolute;
-    }
-    .table {
-        margin: 0;
-    }
-	.print-format p {
+    /* Conteneurs print designer avec isolation complète */
+    #__print_designer .print-designer-container {
+        position: absolute !important;
         margin: 0 !important;
+        padding: 0 !important;
+        border: none !important;
+        background: transparent !important;
+        z-index: auto !important;
     }
-    tr:first-child th {
+    
+    /* Tables avec styles isolés */
+    #__print_designer .table,
+    #__print_designer table {
+        margin: 0 !important;
+        padding: 0 !important;
+        border-collapse: collapse !important;
+        border-spacing: 0 !important;
+        width: auto !important;
+        height: auto !important;
+        background: transparent !important;
+        font-family: inherit !important;
+        font-size: inherit !important;
+        line-height: inherit !important;
+        color: inherit !important;
+    }
+    
+    /* Paragraphes et textes isolés */
+	#__print_designer .print-format p,
+	#__print_designer p {
+        margin: 0 !important;
+        padding: 0 !important;
+        font-family: inherit !important;
+        font-size: inherit !important;
+        line-height: inherit !important;
+        color: inherit !important;
+        text-align: inherit !important;
+        background: transparent !important;
+    }
+    /* Cellules de tableaux avec isolation */
+    #__print_designer tr:first-child th {
         border-top-style: solid !important;
     }
-    tr th:first-child {
+    #__print_designer tr th:first-child {
         border-left-style: solid !important;
     }
-    tr th:last-child {
+    #__print_designer tr th:last-child {
         border-right-style: solid !important;
     }
-    tr:last-child td {
+    #__print_designer tr:last-child td {
         border-bottom-style: solid !important;
     }
-    tr td:first-child {
+    #__print_designer tr td:first-child {
         border-left-style: solid !important;
     }
-    tr td:last-child {
+    #__print_designer tr td:last-child {
         border-right-style: solid !important;
+    }
+    
+    /* Headers et cellules isolées */
+    #__print_designer th,
+    #__print_designer td {
+        margin: 0 !important;
+        padding: inherit !important;
+        border: inherit !important;
+        background: inherit !important;
+        font-family: inherit !important;
+        font-size: inherit !important;
+        line-height: inherit !important;
+        color: inherit !important;
+        text-align: inherit !important;
+        vertical-align: inherit !important;
+        white-space: inherit !important;
     }
     .flexDynamicText .baseSpanTag {
 		 display: block;

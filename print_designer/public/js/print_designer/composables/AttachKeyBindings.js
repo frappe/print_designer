@@ -118,6 +118,30 @@ export function useAttachKeyBindings() {
 					break;
 			}
 		}
+		// Raccourcis grille (avant la vérification des modificateurs)
+		if (!e.ctrlKey && !e.altKey) {
+			if (e.key == "G" || e.key == "g") {
+				if (e.shiftKey) {
+					// Shift+G: Toggle Snap to Grid
+					e.preventDefault();
+					MainStore.toggleSnapToGrid();
+					return;
+				} else {
+					// G: Toggle Grid
+					e.preventDefault();
+					MainStore.toggleGrid();
+					return;
+				}
+			} else if ((e.key == "R" || e.key == "r") && !e.shiftKey) {
+				// R sans Shift: Toggle Rulers (priorité sur Rectangle si pas d'éléments sélectionnés)
+				if (MainStore.getCurrentElementsId.length === 0) {
+					e.preventDefault();
+					MainStore.toggleRulers();
+					return;
+				}
+			}
+		}
+
 		if (e.altKey || e.shiftKey || e.ctrlKey || e.metaKey) return;
 		if ((e.key == "M") | (e.key == "m")) {
 			MainStore.setActiveControl("MousePointer");

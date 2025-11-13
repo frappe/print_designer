@@ -4,6 +4,7 @@ import { useChangeValueUnit } from "../composables/ChangeValueUnit";
 import { GoogleFonts, barcodeFormats } from "../defaultObjects";
 import { globalStyles } from "../globalStyles";
 import { pageSizes } from "../pageSizes";
+import svgPreloader from "../utils/svgPreloader.js";
 export const useMainStore = defineStore("MainStore", {
 	state: () => ({
 		/**
@@ -21,7 +22,7 @@ export const useMainStore = defineStore("MainStore", {
 		mode: "editing",
 		activePage: null,
 		visiblePages: [],
-		cursor: "url('/assets/print_designer/images/mouse-pointer.svg'), default !important",
+		cursor: svgPreloader.getCursorWithPreload('/assets/print_designer/images/mouse-pointer.svg', 'default') + ' !important',
 		isMarqueeActive: false,
 		isDrawing: false,
 		doctype: null,
@@ -79,6 +80,18 @@ export const useMainStore = defineStore("MainStore", {
 		globalStyles,
 		printDesignName: "",
 		isLayerPanelEnabled: false,
+		// Propriétés pour la grille et les règles
+		showGrid: false,
+		showRulers: true,
+		gridSize: 20, // Taille d'une cellule de grille en pixels
+		gridColor: "#e0e0e0",
+		gridMajorColor: "#c0c0c0", 
+		gridOpacity: 0.5,
+		snapToGrid: false,
+		snapThreshold: 10, // Distance en pixels pour le snap
+		unit: "mm", // Unité d'affichage (mm, cm, in, px)
+		pixelsPerUnit: 3.78, // Conversion pixels par mm (96 DPI / 25.4)
+		showGridSettings: false,
 		page: {
 			height: 1122.519685,
 			width: 793.7007874,
@@ -98,7 +111,7 @@ export const useMainStore = defineStore("MainStore", {
 				control: "MousePointer",
 				aria_label: __("Mouse Pointer (M)"),
 				id: "mouse-pointer",
-				cursor: "url('/assets/print_designer/images/mouse-pointer.svg'), default",
+				cursor: svgPreloader.getCursorWithPreload('/assets/print_designer/images/mouse-pointer.svg', 'default'),
 				isDisabled: false,
 			},
 			Text: {
@@ -106,7 +119,7 @@ export const useMainStore = defineStore("MainStore", {
 				control: "Text",
 				aria_label: __("Text (T)"),
 				id: "text",
-				cursor: "url('/assets/print_designer/images/add-text.svg') 10 10, text",
+				cursor: svgPreloader.getCursorWithPreload('/assets/print_designer/images/add-text.svg', 'text', 10, 10),
 				isDisabled: false,
 			},
 			Rectangle: {
@@ -114,7 +127,7 @@ export const useMainStore = defineStore("MainStore", {
 				control: "Rectangle",
 				aria_label: __("Rectangle (R)"),
 				id: "rectangle",
-				cursor: "url('/assets/print_designer/images/add-rectangle.svg') 6 6, crosshair",
+				cursor: svgPreloader.getCursorWithPreload('/assets/print_designer/images/add-rectangle.svg', 'crosshair', 6, 6),
 				isDisabled: false,
 			},
 			Image: {
@@ -122,7 +135,7 @@ export const useMainStore = defineStore("MainStore", {
 				control: "Image",
 				aria_label: __("Image (I)"),
 				id: "image",
-				cursor: "url('/assets/print_designer/images/add-image.svg') 6 6, crosshair",
+				cursor: svgPreloader.getCursorWithPreload('/assets/print_designer/images/add-image.svg', 'crosshair', 6, 6),
 				isDisabled: false,
 			},
 			Table: {
@@ -130,7 +143,7 @@ export const useMainStore = defineStore("MainStore", {
 				control: "Table",
 				aria_label: __("Table (A)"),
 				id: "table",
-				cursor: "url('/assets/print_designer/images/add-table.svg') 6 6, crosshair",
+				cursor: svgPreloader.getCursorWithPreload('/assets/print_designer/images/add-table.svg', 'crosshair', 6, 6),
 				isDisabled: false,
 			},
 			// Components: {
@@ -145,7 +158,7 @@ export const useMainStore = defineStore("MainStore", {
 				control: "Barcode",
 				aria_label: __("Barcode (B)"),
 				id: "barcode",
-				cursor: "url('/assets/print_designer/images/add-barcode.svg') 6 6, crosshair",
+				cursor: svgPreloader.getCursorWithPreload('/assets/print_designer/images/add-barcode.svg', 'crosshair', 6, 6),
 			},
 		},
 		propertiesPanel: [],
@@ -519,6 +532,17 @@ export const useMainStore = defineStore("MainStore", {
 	},
 	actions: {
 		/**
+		 * Initialize SVG preloading for commonly used cursors
+		 */
+		initializeSvgPreloading() {
+			// Preload the most commonly used SVGs when print designer starts
+			const svgPaths = [
+				'/assets/print_designer/images/mouse-pointer.svg',
+				'/assets/print_designer/images/add-text.svg'
+			];
+			svgPreloader.preloadMultiple(svgPaths).catch(console.warn);
+		},
+		/**
 		 * @param {'MousePointer'|'Text'|'Rectangle'|'Components'|'Image'|'Table'|'Barcode'}  id
 		 */
 		setActiveControl(id) {
@@ -612,6 +636,57 @@ export const useMainStore = defineStore("MainStore", {
 					}
 				}
 			});
+		},
+		// Actions pour la grille et les règles
+		toggleGrid() {
+			this.showGrid = !this.showGrid;
+		},
+		toggleRulers() {
+			this.showRulers = !this.showRulers;
+		},
+		toggleSnapToGrid() {
+			this.snapToGrid = !this.snapToGrid;
+		},
+		setGridSize(size) {
+			this.gridSize = Math.max(5, Math.min(100, size)); // Entre 5px et 100px
+		},
+		setGridOpacity(opacity) {
+			this.gridOpacity = Math.max(0.1, Math.min(1, opacity)); // Entre 0.1 et 1
+		},
+		setUnit(unit) {
+			const validUnits = ['px', 'mm', 'cm', 'in'];
+			if (validUnits.includes(unit)) {
+				this.unit = unit;
+				// Mettre à jour la conversion pixels par unité
+				switch (unit) {
+					case 'mm':
+						this.pixelsPerUnit = 3.78; // 96 DPI / 25.4
+						break;
+					case 'cm':
+						this.pixelsPerUnit = 37.8; // 96 DPI / 2.54
+						break;
+					case 'in':
+						this.pixelsPerUnit = 96; // 96 DPI
+						break;
+					case 'px':
+						this.pixelsPerUnit = 1;
+						break;
+				}
+			}
+		},
+		// Fonction pour snapper une valeur à la grille
+		snapValueToGrid(value) {
+			if (!this.snapToGrid) return value;
+			const gridSize = this.gridSize;
+			return Math.round(value / gridSize) * gridSize;
+		},
+		// Fonction pour snapper une position (objet {x, y}) à la grille
+		snapPositionToGrid(position) {
+			if (!this.snapToGrid) return position;
+			return {
+				x: this.snapValueToGrid(position.x),
+				y: this.snapValueToGrid(position.y)
+			};
 		},
 	},
 });

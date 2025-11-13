@@ -7,6 +7,13 @@
 			v-marquee="marqueeOptions"
 			:style="[MainStore.mode == 'editing' && { cursor: MainStore.cursor }]"
 		>
+			<!-- Système de Grille et Règles -->
+			<AppGridAndRulers 
+				:canvasElement="canvasContainer"
+				:pageContainer="canvasContainer"
+			/>
+			<!-- Guides Glissables -->
+			<AppDraggableGuides ref="draggableGuides" />
 			<AppPages v-for="page in ElementStore.Elements" :key="page.index" :page="page" />
 			<div class="page-btn-wrapper">
 				<button
@@ -101,6 +108,8 @@ import AppDynamicTextModal from "./AppDynamicTextModal.vue";
 import AppUserProvidedJinjaModal from "./AppUserProvidedJinjaModal.vue";
 import AppBarcodeModal from "./AppBarcodeModal.vue";
 import AppImageModal from "./AppImageModal.vue";
+import AppGridAndRulers from "./AppGridAndRulers.vue";
+import AppDraggableGuides from "./AppDraggableGuides.vue";
 import IconsUse from "../../icons/IconsUse.vue";
 import { watch, watchEffect, onMounted, ref, nextTick } from "vue";
 import { useMainStore } from "../../store/MainStore";
