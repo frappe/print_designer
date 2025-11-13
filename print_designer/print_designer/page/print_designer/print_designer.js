@@ -5,7 +5,7 @@ frappe.pages["print-designer"].on_page_load = function (wrapper) {
 		frappe.hot_update.push(() => load_print_designer(wrapper));
 	}
 };
-
+//
 frappe.pages["print-designer"].on_page_show = function (wrapper) {
 	load_print_designer(wrapper);
 };

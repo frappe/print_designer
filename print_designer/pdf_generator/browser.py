@@ -245,11 +245,14 @@ class Browser:
 			"marginLeft": 0,
 			"marginRight": 0,
 			"landscape": options.get("orientation", "Portrait") == "Landscape",
-			"preferCSSPageSize": False,
+			"preferCSSPageSize": True,  # CRITICAL FIX: Allow CSS to control page sizing and positioning
 			"pageRanges": options.get("page-ranges", ""),
 			# Experimental
 			"generateTaggedPDF": options.get("generate-tagged-pdf", False),
 			"generateOutline": options.get("generate-outline", False),
+			# CRITICAL POSITIONING FIXES
+			"displayHeaderFooter": False,  # Prevent interference with Print Designer positioning
+			"omitBackground": False,  # Ensure backgrounds are rendered
 		}
 
 		# bad implicit setting of margin #backwards-compatibility

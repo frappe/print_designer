@@ -24,9 +24,24 @@ export const useElementStore = defineStore("ElementStore", {
 		Footers: new Array(),
 	}),
 	actions: {
+		// Initialiser l'historique au chargement des éléments
+		initializeHistoryForElements() {
+			import("./HistoryStore").then(({ useHistoryStore }) => {
+				const HistoryStore = useHistoryStore();
+				HistoryStore.initializeHistory();
+			}).catch(console.error);
+		},
+
 		createNewObject(event, element) {
 			let newElement;
 			const MainStore = useMainStore();
+			
+			// Sauvegarder l'état avant création
+			import("./HistoryStore").then(({ useHistoryStore }) => {
+				const HistoryStore = useHistoryStore();
+				HistoryStore.saveState('before_create_element');
+			}).catch(console.error);
+			
 			if (MainStore.activeControl == "text") {
 				if (MainStore.textControlType == "static") {
 					newElement = createText(event, element);
@@ -42,6 +57,15 @@ export const useElementStore = defineStore("ElementStore", {
 			} else if (MainStore.activeControl == "barcode") {
 				newElement = createBarcode(event, element);
 			}
+			
+			// Sauvegarder l'état après création
+			setTimeout(() => {
+				import("./HistoryStore").then(({ useHistoryStore }) => {
+					const HistoryStore = useHistoryStore();
+					HistoryStore.saveState('after_create_element');
+				}).catch(console.error);
+			}, 100);
+			
 			return newElement;
 		},
 		computeLayoutForSave() {
@@ -1272,6 +1296,14 @@ export const useElementStore = defineStore("ElementStore", {
 			});
 			this.Elements.forEach((page) => this.setElementProperties(page));
 			frappe.dom.unfreeze();
+			
+			// Initialiser l'historique après le chargement des éléments
+			setTimeout(() => {
+				import("./HistoryStore").then(({ useHistoryStore }) => {
+					const HistoryStore = useHistoryStore();
+					HistoryStore.initializeHistory();
+				}).catch(console.error);
+			}, 500);
 		},
 		setPrimaryTable(tableEl, value) {
 			if (!value) {

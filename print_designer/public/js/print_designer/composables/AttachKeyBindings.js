@@ -1,11 +1,13 @@
 import { onMounted, onUnmounted } from "vue";
 import { useMainStore } from "../store/MainStore";
 import { useElementStore } from "../store/ElementStore";
+import { useHistoryStore } from "../store/HistoryStore";
 import { checkUpdateElementOverlapping, deleteCurrentElements } from "../utils";
 
 export function useAttachKeyBindings() {
 	const MainStore = useMainStore();
 	const ElementStore = useElementStore();
+	const HistoryStore = useHistoryStore();
 	function updateStartXY(axis, value) {
 		MainStore.getCurrentElementsValues.forEach((element) => {
 			let restrict;
@@ -64,6 +66,15 @@ export function useAttachKeyBindings() {
 			} else if (!e.repeat && ["l", "L"].indexOf(e.key) != -1) {
 				e.preventDefault();
 				MainStore.isLayerPanelEnabled = !MainStore.isLayerPanelEnabled;
+			} else if (!e.repeat && ["z", "Z"].indexOf(e.key) != -1) {
+				e.preventDefault();
+				if (e.shiftKey) {
+					// Ctrl+Shift+Z = Redo
+					HistoryStore.redo();
+				} else {
+					// Ctrl+Z = Undo
+					HistoryStore.undo();
+				}
 			}
 		}
 		if (
@@ -107,6 +118,30 @@ export function useAttachKeyBindings() {
 					break;
 			}
 		}
+		// Raccourcis grille (avant la vérification des modificateurs)
+		if (!e.ctrlKey && !e.altKey) {
+			if (e.key == "G" || e.key == "g") {
+				if (e.shiftKey) {
+					// Shift+G: Toggle Snap to Grid
+					e.preventDefault();
+					MainStore.toggleSnapToGrid();
+					return;
+				} else {
+					// G: Toggle Grid
+					e.preventDefault();
+					MainStore.toggleGrid();
+					return;
+				}
+			} else if ((e.key == "R" || e.key == "r") && !e.shiftKey) {
+				// R sans Shift: Toggle Rulers (priorité sur Rectangle si pas d'éléments sélectionnés)
+				if (MainStore.getCurrentElementsId.length === 0) {
+					e.preventDefault();
+					MainStore.toggleRulers();
+					return;
+				}
+			}
+		}
+
 		if (e.altKey || e.shiftKey || e.ctrlKey || e.metaKey) return;
 		if ((e.key == "M") | (e.key == "m")) {
 			MainStore.setActiveControl("MousePointer");
