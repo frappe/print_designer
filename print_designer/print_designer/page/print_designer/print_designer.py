@@ -175,50 +175,48 @@ def convert_uom(
 	to_uom: Literal["px", "mm", "cm", "in"] = "px",
 	only_number: bool = False,
 ) -> float:
-	unit_values = {
-		"px": 1,
-		"mm": 3.7795275591,
-		"cm": 37.795275591,
-		"in": 96,
-	}
-	from_px = (
-		{
-			"to_px": 1,
-			"to_mm": unit_values["px"] / unit_values["mm"],
-			"to_cm": unit_values["px"] / unit_values["cm"],
-			"to_in": unit_values["px"] / unit_values["in"],
-		},
-	)
-	from_mm = (
-		{
-			"to_mm": 1,
-			"to_px": unit_values["mm"] / unit_values["px"],
-			"to_cm": unit_values["mm"] / unit_values["cm"],
-			"to_in": unit_values["mm"] / unit_values["in"],
-		},
-	)
-	from_cm = (
-		{
-			"to_cm": 1,
-			"to_px": unit_values["cm"] / unit_values["px"],
-			"to_mm": unit_values["cm"] / unit_values["mm"],
-			"to_in": unit_values["cm"] / unit_values["in"],
-		},
-	)
-	from_in = {
-		"to_in": 1,
-		"to_px": unit_values["in"] / unit_values["px"],
-		"to_mm": unit_values["in"] / unit_values["mm"],
-		"to_cm": unit_values["in"] / unit_values["cm"],
-	}
-	converstion_factor = (
-		{"from_px": from_px, "from_mm": from_mm, "from_cm": from_cm, "from_in": from_in},
-	)
+	# === CORRECTION POUR ÉLIMINER LES DÉCALAGES ===
+	# Préservation des pixels sans conversion pour garder la précision exacte du Print Designer
+	
+	# Si conversion entre mêmes unités, retour direct sans calcul
+	if from_uom == to_uom:
+		if only_number:
+			return number
+		return f"{number}{to_uom}"
+	
+	# Pour le Print Designer, on préserve les pixels autant que possible
+	# Conversion pixels vers autres unités avec précision maximale (sans arrondi)
+	if from_uom == "px":
+		conversion_factors = {
+			"mm": number / 3.7795275591,  # Précision maximale
+			"cm": number / 37.795275591,
+			"in": number / 96,
+		}
+		result = conversion_factors.get(to_uom, number)
+		if only_number:
+			return result  # Pas d'arrondi !
+		return f"{result}{to_uom}"
+	
+	# Conversion autres unités vers pixels avec précision maximale
+	if to_uom == "px":
+		conversion_factors = {
+			"mm": number * 3.7795275591,
+			"cm": number * 37.795275591, 
+			"in": number * 96,
+		}
+		result = conversion_factors.get(from_uom, number)
+		if only_number:
+			return result  # Pas d'arrondi !
+		return f"{result}{to_uom}"
+	
+	# Fallback pour conversions entre unités non-pixels (mm, cm, in)
+	# Conversion via pixels comme intermédiaire mais sans double arrondi
+	pixels = convert_uom(number, from_uom, "px", True)
+	final_result = convert_uom(pixels, "px", to_uom, True)
+	
 	if only_number:
-		return round(number * converstion_factor[0][f"from_{from_uom}"][0][f"to_{to_uom}"], 3)
-	return (
-		f"{round(number * converstion_factor[0][f'from_{from_uom}'][0][f'to_{to_uom}'], 3)}{to_uom}"
-	)
+		return final_result
+	return f"{final_result}{to_uom}"
 
 
 @frappe.whitelist()

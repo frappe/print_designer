@@ -1,5 +1,111 @@
 {% macro render_styles(settings) %}
 <style>
+/* ============================================================================
+   RESET CSS UNIVERSEL POUR PRINT DESIGNER - PRIORITÉ ABSOLUE
+   ============================================================================ */
+
+/* CORRECTION DU PROBLÈME D'ALIGNEMENT - Version 1.0 */
+/* Le problème : les éléments Print Designer ont besoin de position absolue */
+/* mais le reset CSS global forçait position: static, causant les décalages */
+   
+/* Reset universel - appliqué AVANT tout autre style */
+#__print_designer {
+    /* Force le reset total en premier */
+    all: initial !important;
+    
+    /* Isolation complète du contexte */
+    contain: layout style paint !important;
+    isolation: isolate !important;
+    
+    /* Dimensions et positionnement de base */
+    display: block !important;
+    position: relative !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: 0 !important;
+    background: white !important;
+    
+    /* Typography reset */
+    font-family: "Times New Roman", Times, serif !important;
+    font-size: 11pt !important;
+    line-height: 1.15 !important;
+    color: black !important;
+    text-align: left !important;
+    
+    /* Layout reset */
+    width: 100% !important;
+    height: auto !important;
+    min-width: 0 !important;
+    min-height: 0 !important;
+    max-width: none !important;
+    max-height: none !important;
+    
+    /* Transform reset */
+    transform: none !important;
+    transform-origin: 0 0 !important;
+    
+    /* Override Bootstrap/CSS Framework */
+    box-sizing: border-box !important;
+    float: none !important;
+    clear: none !important;
+    
+    /* Visual effects reset */
+    opacity: 1 !important;
+    visibility: visible !important;
+    overflow: visible !important;
+    clip: auto !important;
+    z-index: auto !important;
+}
+
+/* Reset pour TOUS les enfants - Crucial ! */
+#__print_designer *,
+#__print_designer *::before,
+#__print_designer *::after {
+    /* Reset universel pour tous les éléments */
+    all: initial !important;
+    
+    /* Redéfinir les displays essentiels */
+    display: revert !important;
+    box-sizing: border-box !important;
+    
+    /* Neutraliser Bootstrap/Frappe */
+    margin: 0 !important;
+    padding: 0 !important;
+    border: 0 !important;
+    background: transparent !important;
+    
+    /* Typography reset */
+    font: inherit !important;
+    color: inherit !important;
+    text-decoration: none !important;
+    text-transform: none !important;
+    
+    /* Layout neutralization */
+    float: none !important;
+    clear: none !important;
+    /* DO NOT FORCE position: static - Elements need absolute positioning for Print Designer */
+    
+    /* Dimensional reset */
+    width: auto !important;
+    height: auto !important;
+    min-width: 0 !important;
+    min-height: 0 !important;
+    max-width: none !important;
+    max-height: none !important;
+    
+    /* Transform reset */
+    transform: none !important;
+    
+    /* Visual effects reset */
+    opacity: 1 !important;
+    visibility: inherit !important;
+    overflow: visible !important;
+    
+    /* Remove Bootstrap/Framework effects */
+    box-shadow: none !important;
+    outline: none !important;
+    border-radius: 0 !important;
+}
     /* === RESET GLOBAL COMPLET POUR PRINT DESIGNER === */
     body #__print_designer,
     .print-format-container #__print_designer,
@@ -62,7 +168,7 @@
         padding: 0 !important;
         width: auto !important;
         height: auto !important;
-        position: static !important;
+        /* position: static !important; - REMOVED: Critical fix for Print Designer positioning */
         float: none !important;
         clear: none !important;
     }
@@ -144,7 +250,7 @@
         outline: none !important;
         box-shadow: none !important;
         transform: none !important;
-        position: static !important;
+        /* position: static !important; - REMOVED: Critical fix for Print Designer positioning */
         float: none !important;
         clear: none !important;
     }
@@ -223,7 +329,7 @@
         box-shadow: none !important;
         outline: none !important;
         transform: none !important;
-        position: static !important;
+        /* position: static !important; - REMOVED: Conflicts with Print Designer absolute positioning */
         float: none !important;
         clear: none !important;
         width: auto !important;
@@ -239,6 +345,66 @@
     #__print_designer th,
     #__print_designer td {
         display: table-cell !important;
+    }
+
+    /* ============================================================================
+       RECONSTRUCTION DES STYLES ESSENTIELS POUR LE PRINT DESIGNER
+       ============================================================================ */
+       
+    /* Reconstruction Table Styling - Après Reset Total */
+    #__print_designer table {
+        display: table !important;
+        border-collapse: separate !important;
+        border-spacing: 0 !important;
+        empty-cells: show !important;
+        table-layout: auto !important;
+    }
+    
+    #__print_designer tr {
+        display: table-row !important;
+        vertical-align: inherit !important;
+    }
+    
+    #__print_designer th,
+    #__print_designer td {
+        display: table-cell !important;
+        vertical-align: inherit !important;
+        text-align: inherit !important;
+    }
+    
+    #__print_designer tbody { display: table-row-group !important; }
+    #__print_designer thead { display: table-header-group !important; }
+    #__print_designer tfoot { display: table-footer-group !important; }
+    #__print_designer colgroup { display: table-column-group !important; }
+    #__print_designer col { display: table-column !important; }
+    
+    /* Block Elements */
+    #__print_designer div,
+    #__print_designer p,
+    #__print_designer h1, #__print_designer h2, #__print_designer h3,
+    #__print_designer h4, #__print_designer h5, #__print_designer h6,
+    #__print_designer section, #__print_designer article {
+        display: block !important;
+    }
+    
+    /* Inline Elements */
+    #__print_designer span,
+    #__print_designer a,
+    #__print_designer strong, #__print_designer b,
+    #__print_designer em, #__print_designer i,
+    #__print_designer small, #__print_designer big {
+        display: inline !important;
+    }
+    
+    /* List Elements */
+    #__print_designer ul, #__print_designer ol { display: block !important; list-style: none !important; }
+    #__print_designer li { display: list-item !important; }
+    
+    /* Image Elements */
+    #__print_designer img {
+        display: inline-block !important;
+        max-width: 100% !important;
+        height: auto !important;
     }
     .flexDynamicText .baseSpanTag {
 		 display: block;
@@ -277,5 +443,37 @@
     * {
         -webkit-box-sizing: border-box;
     }
+
+    /* ============================================================================
+       CORRECTION SPÉCIFIQUE POUR LE POSITIONNEMENT PRINT DESIGNER
+       ============================================================================ */
+       
+    /* Préserver le positionnement absolu pour les éléments Print Designer */
+    #__print_designer table[style*="position:absolute"],
+    #__print_designer div[style*="position:absolute"],
+    #__print_designer span[style*="position:absolute"],
+    #__print_designer img[style*="position:absolute"],
+    #__print_designer .table-container,
+    #__print_designer .printTable {
+        position: absolute !important;
+    }
+    
+    /* Préserver le positionnement relatif pour les conteneurs dynamiques */
+    #__print_designer table[style*="position:relative"],
+    #__print_designer div[style*="position:relative"] {
+        position: relative !important;
+    }
+    
+    /* Assurer que les coordonnées top/left sont respectées */
+    #__print_designer [style*="top:"] {
+        position: absolute !important;
+    }
+    
+    /* Fix pour les marges dynamiques */
+    #__print_designer [style*="margin-top:"] {
+        position: relative !important;
+        display: block !important;
+    }
+    
 </style>
 {% endmacro %}
