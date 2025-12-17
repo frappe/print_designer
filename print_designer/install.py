@@ -55,7 +55,6 @@ def setup_chromium():
 
 	try:
 		executable = find_or_download_chromium_executable()
-		click.echo(f"Chromium is already set up at {executable}")
 	except Exception as e:
 		click.echo(f"Failed to setup Chromium: {e}")
 		raise RuntimeError(f"Failed to setup Chromium: {e}")
@@ -97,6 +96,8 @@ def find_or_download_chromium_executable():
 	if not exec_path.exists():
 		click.echo("Chromium is not available. downloading...")
 		download_chromium()
+	else:
+		click.echo(f"Chromium is already set up at {exec_path}")
 
 	if not exec_path.exists():
 		click.echo("Error while downloading chrome")
