@@ -161,9 +161,9 @@ def download_chromium():
 					os.rename(executable_shell, os.path.join(renamed_dir, "headless_shell"))
 				else:
 					raise RuntimeError("Failed to rename executable. Expected chrome-headless-shell.")
-			# Make the `headless_shell` executable
-			exec_path = os.path.join(renamed_dir, executable_path[1])
-			make_chromium_executable(exec_path)
+
+		exec_path = os.path.join(chromium_dir, chrome_folder_name, executable_path[1])
+		make_chromium_executable(exec_path)
 
 		click.echo(f"Chromium is ready to use at: {chromium_dir}")
 	except requests.Timeout:
