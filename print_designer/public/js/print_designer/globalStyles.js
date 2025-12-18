@@ -149,6 +149,7 @@ export const globalStyles = {
 		type: "image",
 		isDynamic: false,
 		mainRuleSelector: ".image",
+		imageFit: "contain",
 		style: {
 			display: "block",
 			border: "none",
