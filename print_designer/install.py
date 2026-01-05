@@ -323,7 +323,12 @@ def add_pdf_generator_option():
 
 
 def set_pdf_generator_option(action: Literal["add", "remove"]):
-	options = (frappe.get_meta("Print Format").get_field("pdf_generator").options).split("\n")
+	field = frappe.get_meta("Print Format").get_field("pdf_generator")
+
+	if not field:
+		return
+
+	options = (field.options).split("\n")
 
 	if "chrome" in options and action == "add":
 		return
