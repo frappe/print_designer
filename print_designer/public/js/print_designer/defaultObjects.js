@@ -58,6 +58,7 @@ export const createImage = (cordinates, parent = null) => {
 		isDropZone: false,
 		isDynamic: false,
 		image: null,
+		imageFit: "contain",
 		startX: cordinates.startX,
 		startY: cordinates.startY,
 		pageX: cordinates.pageX,
