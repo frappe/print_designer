@@ -5,6 +5,7 @@ import time
 
 import frappe
 from frappe.monitor import add_data_to_monitor
+from frappe.utils.data import get_url
 from frappe.utils.error import log_error
 from frappe.utils.jinja_globals import is_rtl
 from frappe.utils.pdf import pdf_body_html as fw_pdf_body_html
@@ -149,3 +150,10 @@ def measure_time(func):
 		return result
 
 	return wrapper
+
+
+def get_host_url():
+	if frappe.request:
+		return frappe.request.host_url
+	else:
+		return get_url() + "/"
