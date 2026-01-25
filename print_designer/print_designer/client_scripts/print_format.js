@@ -32,7 +32,7 @@ frappe.ui.form.on("Print Format", {
 			} else if (frm.doc.custom_format && !frm.doc.raw_printing) {
 				frm.set_df_property("html", "reqd", 1);
 			}
-			if (frappe.model.can_write("Customize Form")) {
+			if (frappe.model.can_write("Customize Form") && frm.doc.doc_type) {	
 				frappe.model.with_doctype(frm.doc.doc_type, function () {
 					let current_format = frappe.get_meta(frm.doc.DocType)?.default_print_format;
 					if (current_format == frm.doc.name) {

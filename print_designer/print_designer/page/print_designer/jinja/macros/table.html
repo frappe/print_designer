@@ -17,20 +17,24 @@
             </thead>
             <tbody>
             {% if element.columns %}
-            {% for row in doc.get(element.table.fieldname)%}
-                <tr>
-                    {% set isLastRow = loop.last %}
-                {% for column in element.columns%}
-                    <td style="{{convert_css(element.style)}}{%if row.idx % 2 == 0 %}{{convert_css(element.altStyle)}}{%endif%}{%if isLastRow%}border-bottom-style: solid !important;{%endif%}{%if loop.first%}border-left-style: solid !important;{%elif loop.last%}border-right-style: solid !important;{%endif%}{%- if column.style -%}{{convert_css(column.style)}}{%- endif -%}">
-                {% if column is mapping %}
-                    {% for field in column.dynamicContent%}
-                        {{ span_tag(field, element, row, send_to_jinja) }}
+                {% if not element.table or not element.table.fieldname %}
+                    <tr><td colspan="{{ element.columns | length }}" style="color: red; text-align: center; padding: 10px;">Error: Table field is not configured. Please select a child table field in the print designer.</td></tr>
+                {% else %}
+                    {% for row in doc.get(element.table.fieldname) or [] %}
+                        <tr>
+                            {% set isLastRow = loop.last %}
+                        {% for column in element.columns%}
+                            <td style="{{convert_css(element.style)}}{%if row.idx % 2 == 0 %}{{convert_css(element.altStyle)}}{%endif%}{%if isLastRow%}border-bottom-style: solid !important;{%endif%}{%if loop.first%}border-left-style: solid !important;{%elif loop.last%}border-right-style: solid !important;{%endif%}{%- if column.style -%}{{convert_css(column.style)}}{%- endif -%}">
+                            {% if column is mapping %}
+                                {% for field in column.dynamicContent%}
+                                    {{ span_tag(field, element, row, send_to_jinja) }}
+                                {% endfor %}
+                            {% endif %}
+                            </td>
+                        {% endfor %}
+                    </tr>
                     {% endfor %}
-            {% endif %}
-                    </td>
-                {% endfor %}
-                </tr>
-                {% endfor %}
+                {% endif %}
             {% endif %}
             </tbody>
     </table>
