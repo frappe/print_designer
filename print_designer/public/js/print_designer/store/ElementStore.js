@@ -165,53 +165,6 @@ export const useElementStore = defineStore("ElementStore", {
 				xhr.send(form_data);
 			});
 		},
-		async generatePreview() {
-			const MainStore = useMainStore();
-			// first delete old preview image
-			const filter = {
-				attached_to_doctype: "Print Format",
-				attached_to_name: MainStore.printDesignName,
-				attached_to_field: "print_designer_preview_img",
-			};
-			// get filename before uploading new file
-			let old_filename = await frappe.db.get_value("File", filter, "name");
-			old_filename = old_filename.message.name;
-			if (old_filename) {
-				frappe.db.delete_doc("File", old_filename);
-			}
-
-			const options = {
-				backgroundColor: "#ffffff",
-				height: MainStore.page.height,
-				width: MainStore.page.width,
-			};
-			const print_stylesheet = document.createElement("style");
-			print_stylesheet.rel = "stylesheet";
-			let st = `.main-container::after {
-				display: none;
-			}`;
-			document.getElementsByClassName("main-container")[0].appendChild(print_stylesheet);
-			print_stylesheet.sheet.insertRule(st, 0);
-			const preview_canvas = await html2canvas(
-				document.getElementsByClassName("main-container")[0],
-				options
-			);
-			document.getElementsByClassName("main-container")[0].removeChild(print_stylesheet);
-			preview_canvas.toBlob(async (blob) => {
-				const file = new File(
-					[blob],
-					`print_designer-${frappe.scrub(MainStore.printDesignName)}-preview.jpg`,
-					{ type: "image/jpeg" }
-				);
-				const file_data = {
-					file_obj: file,
-					optimize: 1,
-					name: file.name,
-					private: true,
-				};
-				await this.upload_file(file_data);
-			});
-		},
 		async saveElements() {
 			const MainStore = useMainStore();
 			if (this.checkIfAnyTableIsEmpty()) return;
@@ -268,7 +221,6 @@ export const useElementStore = defineStore("ElementStore", {
 					},
 					5
 				);
-				await this.generatePreview();
 			}
 		},
 		checkIfAnyTableIsEmpty() {
