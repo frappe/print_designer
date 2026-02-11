@@ -9,6 +9,7 @@ import requests
 
 # TODO: close browser when worker is killed.
 
+DEFAULT_CHROMIUM_START_TIMEOUT = 10 # seconds
 
 class FrappePDFGenerator:
 
@@ -74,7 +75,7 @@ class FrappePDFGenerator:
 		# TODO: Better Implement logic to support for persistent chrome proccess.
 		self.USE_PERSISTENT_CHROMIUM = site_config.get("use_persistent_chromium", False)
 		#  time to wait for chromium to start and provide dev tools url used in _set_devtools_url.
-		self.START_TIMEOUT = site_config.get("chromium_start_timeout", 3)
+		self.START_TIMEOUT = site_config.get("chromium_start_timeout", DEFAULT_CHROMIUM_START_TIMEOUT)
 
 		self._chromium_path = (
 			self._find_chromium_executable() if not self.CHROMIUM_BINARY_PATH else self.CHROMIUM_BINARY_PATH
