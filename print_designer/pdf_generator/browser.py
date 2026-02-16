@@ -113,6 +113,10 @@ class Browser:
 			"page",
 			"frompage",
 			"topage",
+			"pageNumber",
+			"totalPages",
+			"page-current",
+			"page-total",
 			"page_info_page",
 			"page_info_frompage",
 			"page_info_topage",
@@ -149,17 +153,33 @@ class Browser:
 		# set header and footer content ( not waiting for it to load yet).
 		if self.header_page:
 			self.header_page.wait_for_navigate()
-			self.header_page.set_content(
-				self.get_rendered_header_footer(self.header_content, "header", head, styles, css=[])
-			)
+			header_html = self.get_rendered_header_footer(self.header_content, "header", head, styles, css=[])
+			try:
+				frappe.logger("print_designer").info(
+					f"[PD_HEADER_PASS] header_content_has_img={bool(self.header_content.find('img'))} rendered_has_img={'<img' in header_html}"
+				)
+			except Exception:
+				pass
+			self.header_page.set_content(header_html)
 
 		if self.footer_page:
 			self.footer_page.wait_for_navigate()
-			self.footer_page.set_content(
-				self.get_rendered_header_footer(self.footer_content, "footer", head, styles, css=[])
-			)
+			footer_html = self.get_rendered_header_footer(self.footer_content, "footer", head, styles, css=[])
+			try:
+				frappe.logger("print_designer").info(
+					f"[PD_FOOTER_PASS] footer_content_has_img={bool(self.footer_content.find('img'))} rendered_has_img={'<img' in footer_html}"
+				)
+			except Exception:
+				pass
+			self.footer_page.set_content(footer_html)
 		if self.header_page:
 			self.header_page.wait_for_set_content()
+			self._wait_for_images_loaded(self.header_page)
+			try:
+				img_count = self.header_page.evaluate("document.images ? document.images.length : 0")
+				frappe.logger("print_designer").info(f"[PD_HEADER_PASS] header_page_image_count={img_count}")
+			except Exception:
+				pass
 			self.header_height = self.header_page.get_element_height()
 			self.is_header_dynamic = self.is_page_no_used(self.header_content)
 			del self.header_content
@@ -170,6 +190,12 @@ class Browser:
 
 		if self.footer_page:
 			self.footer_page.wait_for_set_content()
+			self._wait_for_images_loaded(self.footer_page)
+			try:
+				img_count = self.footer_page.evaluate("document.images ? document.images.length : 0")
+				frappe.logger("print_designer").info(f"[PD_FOOTER_PASS] footer_page_image_count={img_count}")
+			except Exception:
+				pass
 			self.footer_height = self.footer_page.get_element_height()
 			self.is_footer_dynamic = self.is_page_no_used(self.footer_content)
 			del self.footer_content
@@ -188,6 +214,30 @@ class Browser:
 			self.header_page.generate_pdf(wait_for_pdf=False)
 		if self.footer_page and not self.is_footer_dynamic:
 			self.footer_page.generate_pdf(wait_for_pdf=False)
+
+	def _wait_for_images_loaded(self, page):
+		# Ensure footer/header image dimensions are final before measuring height.
+		# Without this, chrome can under-measure and split one logical footer into 2 PDF pages.
+		page.evaluate(
+			"""
+			new Promise((resolve) => {
+				const imgs = Array.from(document.images || []);
+				if (!imgs.length) return resolve(true);
+				let left = imgs.length;
+				const done = () => { left -= 1; if (left <= 0) resolve(true); };
+				imgs.forEach((img) => {
+					if (img.complete) {
+						done();
+					} else {
+						img.addEventListener('load', done, { once: true });
+						img.addEventListener('error', done, { once: true });
+					}
+				});
+				setTimeout(() => resolve(true), 1500);
+			});
+			""",
+			await_promise=True,
+		)
 
 	def _get_converted_num(self, num_str, unit="px"):
 		parsed = parse_float_and_unit(num_str)
