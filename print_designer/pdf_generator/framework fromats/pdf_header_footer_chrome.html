@@ -12,18 +12,32 @@
 				border: 0 !important;
 				/* padding-top: 1mm !important; */
 			}
-			.letter-head,
-			.letter-head-footer {
+			.letter-head {
 				margin-top: -12mm !important;
+			}
+			.letter-head-footer {
+				margin-top: 0 !important;
 			}
 			/* Dont show explicit links for <a> tags */
 			@media print {
-				/* padding is added to simulate old wkhtmltopdf format prints */
+				{% if html_id == "footer-html" %}
+				/* Footer must keep print-format flow; do not force top padding/negative shift */
+				.wrapper {
+					box-sizing: border-box;
+					padding: 0 !important;
+					page-break-after: auto !important;
+				}
+				.letter-head-footer {
+					margin-top: 0 !important;
+				}
+				{% else %}
+				/* Header keeps legacy top padding behavior */
 				.wrapper {
 					box-sizing: border-box;
 					padding: 17mm 0 1mm !important;
 					page-break-after: always !important;
 				}
+				{% endif %}
 				[document-status] {
 					margin-bottom: 0 !important;
 				}
@@ -36,6 +50,13 @@
 		{% for tag in styles -%}
 			{{ tag | string }}
 		{%- endfor %}
+
+		<style>
+			/* Keep footer/header overlay layers transparent so merged layers don't hide each other */
+			html, body, .print-format, .wrapper {
+				background: transparent !important;
+			}
+		</style>
 	</head>
 	<body>
 		<div class="print-format">
