@@ -172,10 +172,6 @@ frappe.ui.form.PrintView = class PrintView extends frappe.ui.form.PrintView {
 		}
 		super.printit();
 	}
-	show(frm) {
-		super.show(frm);
-
-	}
 	preview() {
 		let print_format = this.get_print_format();
 		if (print_format.print_designer && print_format.print_designer_body) {
