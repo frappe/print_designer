@@ -63,7 +63,7 @@ class FrappePDFGenerator:
 			return
 
 		# only when we want to use chromium from a specific path ( incase we don't have chromium in bench folder )
-		self.CHROMIUM_BINARY_PATH = site_config.get("chromium_binary_path", "")
+		self.CHROMIUM_BINARY_PATH = site_config.get("chromium_binary_path") or site_config.get("chromium_path", "")
 		"""
 		Number of allowed open websocket connections to chromium.
 		This number will basically define how many concurrent requests can be handled by one chromium instance.
