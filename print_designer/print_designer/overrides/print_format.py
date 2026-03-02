@@ -74,6 +74,11 @@ class PDPrintFormat(PrintFormat):
 			file_export = file.as_dict(no_nulls=True)
 			file.run_method("before_export", file_export)
 			org_path = file.get_full_path()
+
+			if not os.path.exists(org_path):
+			    frappe.msgprint(_("Warning: Preview image file not found on disk. Skipping export of preview image."))
+			    return
+
 			target_path = os.path.join(folder, org_path.split("/")[-1])
 			shutil.copy2(org_path, target_path)
 			print(f"Wrote preview file for {self.doctype} {self.name} at {target_path}")
