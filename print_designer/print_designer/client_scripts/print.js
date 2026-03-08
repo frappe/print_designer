@@ -28,6 +28,11 @@ frappe.pages["print"].on_page_load = function (wrapper) {
 			print_view.show(print_view.frm);
 		}
 	});
+
+	$(wrapper).bind("hide", () => {
+		// empty the print view on hide to remove the pdf from DOM
+		print_view.page.main.empty();
+	});
 };
 frappe.ui.form.PrintView = class PrintView extends frappe.ui.form.PrintView {
 	constructor(wrapper) {
