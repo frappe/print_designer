@@ -32,7 +32,7 @@ def delete_custom_fields(custom_fields):
 
 
 def remove_pdf_generator_option():
-	delete_property_setter("Print Format", "pdf_generator")
+	delete_property_setter("Print Format", field_name="pdf_generator")
 
 
 def before_uninstall():
