@@ -2,6 +2,7 @@ import frappe
 
 from print_designer.custom_fields import CUSTOM_FIELDS
 from print_designer.install import set_pdf_generator_option
+from frappe.custom.doctype.property_setter.property_setter import delete_property_setter
 
 
 def delete_custom_fields(custom_fields):
@@ -31,7 +32,7 @@ def delete_custom_fields(custom_fields):
 
 
 def remove_pdf_generator_option():
-	set_pdf_generator_option("remove")
+	delete_property_setter("Print Format", "pdf_generator")
 
 
 def before_uninstall():
