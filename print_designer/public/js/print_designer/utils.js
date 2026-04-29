@@ -558,6 +558,87 @@ export const cloneElement = () => {
 	MainStore.lastCloned = clonedElements;
 };
 
+/**
+ * Copia los elementos actualmente seleccionados al clipboard interno.
+ * Se guardan snapshots independientes (sin referencias al DOM ni al parent).
+ */
+export const copyCurrentElements = () => {
+	const MainStore = useMainStore();
+	if (!MainStore.getCurrentElementsValues.length) return;
+	MainStore.clipboard = MainStore.getCurrentElementsValues.map((element) => {
+		// Guardamos una copia plana del elemento para restaurarlo en paste
+		const snapshot = JSON.parse(
+			JSON.stringify(element, (key, value) => {
+				// Excluir referencias circulares/DOM que no son serializables
+				if (key === "DOMRef" || key === "parent" || key === "snapPoints" || key === "snapEdges") {
+					return undefined;
+				}
+				return value;
+			})
+		);
+		// Preservamos la referencia al parent (page/rectangle) para pegar en el mismo contenedor
+		snapshot._sourceParent = element.parent;
+		return snapshot;
+	});
+};
+
+const PASTE_OFFSET = 20;
+
+/**
+ * Pega los elementos del clipboard con un offset de PASTE_OFFSET px en X e Y.
+ * Si el elemento pegado quedaría fuera del área visible del parent, se recorta al borde.
+ * Los elementos pegados pasan a ser la selección activa.
+ */
+export const pasteElements = () => {
+	const MainStore = useMainStore();
+	if (!MainStore.clipboard.length) return;
+
+	// Limpiar selección actual
+	MainStore.getCurrentElementsId.forEach((id) => {
+		delete MainStore.currentElements[id];
+	});
+
+	MainStore.clipboard.forEach((snapshot) => {
+		const parent = snapshot._sourceParent;
+		if (!parent) return;
+
+		// Calcular límites del área visible del parent
+		const parentRect = parent.DOMRef ? parent.DOMRef.getBoundingClientRect() : null;
+		const maxWidth = parentRect ? parentRect.width : parent.width || 0;
+		const maxHeight = parentRect ? parentRect.height : parent.height || 0;
+
+		// Calcular nueva posición con offset, clampada al área del parent
+		const newStartX = Math.min(
+			snapshot.startX + PASTE_OFFSET,
+			maxWidth - snapshot.width - 1
+		);
+		const newStartY = Math.min(
+			snapshot.startY + PASTE_OFFSET,
+			maxHeight - snapshot.height - 1
+		);
+
+		// Reconstruir el elemento como un clon fresco usando childrensCleanUp vía recursiveChildrens
+		const clonedElement = { ...snapshot };
+		delete clonedElement._sourceParent;
+
+		// Asignar nueva posición antes de limpiar ids/refs
+		clonedElement.startX = Math.max(0, newStartX);
+		clonedElement.startY = Math.max(0, newStartY);
+		clonedElement.pageX = clonedElement.startX;
+		clonedElement.pageY = clonedElement.startY;
+
+		// Restaurar la referencia al parent para que recursiveChildrens pueda hacer push
+		clonedElement.parent = parent;
+
+		// recursiveChildrens asigna nuevo id, limpia DOMRef/snapPoints y hace push a parent.childrens
+		recursiveChildrens({ element: clonedElement, isClone: true });
+
+		MainStore.currentElements[clonedElement.id] = clonedElement;
+	});
+
+	checkUpdateElementOverlapping();
+};
+
 export const getSnapPointsAndEdges = (element) => {
 	const boundingRect = {};
 	const observer = new IntersectionObserver((entries) => {
