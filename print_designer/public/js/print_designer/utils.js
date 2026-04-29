@@ -584,16 +584,10 @@ export const copyCurrentElements = () => {
 
 const PASTE_OFFSET = 20;
 
-/**
- * Pega los elementos del clipboard con un offset de PASTE_OFFSET px en X e Y.
- * Si el elemento pegado quedaría fuera del área visible del parent, se recorta al borde.
- * Los elementos pegados pasan a ser la selección activa.
- */
 export const pasteElements = () => {
 	const MainStore = useMainStore();
 	if (!MainStore.clipboard.length) return;
-
-	// Limpiar selección actual
+	
 	MainStore.getCurrentElementsId.forEach((id) => {
 		delete MainStore.currentElements[id];
 	});
@@ -602,12 +596,10 @@ export const pasteElements = () => {
 		const parent = snapshot._sourceParent;
 		if (!parent) return;
 
-		// Calcular límites del área visible del parent
 		const parentRect = parent.DOMRef ? parent.DOMRef.getBoundingClientRect() : null;
 		const maxWidth = parentRect ? parentRect.width : parent.width || 0;
 		const maxHeight = parentRect ? parentRect.height : parent.height || 0;
 
-		// Calcular nueva posición con offset, clampada al área del parent
 		const newStartX = Math.min(
 			snapshot.startX + PASTE_OFFSET,
 			maxWidth - snapshot.width - 1
@@ -617,20 +609,16 @@ export const pasteElements = () => {
 			maxHeight - snapshot.height - 1
 		);
 
-		// Reconstruir el elemento como un clon fresco usando childrensCleanUp vía recursiveChildrens
 		const clonedElement = { ...snapshot };
 		delete clonedElement._sourceParent;
 
-		// Asignar nueva posición antes de limpiar ids/refs
 		clonedElement.startX = Math.max(0, newStartX);
 		clonedElement.startY = Math.max(0, newStartY);
 		clonedElement.pageX = clonedElement.startX;
 		clonedElement.pageY = clonedElement.startY;
 
-		// Restaurar la referencia al parent para que recursiveChildrens pueda hacer push
 		clonedElement.parent = parent;
 
-		// recursiveChildrens asigna nuevo id, limpia DOMRef/snapPoints y hace push a parent.childrens
 		recursiveChildrens({ element: clonedElement, isClone: true });
 
 		MainStore.currentElements[clonedElement.id] = clonedElement;
