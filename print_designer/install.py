@@ -319,10 +319,10 @@ def calculate_platform():
 
 
 def add_pdf_generator_option():
-	set_pdf_generator_option("add")
+	set_pdf_generator_option()
 
 
-def set_pdf_generator_option(action: Literal["add", "remove"]):
+def set_pdf_generator_option():
 	field = frappe.get_meta("Print Format").get_field("pdf_generator")
 
 	if not field:
@@ -330,15 +330,11 @@ def set_pdf_generator_option(action: Literal["add", "remove"]):
 
 	options = (field.options).split("\n")
 
-	if "chrome" in options and action == "add":
+	if "chrome" in options:
 		return
 
-	if action == "add":
-		if "chrome" not in options:
-			options.append("chrome")
-	elif action == "remove":
-		if "chrome" in options:
-			options.remove("chrome")
+	if "chrome" not in options:
+		options.append("chrome")
 
 	make_property_setter(
 		"Print Format",
