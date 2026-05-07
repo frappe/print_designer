@@ -17,6 +17,12 @@ const update_page_no = (clone, i, no_of_pages, print_designer) => {
 	} else {
 		replaceText(clone, "page", i);
 		replaceText(clone, "topage", no_of_pages);
+		// Chromium-native token classes used in some templates
+		replaceText(clone, "pageNumber", i);
+		replaceText(clone, "totalPages", no_of_pages);
+		// Custom classes used by older custom formats
+		replaceText(clone, "page-current", i);
+		replaceText(clone, "page-total", no_of_pages);
 		replaceText(clone, "date", dateObj.toLocaleDateString());
 		replaceText(clone, "isodate", dateObj.toISOString());
 		replaceText(clone, "time", dateObj.toLocaleTimeString());
