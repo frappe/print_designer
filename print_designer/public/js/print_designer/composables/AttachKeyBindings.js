@@ -59,6 +59,16 @@ export function useAttachKeyBindings() {
 						MainStore.currentElements[element.id] = element;
 					});
 				});
+			} else if (!e.repeat && ["z", "Z"].indexOf(e.key) != -1) {
+				e.preventDefault();
+				if (e.shiftKey) {
+					ElementStore.redoHistory();
+				} else {
+					ElementStore.undoHistory();
+				}
+			} else if (!e.repeat && ["y", "Y"].indexOf(e.key) != -1) {
+				e.preventDefault();
+				ElementStore.redoHistory();
 			} else if (!e.repeat && ["s", "S"].indexOf(e.key) != -1) {
 				await ElementStore.saveElements();
 			} else if (!e.repeat && ["l", "L"].indexOf(e.key) != -1) {

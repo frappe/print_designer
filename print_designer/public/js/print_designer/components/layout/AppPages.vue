@@ -62,7 +62,9 @@ import BaseStaticText from "../base/BaseStaticText.vue";
 import BaseDynamicText from "../base/BaseDynamicText.vue";
 import BaseImage from "../base/BaseImage.vue";
 import BaseTable from "../base/BaseTable.vue";
+import BaseGrid from "../base/BaseGrid.vue";
 import BaseBarcode from "../base/BaseBarcode.vue";
+import { createGridCells, normalizeGridStructure } from "../../defaultObjects";
 
 import { useDraw } from "../../composables/Draw";
 import { useElement } from "../../composables/Element";
@@ -93,6 +95,7 @@ const isComponent = Object.freeze({
 	},
 	image: BaseImage,
 	table: BaseTable,
+	grid: BaseGrid,
 	barcode: BaseBarcode,
 });
 
@@ -120,13 +123,15 @@ const getMarginContainerStyle = computed(() => {
 onMounted(() => {
 	// TODO: Refactor this as per the new store structure
 	ElementStore.$subscribe((mutation, state) => {
-		if (!mutation?.events) return;
-		if (
-			(mutation.events.type === "set" && mutation.events.key == "Elements") ||
-			(mutation.events.type === "add" && mutation.events.newValue.parent?.type == "page")
-		) {
-			checkUpdateElementOverlapping();
+		if (mutation?.events) {
+			if (
+				(mutation.events.type === "set" && mutation.events.key == "Elements") ||
+				(mutation.events.type === "add" && mutation.events.newValue.parent?.type == "page")
+			) {
+				checkUpdateElementOverlapping();
+			}
 		}
+		ElementStore.scheduleHistorySnapshot();
 	});
 	watch(
 		() => [MainStore.page.headerHeight, MainStore.page.footerHeight],
@@ -139,6 +144,21 @@ onMounted(() => {
 				MainStore.page.marginBottom;
 			props.page.footer[0].height = MainStore.page.footerHeight;
 		}
+	);
+	watch(
+		() => [
+			MainStore.page.height,
+			MainStore.page.width,
+			MainStore.page.marginTop,
+			MainStore.page.marginBottom,
+			MainStore.page.marginLeft,
+			MainStore.page.marginRight,
+			MainStore.page.headerHeight,
+			MainStore.page.footerHeight,
+			MainStore.currentPageSize,
+			MainStore.isHeaderFooterAuto,
+		],
+		() => ElementStore.scheduleHistorySnapshot()
 	);
 	const observer = new IntersectionObserver(
 		function (entries, observer) {
@@ -256,6 +276,19 @@ const handleMouseMove = (e) => {
 					}
 				}
 			}
+		} else if (MainStore.activeControl == "grid") {
+			let width = MainStore.currentDrawListener.parameters.width;
+			let height = MainStore.currentDrawListener.parameters.height;
+			let columns = Math.max(1, Math.floor(width / 100));
+			let rows = Math.max(1, Math.floor(height / 32));
+			let grid = MainStore.lastCreatedElement;
+			if (grid.rows != rows || grid.columns != columns) {
+				const previousRows = grid.rows;
+				grid.rows = rows;
+				grid.columns = columns;
+				grid.cells = createGridCells(rows, columns, grid.cells);
+				normalizeGridStructure(grid, previousRows);
+			}
 		}
 	}
 };
@@ -297,6 +330,8 @@ const handleMouseUp = (e) => {
 				if (MainStore.frappeControls.table?.get_value() == "") {
 					MainStore.frappeControls.table.set_focus();
 				}
+			} else if (MainStore.activeControl == "grid") {
+				MainStore.setActiveControl("MousePointer");
 			}
 		} else {
 			MainStore.currentDrawListener?.drawEventHandler.mouseup(e);

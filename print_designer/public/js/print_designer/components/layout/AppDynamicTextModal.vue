@@ -365,7 +365,8 @@ small {
 .dynamic-results {
 	display: flex;
 	flex: auto;
-	max-height: max(calc(94vh - 318px), 150px);
+	min-height: 0;
+	overflow: hidden;
 	.searchbar {
 		height: 26px;
 		width: 100%;
@@ -460,7 +461,8 @@ small {
 	.main-section {
 		flex: auto;
 		padding: 0px 15px;
-		max-height: min(50vh, 650px);
+		min-height: 0;
+		min-width: 0;
 		overflow: auto;
 		&::-webkit-scrollbar {
 			width: 5px;
@@ -525,6 +527,7 @@ small {
 					font-size: var(--text-md);
 					flex: 33.3333333333%;
 					max-width: 33.3333333333%;
+					min-width: 0;
 					padding: var(--padding-sm) 0;
 					border-bottom: 1px solid var(--border-color);
 
@@ -539,6 +542,12 @@ small {
 							padding: 0px 15px;
 							flex: 0 0 100%;
 							max-width: 100%;
+							min-width: 0;
+							span {
+								overflow: hidden;
+								text-overflow: ellipsis;
+								white-space: nowrap;
+							}
 						}
 						&:hover {
 							border: 1px solid var(--gray-600);
@@ -548,6 +557,7 @@ small {
 								padding: 0px 14px;
 								flex: 0 0 100%;
 								max-width: 100%;
+								min-width: 0;
 							}
 						}
 					}
@@ -571,6 +581,7 @@ small {
 							display: flex;
 							justify-content: space-between;
 							align-items: center;
+							min-width: 0;
 						}
 					}
 				}

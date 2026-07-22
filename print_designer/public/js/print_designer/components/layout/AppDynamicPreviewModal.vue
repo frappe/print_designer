@@ -366,11 +366,10 @@ const deleteField = (ev) => {
 <style lang="scss" scoped>
 .preview-container {
 	flex: 1;
+	min-height: 80px;
 	padding: 0px 15px;
 	border: 1px solid var(--gray-200);
 	border-radius: var(--border-radius);
-	height: calc(23vh - 45px);
-	min-height: 100px;
 	width: 100%;
 	background-color: var(--subtle-fg);
 	overflow: auto;
@@ -430,16 +429,21 @@ const deleteField = (ev) => {
 }
 .footer {
 	display: flex;
+	flex: 0 0 auto;
 	align-items: center;
 	justify-content: space-between;
+	min-height: 42px;
+	overflow: hidden;
 	.icons {
 		display: flex;
 		flex: 1;
+		min-width: 0;
 		align-items: center;
 		font-size: 16px;
 		justify-content: flex-start;
 		padding: 10px;
 		color: var(--text-muted);
+		overflow: auto;
 
 		& > * {
 			font-weight: 500;

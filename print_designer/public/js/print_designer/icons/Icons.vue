@@ -41,6 +41,22 @@
 				</filter>
 			</defs>
 		</symbol>
+		<symbol id="undoTool" fill="none" viewBox="0 0 16 16">
+			<path
+				fill="var(--icon-stroke)"
+				fill-rule="evenodd"
+				d="M6.854 2.146a.5.5 0 0 1 0 .708L4.707 5H9.5A4.5 4.5 0 0 1 14 9.5V10a4 4 0 0 1-4 4H6.5a.5.5 0 0 1 0-1H10a3 3 0 0 0 3-3v-.5A3.5 3.5 0 0 0 9.5 6H4.707l2.147 2.146a.5.5 0 1 1-.708.708l-3-3a.5.5 0 0 1 0-.708l3-3a.5.5 0 0 1 .708 0Z"
+				clip-rule="evenodd"
+			/>
+		</symbol>
+		<symbol id="redoTool" fill="none" viewBox="0 0 16 16">
+			<path
+				fill="var(--icon-stroke)"
+				fill-rule="evenodd"
+				d="M9.146 2.146a.5.5 0 0 0 0 .708L11.293 5H6.5A4.5 4.5 0 0 0 2 9.5V10a4 4 0 0 0 4 4h3.5a.5.5 0 0 0 0-1H6a3 3 0 0 1-3-3v-.5A3.5 3.5 0 0 1 6.5 6h4.793L9.146 8.146a.5.5 0 1 0 .708.708l3-3a.5.5 0 0 0 0-.708l-3-3a.5.5 0 0 0-.708 0Z"
+				clip-rule="evenodd"
+			/>
+		</symbol>
 		<symbol id="mouseTool" fill="none" viewBox="0 0 16 16">
 			<path
 				fill="var(--icon-stroke)"
@@ -62,6 +78,14 @@
 				fill="var(--icon-stroke)"
 				fill-rule="evenodd"
 				d="M4.5 2h-1A1.5 1.5 0 0 0 2 3.5v9A1.5 1.5 0 0 0 3.5 14h1V2ZM5 1H3.5A2.5 2.5 0 0 0 1 3.5v9A2.5 2.5 0 0 0 3.5 15h9a2.5 2.5 0 0 0 2.5-2.5v-9A2.5 2.5 0 0 0 12.5 1H5Zm.5 1v3H14V3.5A1.5 1.5 0 0 0 12.5 2h-7Zm0 4v3.5H14V6H5.5Zm0 4.5V14h7a1.5 1.5 0 0 0 1.5-1.5v-2H5.5Z"
+				clip-rule="evenodd"
+			/>
+		</symbol>
+		<symbol id="gridTool" fill="none" viewBox="0 0 16 16">
+			<path
+				fill="var(--icon-stroke)"
+				fill-rule="evenodd"
+				d="M3.5 2A1.5 1.5 0 0 0 2 3.5v9A1.5 1.5 0 0 0 3.5 14h9a1.5 1.5 0 0 0 1.5-1.5v-9A1.5 1.5 0 0 0 12.5 2h-9ZM1 3.5A2.5 2.5 0 0 1 3.5 1h9A2.5 2.5 0 0 1 15 3.5v9a2.5 2.5 0 0 1-2.5 2.5h-9A2.5 2.5 0 0 1 1 12.5v-9ZM5.5 2v12h1V2h-1Zm4 0v12h1V2h-1ZM2 5.5v1h12v-1H2Zm0 4v1h12v-1H2Z"
 				clip-rule="evenodd"
 			/>
 		</symbol>

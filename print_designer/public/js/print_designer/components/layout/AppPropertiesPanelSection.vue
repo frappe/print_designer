@@ -1,5 +1,5 @@
 <template>
-	<div :class="section.title && 'settings-section'" v-if="section.sectionCondtional()">
+	<div :class="section.title && 'settings-section'" v-if="shouldShowSection(section)">
 		<p v-if="section.title" class="section-title">{{ section.title }}</p>
 		<div class="fields-container">
 			<template v-for="field in section.fields" :key="field.name">
@@ -9,15 +9,11 @@
 						{
 							'panel-border-top':
 								field.findIndex(
-									(fd) =>
-										(typeof fd.condtional != 'function' || fd.condtional()) &&
-										fd.parentBorderTop
+									(fd) => shouldShowField(fd) && fd.parentBorderTop
 								) != -1,
 							'panel-border-bottom':
 								field.findIndex(
-									(fd) =>
-										(typeof fd.condtional != 'function' || fd.condtional()) &&
-										fd.parentBorderBottom
+									(fd) => shouldShowField(fd) && fd.parentBorderBottom
 								) != -1,
 						},
 					]"
@@ -34,7 +30,7 @@
 								},
 							]"
 							:style="[fd.flex && { flex: fd.flex }]"
-							v-if="typeof fd.condtional != 'function' || fd.condtional()"
+							v-if="shouldShowField(fd)"
 							@loadstart="borderCheckOnLoad(fd)"
 						>
 							<IconsUse
@@ -196,10 +192,7 @@
 					</template>
 				</div>
 				<div
-					v-else-if="
-						field.frappeControl &&
-						(typeof field.condtional != 'function' || field.condtional())
-					"
+					v-else-if="field.frappeControl && shouldShowField(field)"
 					:class="['frappeControl']"
 				>
 					<label
@@ -259,6 +252,25 @@ const props = defineProps({
 		required: true,
 	},
 });
+
+const shouldShowSection = (section) => {
+	if (typeof section.sectionCondtional != "function") return true;
+	try {
+		return !!section.sectionCondtional();
+	} catch {
+		return false;
+	}
+};
+
+const shouldShowField = (field) => {
+	if (typeof field.condtional != "function") return true;
+	try {
+		return !!field.condtional();
+	} catch {
+		return false;
+	}
+};
+
 const handleKeyDown = ({
 	$event: e,
 	object,

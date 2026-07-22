@@ -206,6 +206,8 @@ onUnmounted(() => {
 		padding: 0.5rem;
 		display: flex;
 		flex-direction: column;
+		min-height: 0;
+		overflow: hidden;
 	}
 	.modal-content {
 		border: 1px solid rgba(0, 0, 0, 0.05);

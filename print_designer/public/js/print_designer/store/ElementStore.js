@@ -1,4 +1,5 @@
 import { defineStore } from "pinia";
+import { nextTick } from "vue";
 import { useMainStore } from "./MainStore";
 import {
 	createText,
@@ -6,6 +7,9 @@ import {
 	createDynamicText,
 	createImage,
 	createTable,
+	createGrid,
+	createGridCells,
+	normalizeGridStructure,
 	createBarcode,
 } from "../defaultObjects";
 import {
@@ -17,13 +21,318 @@ import {
 
 import html2canvas from "html2canvas";
 
+const parseJSON = (value, fallback) => {
+	if (!value) return fallback;
+	try {
+		return JSON.parse(value);
+	} catch {
+		return fallback;
+	}
+};
+
+const cloneObject = (value) => {
+	return value && typeof value == "object" && !Array.isArray(value) ? { ...value } : {};
+};
+
+const normalizeDynamicContent = (fields = [], clearValues = false) => {
+	return (Array.isArray(fields) ? fields : []).map((field) => {
+		const newField = {
+			...field,
+			style: cloneObject(field?.style),
+			labelStyle: cloneObject(field?.labelStyle),
+		};
+		if (clearValues && !newField.is_static) {
+			newField.value = "";
+		}
+		return newField;
+	});
+};
+
+const normalizeDesignerElement = (element) => {
+	if (!element.styleEditMode) {
+		element.styleEditMode = "main";
+	}
+	element.style = cloneObject(element.style);
+	element.classes = Array.isArray(element.classes) ? [...element.classes] : [];
+
+	if (["text", "barcode"].includes(element.type)) {
+		element.labelStyle = cloneObject(element.labelStyle);
+		element.dynamicContent = normalizeDynamicContent(element.dynamicContent);
+		element.selectedDynamicText = null;
+	}
+
+	if (element.type == "table") {
+		element.labelStyle = cloneObject(element.labelStyle);
+		element.headerStyle = cloneObject(element.headerStyle);
+		element.altStyle = cloneObject(element.altStyle);
+		element.columns = (Array.isArray(element.columns) ? element.columns : []).map(
+			(column) => ({
+				...column,
+				style: cloneObject(column.style),
+				labelStyle: cloneObject(column.labelStyle),
+				dynamicContent: normalizeDynamicContent(column.dynamicContent),
+				selectedDynamicText: null,
+			})
+		);
+	}
+
+	if (element.type == "grid") {
+		const previousRows = Math.max(parseInt(element.rows) || 1, 1);
+		const hasPersistedRowHeights =
+			Array.isArray(element.rowHeights) &&
+			element.rowHeights.some((rowHeight) => parseFloat(rowHeight) > 0);
+		element.labelStyle = cloneObject(element.labelStyle);
+		element.rows = Math.max(parseInt(element.rows) || 1, 1);
+		element.columns = Math.max(parseInt(element.columns) || 1, 1);
+		element.cells = createGridCells(element.rows, element.columns, element.cells || []).map(
+			(cell) => ({
+				...cell,
+				style: cloneObject(cell.style),
+				labelStyle: cloneObject(cell.labelStyle),
+				dynamicContent: normalizeDynamicContent(cell.dynamicContent),
+			})
+		);
+		normalizeGridStructure(element, previousRows);
+		element._needsMeasuredRowHeights = !hasPersistedRowHeights;
+		element.selectedCell = null;
+		element.selectedDynamicText = null;
+	}
+
+	if (["rectangle", "page"].includes(element.type)) {
+		element.childrens = Array.isArray(element.childrens) ? element.childrens : [];
+	}
+
+	return element;
+};
+
+const normalizeGlobalStyleSettings = (savedStyles = {}, defaultStyles = {}) => {
+	const normalizedStyles = JSON.parse(JSON.stringify(defaultStyles || {}));
+	Object.entries(savedStyles || {}).forEach(([name, savedStyle]) => {
+		if (!savedStyle || typeof savedStyle != "object" || Array.isArray(savedStyle)) return;
+		const mergedStyle = {
+			...(normalizedStyles[name] || {}),
+			...savedStyle,
+		};
+		mergedStyle.style = cloneObject(mergedStyle.style);
+		mergedStyle.labelStyle = cloneObject(mergedStyle.labelStyle);
+		mergedStyle.headerStyle = cloneObject(mergedStyle.headerStyle);
+		mergedStyle.altStyle = cloneObject(mergedStyle.altStyle);
+		delete mergedStyle.mainCssRule;
+		delete mergedStyle.labelCssRule;
+		delete mergedStyle.headerCssRule;
+		delete mergedStyle.altCssRule;
+		normalizedStyles[name] = mergedStyle;
+	});
+	return normalizedStyles;
+};
+
+const HISTORY_SKIPPED_KEYS = new Set([
+	"DOMRef",
+	"parent",
+	"snapPoints",
+	"snapEdges",
+	"printY",
+	"isDraggable",
+	"isResizable",
+	"isDropZone",
+	"contenteditable",
+	"selectedDynamicText",
+	"selectedCell",
+	"_needsMeasuredRowHeights",
+	"header",
+	"footer",
+]);
+
+const serializeHistoryValue = (value) => {
+	if (Array.isArray(value)) {
+		return value.map((entry) => serializeHistoryValue(entry));
+	}
+	if (!value || typeof value != "object") {
+		return value;
+	}
+	const serialized = {};
+	Object.keys(value).forEach((key) => {
+		if (HISTORY_SKIPPED_KEYS.has(key)) return;
+		serialized[key] = serializeHistoryValue(value[key]);
+	});
+	return serialized;
+};
+
+let historySnapshotTimer = null;
+
+const releaseHistoryRestoreLock = (store) => {
+	nextTick(() => {
+		setTimeout(() => {
+			const restoredSnapshot = store.getHistorySnapshot();
+			if (store.historyIndex >= 0) {
+				store.historySnapshots[store.historyIndex] = restoredSnapshot;
+			}
+			store.historyLastSnapshot = restoredSnapshot;
+			store.isApplyingHistory = false;
+		}, 0);
+	});
+};
+
 export const useElementStore = defineStore("ElementStore", {
 	state: () => ({
 		Elements: new Array(),
 		Headers: new Array(),
 		Footers: new Array(),
+		historySnapshots: [],
+		historyIndex: -1,
+		historyLimit: 10,
+		historyLastSnapshot: "",
+		historyReady: false,
+		isApplyingHistory: false,
+		isRecordingHistory: false,
 	}),
+	getters: {
+		canUndo: (state) => state.historyIndex > 0,
+		canRedo: (state) =>
+			state.historyIndex >= 0 && state.historyIndex < state.historySnapshots.length - 1,
+	},
 	actions: {
+		getHistorySnapshot() {
+			const MainStore = useMainStore();
+			return JSON.stringify({
+				Elements: serializeHistoryValue(this.Elements),
+				Headers: serializeHistoryValue(this.Headers),
+				Footers: serializeHistoryValue(this.Footers),
+				page: serializeHistoryValue(MainStore.page),
+				currentPageSize: MainStore.currentPageSize,
+				isHeaderFooterAuto: MainStore.isHeaderFooterAuto,
+			});
+		},
+		clearHistoryTimer() {
+			if (!historySnapshotTimer) return;
+			clearTimeout(historySnapshotTimer);
+			historySnapshotTimer = null;
+		},
+		resetHistory() {
+			this.isRecordingHistory = true;
+			this.clearHistoryTimer();
+			this.historyLastSnapshot = this.getHistorySnapshot();
+			this.historySnapshots = [this.historyLastSnapshot];
+			this.historyIndex = 0;
+			this.historyReady = true;
+			this.isRecordingHistory = false;
+		},
+		scheduleHistorySnapshot({ immediate = false } = {}) {
+			const MainStore = useMainStore();
+			if (
+				!this.historyReady ||
+				this.isApplyingHistory ||
+				this.isRecordingHistory ||
+				MainStore.mode != "editing"
+			) {
+				return;
+			}
+			this.clearHistoryTimer();
+			if (immediate) {
+				this.recordHistorySnapshot();
+				return;
+			}
+			historySnapshotTimer = setTimeout(() => {
+				historySnapshotTimer = null;
+				this.recordHistorySnapshot();
+			}, 250);
+		},
+		recordHistorySnapshot() {
+			if (!this.historyReady || this.isApplyingHistory || this.isRecordingHistory) return;
+			const snapshot = this.getHistorySnapshot();
+			if (snapshot == this.historyLastSnapshot) return;
+			this.isRecordingHistory = true;
+			this.historySnapshots.splice(this.historyIndex + 1);
+			this.historySnapshots.push(snapshot);
+			const snapshotLimit = this.historyLimit + 1;
+			if (this.historySnapshots.length > snapshotLimit) {
+				this.historySnapshots.splice(0, this.historySnapshots.length - snapshotLimit);
+			}
+			this.historyIndex = this.historySnapshots.length - 1;
+			this.historyLastSnapshot = snapshot;
+			this.isRecordingHistory = false;
+		},
+		restoreHistorySnapshot(snapshot) {
+			if (!snapshot) return;
+			const MainStore = useMainStore();
+			const parsedSnapshot = JSON.parse(snapshot);
+			this.isApplyingHistory = true;
+			this.clearHistoryTimer();
+			MainStore.currentElements = {};
+			MainStore.lastCreatedElement = null;
+			MainStore.openModal = false;
+			MainStore.openDynamicModal = null;
+			MainStore.openImageModal = null;
+			MainStore.openBarcodeModal = null;
+			MainStore.openTableColumnModal = null;
+			MainStore.dynamicData.length = 0;
+			Object.assign(MainStore.page, parsedSnapshot.page || {});
+			if (parsedSnapshot.currentPageSize) {
+				MainStore.currentPageSize = parsedSnapshot.currentPageSize;
+			}
+			if (typeof parsedSnapshot.isHeaderFooterAuto == "boolean") {
+				MainStore.isHeaderFooterAuto = parsedSnapshot.isHeaderFooterAuto;
+			}
+			this.Headers.length = 0;
+			this.Headers.push(
+				...(parsedSnapshot.Headers || []).map((header) =>
+					this.childrensLoad(header, this.Headers)
+				)
+			);
+			this.Footers.length = 0;
+			this.Footers.push(
+				...(parsedSnapshot.Footers || []).map((footer) =>
+					this.childrensLoad(footer, this.Footers)
+				)
+			);
+			this.Elements.length = 0;
+			this.Elements.push(...(parsedSnapshot.Elements || []));
+			this.Elements.forEach((page, index) => {
+				normalizeDesignerElement(page);
+				page.parent = this.Elements;
+				page.DOMRef = null;
+				page.isDropZone = true;
+				page.header = [
+					createHeaderFooterElement(
+						this.getHeaderObject(index)?.childrens || [],
+						"header"
+					),
+				];
+				page.footer = [
+					createHeaderFooterElement(
+						this.getFooterObject(index)?.childrens || [],
+						"footer"
+					),
+				];
+				this.setElementProperties(page);
+			});
+			releaseHistoryRestoreLock(this);
+		},
+		undoHistory() {
+			this.clearHistoryTimer();
+			this.recordHistorySnapshot();
+			if (!this.canUndo) return;
+			this.isRecordingHistory = true;
+			this.historyIndex -= 1;
+			const previousSnapshot = this.historySnapshots[this.historyIndex];
+			this.historyLastSnapshot = previousSnapshot;
+			this.isRecordingHistory = false;
+			this.restoreHistorySnapshot(previousSnapshot);
+		},
+		redoHistory() {
+			this.clearHistoryTimer();
+			if (this.getHistorySnapshot() != this.historyLastSnapshot) {
+				this.recordHistorySnapshot();
+				return;
+			}
+			if (!this.canRedo) return;
+			this.isRecordingHistory = true;
+			this.historyIndex += 1;
+			const nextSnapshot = this.historySnapshots[this.historyIndex];
+			this.historyLastSnapshot = nextSnapshot;
+			this.isRecordingHistory = false;
+			this.restoreHistorySnapshot(nextSnapshot);
+		},
 		createNewObject(event, element) {
 			let newElement;
 			const MainStore = useMainStore();
@@ -39,6 +348,8 @@ export const useElementStore = defineStore("ElementStore", {
 				newElement = createImage(event, element);
 			} else if (MainStore.activeControl == "table") {
 				newElement = createTable(event, element);
+			} else if (MainStore.activeControl == "grid") {
+				newElement = createGrid(event, element);
 			} else if (MainStore.activeControl == "barcode") {
 				newElement = createBarcode(event, element);
 			}
@@ -639,13 +950,15 @@ export const useElementStore = defineStore("ElementStore", {
 			delete saveEl.snapPoints;
 			delete saveEl.snapEdges;
 			delete saveEl.parent;
+			delete saveEl._needsMeasuredRowHeights;
 			this.cleanUpDynamicContent(saveEl);
+			delete saveEl._needsMeasuredRowHeights;
 			if (saveEl.type == "table") {
 				saveEl.table = { ...saveEl.table };
 				delete saveEl.table.childfields;
 				delete saveEl.table.default_layout;
 			}
-			if (printFonts && ["text", "table"].indexOf(saveEl.type) != -1) {
+			if (printFonts && ["text", "table", "grid"].indexOf(saveEl.type) != -1) {
 				handlePrintFonts(saveEl, printFonts);
 			}
 			if (saveEl.type == "rectangle" || saveEl.type == "page") {
@@ -661,42 +974,42 @@ export const useElementStore = defineStore("ElementStore", {
 		},
 		cleanUpDynamicContent(element) {
 			const MainStore = useMainStore();
+			normalizeDesignerElement(element);
 			if (
-				["table", "image"].includes(element.type) ||
+				["table", "grid", "image"].includes(element.type) ||
 				(["text", "barcode"].includes(element.type) && element.isDynamic)
 			) {
 				if (["text", "barcode"].indexOf(element.type) != -1) {
-					element.dynamicContent = [
-						...element.dynamicContent.map((el) => {
-							const newEl = { ...el };
-							if (!el.is_static) {
-								newEl.value = "";
-							}
-							return newEl;
-						}),
-					];
+					element.dynamicContent = normalizeDynamicContent(element.dynamicContent, true);
 					element.selectedDynamicText = null;
 				} else if (element.type === "table") {
-					element.columns = [
-						...element.columns.map((el) => {
-							const newEl = { ...el };
-							delete newEl.DOMRef;
-							return newEl;
-						}),
-					];
+					element.columns = element.columns.map((el) => {
+						const newEl = { ...el };
+						delete newEl.DOMRef;
+						return newEl;
+					});
 					element.columns.forEach((col) => {
 						if (!col.dynamicContent) return;
-						col.dynamicContent = [
-							...col.dynamicContent.map((el) => {
-								const newEl = { ...el };
-								if (!el.is_static) {
-									newEl.value = "";
-								}
-								return newEl;
-							}),
-						];
+						col.dynamicContent = normalizeDynamicContent(col.dynamicContent, true);
 						col.selectedDynamicText = null;
 					});
+				} else if (element.type === "grid") {
+					element.cells = createGridCells(
+						element.rows,
+						element.columns,
+						element.cells
+					).map((cell) => {
+						const newCell = {
+							...cell,
+							style: cloneObject(cell.style),
+							labelStyle: cloneObject(cell.labelStyle),
+							dynamicContent: normalizeDynamicContent(cell.dynamicContent, true),
+						};
+						return newCell;
+					});
+					normalizeGridStructure(element);
+					element.selectedCell = null;
+					element.selectedDynamicText = null;
 				} else {
 					element.image = { ...element.image };
 					if (MainStore.is_standard) {
@@ -932,7 +1245,9 @@ export const useElementStore = defineStore("ElementStore", {
 			if (
 				(childElements.length == 1 && childElements[0].style.breakInside == "avoid") ||
 				childElements.some(
-					(el) => ["row", "column"].includes(el.layoutType) && el.style.breakInside == "avoid"
+					(el) =>
+						["row", "column"].includes(el.layoutType) &&
+						el.style.breakInside == "avoid"
 				)
 			) {
 				wrapper.breakInside = "avoid";
@@ -1035,20 +1350,14 @@ export const useElementStore = defineStore("ElementStore", {
 		},
 		handleDynamicContent(element) {
 			const MainStore = useMainStore();
+			normalizeDesignerElement(element);
 			if (
 				element.type == "table" ||
+				element.type == "grid" ||
 				(["text", "image", "barcode"].indexOf(element.type) != -1 && element.isDynamic)
 			) {
 				if (["text", "barcode"].indexOf(element.type) != -1) {
-					element.dynamicContent = [
-						...element.dynamicContent.map((el) => {
-							const newEl = { ...el };
-							if (!el.is_static) {
-								newEl.value = "";
-							}
-							return newEl;
-						}),
-					];
+					element.dynamicContent = normalizeDynamicContent(element.dynamicContent, true);
 					element.selectedDynamicText = null;
 					MainStore.dynamicData.push(...element.dynamicContent);
 				} else if (element.type === "table") {
@@ -1061,25 +1370,30 @@ export const useElementStore = defineStore("ElementStore", {
 						}
 					}
 
-					element.columns = [
-						...element.columns.map((el) => {
-							return { ...el };
-						}),
-					];
 					element.columns.forEach((col) => {
 						if (!col.dynamicContent) return;
-						col.dynamicContent = [
-							...col.dynamicContent.map((el) => {
-								const newEl = { ...el };
-								if (!el.is_static) {
-									newEl.value = "";
-								}
-								return newEl;
-							}),
-						];
+						col.dynamicContent = normalizeDynamicContent(col.dynamicContent, true);
 						col.selectedDynamicText = null;
 						MainStore.dynamicData.push(...col.dynamicContent);
 					});
+				} else if (element.type === "grid") {
+					element.cells = createGridCells(
+						element.rows,
+						element.columns,
+						element.cells
+					).map((cell) => {
+						const newCell = {
+							...cell,
+							style: cloneObject(cell.style),
+							labelStyle: cloneObject(cell.labelStyle),
+							dynamicContent: normalizeDynamicContent(cell.dynamicContent, true),
+						};
+						MainStore.dynamicData.push(...newCell.dynamicContent);
+						return newCell;
+					});
+					normalizeGridStructure(element);
+					element.selectedCell = null;
+					element.selectedDynamicText = null;
 				} else {
 					element.image = { ...element.image };
 					MainStore.dynamicData.push(element.image);
@@ -1087,6 +1401,7 @@ export const useElementStore = defineStore("ElementStore", {
 			}
 		},
 		childrensLoad(element, parent) {
+			normalizeDesignerElement(element);
 			element.parent = parent;
 			element.DOMRef = null;
 			delete element.printY;
@@ -1110,6 +1425,12 @@ export const useElementStore = defineStore("ElementStore", {
 		loadSettings(settings) {
 			const MainStore = useMainStore();
 			if (!settings) return;
+			if (settings.globalStyles) {
+				settings.globalStyles = normalizeGlobalStyleSettings(
+					settings.globalStyles,
+					MainStore.globalStyles
+				);
+			}
 			Object.keys(settings).forEach((key) => {
 				switch (key) {
 					case "schema_version":
@@ -1186,8 +1507,30 @@ export const useElementStore = defineStore("ElementStore", {
 				DOMRef: null,
 			};
 		},
+		getDefaultSettings() {
+			const MainStore = useMainStore();
+			return {
+				page: { ...MainStore.page },
+				pdfPrintDPI: MainStore.pdfPrintDPI,
+				globalStyles: JSON.parse(JSON.stringify(MainStore.globalStyles)),
+				currentPageSize: MainStore.currentPageSize,
+				isHeaderFooterAuto: MainStore.isHeaderFooterAuto,
+				currentDoc: MainStore.currentDoc,
+				textControlType: MainStore.textControlType,
+				currentFonts: [...MainStore.currentFonts],
+				printHeaderFonts: MainStore.printHeaderFonts,
+				printFooterFonts: MainStore.printFooterFonts,
+				printBodyFonts: MainStore.printBodyFonts,
+				userProvidedJinja: MainStore.userProvidedJinja,
+				schema_version: MainStore.schema_version,
+			};
+		},
 		async loadElements(printDesignName) {
 			frappe.dom.freeze(__("Loading Print Format"));
+			this.historyReady = false;
+			this.clearHistoryTimer();
+			this.historySnapshots = [];
+			this.historyIndex = -1;
 			const printFormat = await frappe.db.get_value("Print Format", printDesignName, [
 				"print_designer_header",
 				"print_designer_body",
@@ -1195,13 +1538,21 @@ export const useElementStore = defineStore("ElementStore", {
 				"print_designer_footer",
 				"print_designer_settings",
 			]);
-			let settings = JSON.parse(printFormat.message.print_designer_settings);
+			const MainStore = useMainStore();
+			MainStore.currentElements = {};
+			MainStore.dynamicData.length = 0;
+			let settings = parseJSON(
+				printFormat.message.print_designer_settings,
+				this.getDefaultSettings()
+			);
 			this.loadSettings(settings);
 
-			let ElementsBody = JSON.parse(printFormat.message.print_designer_body);
-			let ElementsAfterTable = JSON.parse(printFormat.message.print_designer_after_table);
-			const headers = JSON.parse(printFormat.message.print_designer_header);
-			const footers = JSON.parse(printFormat.message.print_designer_footer);
+			let ElementsBody = parseJSON(printFormat.message.print_designer_body, []);
+			let ElementsAfterTable = parseJSON(printFormat.message.print_designer_after_table, []);
+			const headers = parseJSON(printFormat.message.print_designer_header, []);
+			const footers = parseJSON(printFormat.message.print_designer_footer, []);
+			this.Headers.length = 0;
+			this.Footers.length = 0;
 			headers.forEach((header) => {
 				this.Headers.push(header);
 			});
@@ -1224,6 +1575,7 @@ export const useElementStore = defineStore("ElementStore", {
 			});
 			this.Elements.forEach((page) => this.setElementProperties(page));
 			frappe.dom.unfreeze();
+			this.resetHistory();
 		},
 		setPrimaryTable(tableEl, value) {
 			if (!value) {

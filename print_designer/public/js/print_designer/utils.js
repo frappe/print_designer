@@ -38,6 +38,7 @@ import { useDraggable } from "./composables/Draggable";
 import { useResizable } from "./composables/Resizable";
 import { useDropZone } from "./composables/DropZone";
 import { ref, isRef, nextTick } from "vue";
+import { normalizeGridStructure } from "./defaultObjects";
 import { getValue } from "./store/fetchMetaAndData";
 
 export const changeDraggable = (element) => {
@@ -159,24 +160,29 @@ const childrensCleanUp = (parentElement, element, isClone, isMainElement) => {
 	element.index = null;
 	element.DOMRef = null;
 	!isMainElement && (element.parent = parentElement);
-	element.style = { ...element.style };
-	element.labelStyle && (element.labelStyle = { ...element.labelStyle });
-	element.headerStyle && (element.headerStyle = { ...element.headerStyle });
-	element.altStyle && (element.altStyle = { ...element.altStyle });
-	element.classes = [...element.classes];
+	element.style = { ...(element.style || {}) };
+	if (["text", "barcode", "table", "grid"].includes(element.type)) {
+		element.labelStyle = { ...(element.labelStyle || {}) };
+	}
+	if (element.type == "table") {
+		element.headerStyle = { ...(element.headerStyle || {}) };
+		element.altStyle = { ...(element.altStyle || {}) };
+	}
+	element.classes = Array.isArray(element.classes) ? [...element.classes] : [];
 	element.snapPoints = [];
 	element.snapEdges = [];
 	if (
 		element.type == "table" ||
+		element.type == "grid" ||
 		element.type == "barcode" ||
 		(["text", "image"].indexOf(element.type) != -1 && element.isDynamic)
 	) {
 		if (["text", "barcode"].indexOf(element.type) != -1) {
 			element.dynamicContent = [
-				...element.dynamicContent.map((el) => {
+				...(element.dynamicContent || []).map((el) => {
 					let clone_el = { ...el };
-					clone_el.style = { ...clone_el.style };
-					clone_el.labelStyle = { ...clone_el.labelStyle };
+					clone_el.style = { ...(clone_el.style || {}) };
+					clone_el.labelStyle = { ...(clone_el.labelStyle || {}) };
 					return clone_el;
 				}),
 			];
@@ -184,7 +190,7 @@ const childrensCleanUp = (parentElement, element, isClone, isMainElement) => {
 			MainStore.dynamicData.push(...element.dynamicContent);
 		} else if (element.type === "table") {
 			element.columns = [
-				...element.columns.map((el) => {
+				...(Array.isArray(element.columns) ? element.columns : []).map((el) => {
 					return { ...el };
 				}),
 			];
@@ -193,14 +199,39 @@ const childrensCleanUp = (parentElement, element, isClone, isMainElement) => {
 				col.dynamicContent = [
 					...col.dynamicContent.map((el) => {
 						let clone_el = { ...el };
-						clone_el.style = { ...clone_el.style };
-						clone_el.labelStyle = { ...clone_el.labelStyle };
+						clone_el.style = { ...(clone_el.style || {}) };
+						clone_el.labelStyle = { ...(clone_el.labelStyle || {}) };
 						return clone_el;
 					}),
 				];
 				col.selectedDynamicText = null;
 				MainStore.dynamicData.push(...col.dynamicContent);
 			});
+		} else if (element.type === "grid") {
+			element.rowHeights = Array.isArray(element.rowHeights) ? [...element.rowHeights] : [];
+			element.columnWidths = Array.isArray(element.columnWidths)
+				? [...element.columnWidths]
+				: [];
+			element.cells = [
+				...(Array.isArray(element.cells) ? element.cells : []).map((cell) => {
+					const cloneCell = { ...cell };
+					cloneCell.style = { ...(cloneCell.style || {}) };
+					cloneCell.labelStyle = { ...(cloneCell.labelStyle || {}) };
+					cloneCell.dynamicContent = [
+						...(cloneCell.dynamicContent || []).map((el) => {
+							let clone_el = { ...el };
+							clone_el.style = { ...(clone_el.style || {}) };
+							clone_el.labelStyle = { ...(clone_el.labelStyle || {}) };
+							return clone_el;
+						}),
+					];
+					MainStore.dynamicData.push(...cloneCell.dynamicContent);
+					return cloneCell;
+				}),
+			];
+			normalizeGridStructure(element);
+			element.selectedCell = null;
+			element.selectedDynamicText = null;
 		} else {
 			element.image = { ...element.image };
 			MainStore.dynamicData.push(element.image);
@@ -345,6 +376,12 @@ const deleteDynamicReferance = (curobj) => {
 	} else if (curobj.type == "table") {
 		curobj.columns.forEach((element) => {
 			element?.dynamicContent?.forEach((el) => {
+				MainStore.dynamicData.splice(MainStore.dynamicData.indexOf(el), 1);
+			});
+		});
+	} else if (curobj.type == "grid") {
+		curobj.cells.forEach((cell) => {
+			cell?.dynamicContent?.forEach((el) => {
 				MainStore.dynamicData.splice(MainStore.dynamicData.indexOf(el), 1);
 			});
 		});
@@ -852,20 +889,23 @@ const getGlobalStyleObject = (object = null, checkProperty = null) => {
 			}
 		}
 	}
-	switch (MainStore.globalStyles[globalStyleName].styleEditMode) {
+	const globalStyle = MainStore.globalStyles[globalStyleName];
+	if (!globalStyle) return {};
+	switch (globalStyle.styleEditMode) {
 		case "main":
-			return MainStore.globalStyles[globalStyleName].style;
+			return globalStyle.style || {};
 		case "label":
-			return MainStore.globalStyles[globalStyleName].labelStyle;
+			return globalStyle.labelStyle || {};
 		case "header":
-			return MainStore.globalStyles[globalStyleName].headerStyle;
+			return globalStyle.headerStyle || {};
 		case "alt":
-			if (checkProperty && MainStore.globalStyles[globalStyleName].altStyle[checkProperty]) {
-				return MainStore.globalStyles[globalStyleName].altStyle;
+			if (checkProperty && globalStyle.altStyle?.[checkProperty]) {
+				return globalStyle.altStyle;
 			} else {
-				return MainStore.globalStyles[globalStyleName].style;
+				return globalStyle.style || {};
 			}
 	}
+	return {};
 };
 export const getConditonalObject = (field) => {
 	let object = field.reactiveObject;
@@ -875,48 +915,73 @@ export const getConditonalObject = (field) => {
 	}
 	isRef(object) && (object = object.value);
 	let orignalObject = object;
+	const ensureObject = (target, key) => {
+		if (!target) return;
+		if (!target[key] || typeof target[key] != "object" || Array.isArray(target[key])) {
+			target[key] = {};
+		}
+		return target[key];
+	};
 	if (field.isStyle) {
 		if (object) {
 			switch (object.styleEditMode) {
 				case "main":
 					if (field.isFontStyle) {
 						object =
-							object.selectedDynamicText?.style ||
-							object.selectedColumn?.style ||
-							object.style;
+							ensureObject(object.selectedDynamicText, "style") ||
+							ensureObject(object.selectedCell, "style") ||
+							ensureObject(object.selectedColumn, "style") ||
+							ensureObject(object, "style");
 					} else {
-						object = object.selectedColumn?.style || object.style;
+						object =
+							ensureObject(object.selectedCell, "style") ||
+							ensureObject(object.selectedColumn, "style") ||
+							ensureObject(object, "style");
 					}
 					break;
 				case "label":
 					if (field.isFontStyle) {
-						object = object.selectedDynamicText?.labelStyle || object.labelStyle;
+						object =
+							ensureObject(object.selectedDynamicText, "labelStyle") ||
+							ensureObject(object.selectedCell, "labelStyle") ||
+							ensureObject(object, "labelStyle");
 					} else {
-						object = object.labelStyle;
+						object =
+							ensureObject(object.selectedCell, "labelStyle") ||
+							ensureObject(object, "labelStyle");
 					}
 					break;
 				case "header":
 					if (field.isFontStyle) {
-						object = object.selectedDynamicText?.headerStyle || object.headerStyle;
+						object =
+							ensureObject(object.selectedDynamicText, "headerStyle") ||
+							ensureObject(object, "headerStyle");
 					} else {
-						object = object.headerStyle;
+						object = ensureObject(object, "headerStyle");
 					}
 					break;
 				case "alt":
 					if (field.isFontStyle) {
 						// This is not implemented yet but will be implemented in future if user requests it.
-						object = object.selectedDynamicText?.altStyle || object.altStyle;
+						object =
+							ensureObject(object.selectedDynamicText, "altStyle") ||
+							ensureObject(object, "altStyle");
 					} else {
-						object = object.altStyle;
+						object = ensureObject(object, "altStyle");
 					}
 					// Incase There is no Alternate Style Fallback to All Row/Main Style
 					if (property && !object[property]) {
-						object = orignalObject.style;
+						object = ensureObject(orignalObject, "style");
 					}
+					break;
+				default:
+					object = ensureObject(object, "style");
 					break;
 			}
 			if (property) {
-				if (object[property]) return object[property];
+				if (Object.prototype.hasOwnProperty.call(object, property)) {
+					return object[property];
+				}
 				return getGlobalStyleObject(orignalObject, property)[property];
 			}
 		} else {
@@ -924,44 +989,44 @@ export const getConditonalObject = (field) => {
 		}
 	}
 	if (property) {
-		return object[property];
+		return object?.[property];
 	}
 	return object;
 };
 export const handlePrintFonts = (element, printFonts) => {
 	const MainStore = useMainStore();
 	const pushFonts = ({ el = null, styleEditMode, globalStyleName }) => {
+		const elementStyle = element[styleEditMode] || {};
+		const fieldStyle = el?.[styleEditMode] || {};
+		const globalStyle = MainStore.globalStyles[globalStyleName]?.[styleEditMode] || {};
 		let fontFamily =
-			el?.[styleEditMode]?.["fontFamily"] ||
-			element[styleEditMode]["fontFamily"] ||
-			MainStore.globalStyles[globalStyleName][styleEditMode]["fontFamily"];
+			fieldStyle["fontFamily"] || elementStyle["fontFamily"] || globalStyle["fontFamily"];
 		let fontWeight =
-			el?.[styleEditMode]?.["fontWeight"] ||
-			element[styleEditMode]["fontWeight"] ||
-			MainStore.globalStyles[globalStyleName][styleEditMode]["fontWeight"];
+			fieldStyle["fontWeight"] || elementStyle["fontWeight"] || globalStyle["fontWeight"];
 		let fontStyle =
-			el?.[styleEditMode]?.["fontStyle"] ||
-			element[styleEditMode]["fontStyle"] ||
-			MainStore.globalStyles[globalStyleName][styleEditMode]["fontStyle"];
+			fieldStyle["fontStyle"] || elementStyle["fontStyle"] || globalStyle["fontStyle"];
 		// fallback to main style if not available in altstyle
 		if (styleEditMode == "altStyle") {
+			const mainElementStyle = element["style"] || {};
+			const mainFieldStyle = el?.["style"] || {};
+			const mainGlobalStyle = MainStore.globalStyles[globalStyleName]?.["style"] || {};
 			if (!fontFamily) {
 				fontFamily =
-					el?.["style"]?.["fontFamily"] ||
-					element["style"]["fontFamily"] ||
-					MainStore.globalStyles[globalStyleName]["style"]["fontFamily"];
+					mainFieldStyle["fontFamily"] ||
+					mainElementStyle["fontFamily"] ||
+					mainGlobalStyle["fontFamily"];
 			}
 			if (!fontWeight) {
 				fontWeight =
-					el?.["style"]?.["fontWeight"] ||
-					element["style"]["fontWeight"] ||
-					MainStore.globalStyles[globalStyleName]["style"]["fontWeight"];
+					mainFieldStyle["fontWeight"] ||
+					mainElementStyle["fontWeight"] ||
+					mainGlobalStyle["fontWeight"];
 			}
 			if (!fontStyle) {
 				fontStyle =
-					el?.["style"]?.["fontStyle"] ||
-					element["style"]["fontStyle"] ||
-					MainStore.globalStyles[globalStyleName]["style"]["fontStyle"];
+					mainFieldStyle["fontStyle"] ||
+					mainElementStyle["fontStyle"] ||
+					mainGlobalStyle["fontStyle"];
 			}
 		}
 		if (!fontFamily || !fontWeight || !fontStyle) return;
@@ -985,6 +1050,9 @@ export const handlePrintFonts = (element, printFonts) => {
 		styleModes.push("headerStyle");
 		styleModes.push("altStyle");
 	}
+	if (element.type == "grid") {
+		styleModes.push("labelStyle");
+	}
 	styleModes.forEach((styleEditMode) => {
 		let globalStyleName = element.type;
 		if (globalStyleName == "text") {
@@ -1001,7 +1069,7 @@ export const handlePrintFonts = (element, printFonts) => {
 					pushFonts({ el, styleEditMode, globalStyleName });
 				}
 			});
-		} else if (element.columns) {
+		} else if (Array.isArray(element.columns)) {
 			if (["headerStyle", "altStyle"].indexOf(styleEditMode) != -1) {
 				pushFonts({ el: element, styleEditMode, globalStyleName });
 			} else {
@@ -1011,6 +1079,13 @@ export const handlePrintFonts = (element, printFonts) => {
 					});
 				});
 			}
+		} else if (element.cells) {
+			element.cells.forEach((cell) => {
+				pushFonts({ el: cell, styleEditMode, globalStyleName });
+				cell.dynamicContent?.forEach((el) => {
+					pushFonts({ el, styleEditMode, globalStyleName });
+				});
+			});
 		}
 	});
 };

@@ -4,10 +4,15 @@ import { useChangeValueUnit } from "../composables/ChangeValueUnit";
 import { GoogleFonts, barcodeFormats } from "../defaultObjects";
 import { globalStyles } from "../globalStyles";
 import { pageSizes } from "../pageSizes";
+
+const styleObject = (value) => {
+	return value && typeof value == "object" && !Array.isArray(value) ? value : {};
+};
+
 export const useMainStore = defineStore("MainStore", {
 	state: () => ({
 		/**
-		 * @type {'mouse-pointer'|'text'|'rectangle'|'image'|'components'|'table'|'barcode'}  activeControl
+		 * @type {'mouse-pointer'|'text'|'rectangle'|'image'|'components'|'table'|'grid'|'barcode'}  activeControl
 		 */
 		activeControl: "mouse-pointer",
 		/**
@@ -56,6 +61,7 @@ export const useMainStore = defineStore("MainStore", {
 			documentControl: null,
 			tableControl: null,
 		},
+		isSyncingFrappeControl: false,
 		isMoveStart: false,
 		isDropped: false,
 		isAltKey: false,
@@ -131,6 +137,14 @@ export const useMainStore = defineStore("MainStore", {
 				aria_label: __("Table (A)"),
 				id: "table",
 				cursor: "url('/assets/print_designer/images/add-table.svg') 6 6, crosshair",
+				isDisabled: false,
+			},
+			Grid: {
+				icon: "gridTool",
+				control: "Grid",
+				aria_label: __("Grid (G)"),
+				id: "grid",
+				cursor: "crosshair",
 				isDisabled: false,
 			},
 			// Components: {
@@ -425,9 +439,9 @@ export const useMainStore = defineStore("MainStore", {
 						globalStyleName = "staticText";
 					}
 				}
-				styleEditMode = mapper[state.globalStyles[globalStyleName].styleEditMode];
+				styleEditMode = mapper[state.globalStyles[globalStyleName]?.styleEditMode];
 			}
-			return state.globalStyles[globalStyleName][styleEditMode];
+			return state.globalStyles[globalStyleName]?.[styleEditMode] || {};
 		},
 		getStyleObject: (state) => (isFontStyle) => {
 			let object = state.getCurrentElementsValues[0];
@@ -438,12 +452,19 @@ export const useMainStore = defineStore("MainStore", {
 				header: "headerStyle",
 				alt: "altStyle",
 			});
-			let styleEditMode = mapper[object.styleEditMode];
+			let styleEditMode = mapper[object.styleEditMode] || "style";
 			return !isFontStyle
-				? object.selectedColumn?.["style"] || object[styleEditMode]
-				: object.selectedDynamicText?.[styleEditMode] ||
+				? object.selectedCell?.[styleEditMode] ||
+						object.selectedCell?.style ||
 						object.selectedColumn?.["style"] ||
-						object[styleEditMode];
+						object[styleEditMode] ||
+						{}
+				: object.selectedDynamicText?.[styleEditMode] ||
+						object.selectedCell?.[styleEditMode] ||
+						object.selectedCell?.style ||
+						object.selectedColumn?.["style"] ||
+						object[styleEditMode] ||
+						{};
 		},
 		isValidValue: (state) => (value) => {
 			if (typeof value == "string") {
@@ -462,32 +483,46 @@ export const useMainStore = defineStore("MainStore", {
 				header: "headerStyle",
 				alt: "altStyle",
 			});
-			let styleEditMode = mapper[object.styleEditMode];
+			let styleEditMode = mapper[object.styleEditMode] || "style";
 			if (propertyName != "backgroundColor") {
 				if (
-					state.isValidValue(object.selectedDynamicText?.[styleEditMode][propertyName])
+					state.isValidValue(object.selectedDynamicText?.[styleEditMode]?.[propertyName])
 				) {
-					return object.selectedDynamicText?.[styleEditMode][propertyName];
+					return object.selectedDynamicText?.[styleEditMode]?.[propertyName];
+				}
+				if (state.isValidValue(object.selectedCell?.[styleEditMode]?.[propertyName])) {
+					return object.selectedCell?.[styleEditMode]?.[propertyName];
+				}
+				if (state.isValidValue(object.selectedCell?.style?.[propertyName])) {
+					return object.selectedCell?.style?.[propertyName];
 				}
 				if (state.isValidValue(object.selectedColumn?.["style"]?.[propertyName])) {
 					return object.selectedColumn?.["style"][propertyName];
 				}
-				if (state.isValidValue(object[styleEditMode][propertyName])) {
-					return object[styleEditMode][propertyName];
+				if (state.isValidValue(object[styleEditMode]?.[propertyName])) {
+					return object[styleEditMode]?.[propertyName];
 				}
 				if (state.isValidValue(state.getGlobalStyleObject[propertyName])) {
 					return state.getGlobalStyleObject[propertyName];
 				}
 			} else {
 				// we need to check if empty string incase it is background color and set as transparent
-				if (typeof object.selectedDynamicText?.[styleEditMode][propertyName] == "string") {
-					return object.selectedDynamicText?.[styleEditMode][propertyName];
+				if (
+					typeof object.selectedDynamicText?.[styleEditMode]?.[propertyName] == "string"
+				) {
+					return object.selectedDynamicText?.[styleEditMode]?.[propertyName];
 				}
-				if (typeof object.selectedColumn?.["style"][propertyName] == "string") {
+				if (typeof object.selectedCell?.[styleEditMode]?.[propertyName] == "string") {
+					return object.selectedCell?.[styleEditMode]?.[propertyName];
+				}
+				if (typeof object.selectedCell?.style?.[propertyName] == "string") {
+					return object.selectedCell?.style?.[propertyName];
+				}
+				if (typeof object.selectedColumn?.["style"]?.[propertyName] == "string") {
 					return object.selectedColumn?.["style"][propertyName];
 				}
-				if (typeof object[styleEditMode][propertyName] == "string") {
-					return object[styleEditMode][propertyName];
+				if (typeof object[styleEditMode]?.[propertyName] == "string") {
+					return object[styleEditMode]?.[propertyName];
 				}
 				if (typeof state.getGlobalStyleObject[propertyName] == "string") {
 					return state.getGlobalStyleObject[propertyName];
@@ -519,7 +554,7 @@ export const useMainStore = defineStore("MainStore", {
 	},
 	actions: {
 		/**
-		 * @param {'MousePointer'|'Text'|'Rectangle'|'Components'|'Image'|'Table'|'Barcode'}  id
+		 * @param {'MousePointer'|'Text'|'Rectangle'|'Components'|'Image'|'Table'|'Grid'|'Barcode'}  id
 		 */
 		setActiveControl(id) {
 			let control = this.controls[id];
@@ -577,6 +612,11 @@ export const useMainStore = defineStore("MainStore", {
 		},
 		addGlobalRules() {
 			Object.entries(this.globalStyles).forEach((element) => {
+				if (!element[1] || typeof element[1] != "object") return;
+				element[1].style = styleObject(element[1].style);
+				element[1].labelStyle = styleObject(element[1].labelStyle);
+				element[1].headerStyle = styleObject(element[1].headerStyle);
+				element[1].altStyle = styleObject(element[1].altStyle);
 				if (!element[1].mainCssRule) {
 					let mainSelector = element[1].mainRuleSelector;
 					const id = this.addStylesheetRules([

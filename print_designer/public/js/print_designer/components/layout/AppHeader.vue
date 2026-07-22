@@ -17,6 +17,28 @@
 			{{ print_format_name }}
 		</h3>
 		<span class="indicator-pill no-indicator-dot ellipsis gray">Beta</span>
+		<div class="history-actions">
+			<button
+				type="button"
+				class="btn btn-sm btn-default history-btn"
+				:title="__('Undo')"
+				:disabled="!ElementStore.canUndo"
+				@click="ElementStore.undoHistory()"
+			>
+				<IconsUse name="undoTool" :size="14" color="currentColor" />
+				<span>Undo</span>
+			</button>
+			<button
+				type="button"
+				class="btn btn-sm btn-default history-btn"
+				:title="__('Redo')"
+				:disabled="!ElementStore.canRedo"
+				@click="ElementStore.redoHistory()"
+			>
+				<IconsUse name="redoTool" :size="14" color="currentColor" />
+				<span>Redo</span>
+			</button>
+		</div>
 		<button class="btn btn-sm btn-default exit-btn" @click="goToLastPage">
 			<svg
 				width="14"
@@ -33,10 +55,13 @@
 </template>
 <script setup>
 import { ref } from "vue";
+import IconsUse from "../../icons/IconsUse.vue";
 import { useMainStore } from "../../store/MainStore";
+import { useElementStore } from "../../store/ElementStore";
 import { selectElementContents } from "../../utils";
 
 const MainStore = useMainStore();
+const ElementStore = useElementStore();
 
 const contenteditable = ref(false);
 
@@ -145,6 +170,24 @@ const goToLastPage = () => {
 		align-items: center;
 		gap: 4px;
 		padding: 2px 8px;
+	}
+
+	.history-actions {
+		display: flex;
+		align-items: center;
+		gap: 6px;
+	}
+
+	.history-btn {
+		display: inline-flex;
+		align-items: center;
+		gap: 4px;
+		padding: 2px 8px;
+	}
+
+	.history-btn:disabled {
+		cursor: not-allowed;
+		opacity: 0.45;
 	}
 
 	[contenteditable] {
