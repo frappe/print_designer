@@ -1,0 +1,58 @@
+{% from 'print_designer/page/print_designer/jinja/macros/spantag.html' import span_tag with context %}
+
+{% macro grid(element, send_to_jinja, heightType) -%}
+    {%- set heightType = element.get("heightType", "fixed") -%}
+    {%- set row_count = element.rows or 1 -%}
+    {%- set column_count = element.columns or 1 -%}
+    {%- set grid_row_heights = element.renderedRowHeights or element.rowHeights -%}
+    <div style="position:{%- if heightType != 'fixed' -%}relative{% else %}absolute{%- endif -%}; {%- if heightType == 'fixed' -%}top: {%- else -%}margin-top: {%- endif -%}{{ element.startY }}px; left:{{ element.startX }}px; width:{{ element.width }}px;{%- if heightType == 'fixed' -%}height:{{ element.height }}px;{%- elif heightType == 'auto-min-height' -%}min-height:{{ element.height }}px;{%- endif -%} max-width:{{ element.width }}px;overflow:visible;" class="grid-container {{ element.classes | join(' ') }}">
+        <table class="printGrid" style="border-collapse:collapse;border-spacing:0;box-sizing:border-box;table-layout:fixed;width:100%;height:auto;margin:0;padding:0;">
+            <colgroup>
+                {%- for column_index in range(column_count) -%}
+                    {%- set column_width = element.columnWidths[column_index] if element.columnWidths and column_index < (element.columnWidths | length) else (100 / column_count) -%}
+                    <col style="width:{{ column_width }}%;">
+                {%- endfor -%}
+            </colgroup>
+            <tbody>
+                {%- for row_index in range(row_count) -%}
+                    {%- set row_height = grid_row_heights[row_index] if grid_row_heights and row_index < (grid_row_heights | length) else (element.height / row_count) -%}
+                    <tr style="height:{{ row_height }}px;max-height:{{ row_height }}px;">
+                        {%- for column_index in range(column_count) -%}
+                            {%- set cell_index = (row_index * column_count) + column_index -%}
+                            {%- set cell = element.cells[cell_index] if element.cells and cell_index < (element.cells | length) else {} -%}
+                            {%- if not cell.mergedInto -%}
+                                {%- set row_span = cell.rowSpan or 1 -%}
+                                {%- set col_span = cell.colSpan or 1 -%}
+                                {%- set cell_height = namespace(value=0) -%}
+                                {%- for span_row_index in range(row_index, row_index + row_span) -%}
+                                    {%- set cell_height.value = cell_height.value + (grid_row_heights[span_row_index] if grid_row_heights and span_row_index < (grid_row_heights | length) else row_height) -%}
+                                {%- endfor -%}
+                                <td class="grid-cell" rowspan="{{ row_span }}" colspan="{{ col_span }}" style="height:{{ cell_height.value }}px;max-height:{{ cell_height.value }}px;box-sizing:border-box;font-family:Inter;font-size:10px;font-weight:400;color:#000;text-align:left;font-style:normal;text-decoration:none;text-transform:none;line-height:1.25;letter-spacing:0px;border:1px solid #000;border-radius:0;background-color:#fff;margin:0;min-width:0;min-height:0;box-shadow:none;overflow-wrap:break-word;white-space:normal;user-select:auto;vertical-align:top;opacity:1;{{ convert_css(element.style) }}{%- if cell.style -%}{{ convert_css(cell.style) }}{%- endif -%}padding:0!important;overflow:hidden!important;">
+                                    <div class="grid-cell grid-cell-content" style="box-sizing:border-box;display:block;{{ convert_css(element.style) }}{%- if cell.style -%}{{ convert_css(cell.style) }}{%- endif -%}width:100%!important;height:{{ cell_height.value }}px!important;max-height:{{ cell_height.value }}px!important;margin:0!important;border:none!important;border-width:0!important;border-radius:0!important;background:transparent!important;box-shadow:none!important;overflow:hidden!important;{%- if cell.textOverflow == 'truncate' -%}white-space:nowrap!important;text-overflow:ellipsis;{%- endif -%}">
+                                        {%- if cell.label -%}
+                                            <div class="printGrid label-text" style="{{ convert_css(element.labelStyle) }}{%- if cell.labelStyle -%}{{ convert_css(cell.labelStyle) }}{%- endif -%}">
+                                                {{ _(cell.label) }}
+                                            </div>
+                                        {%- endif -%}
+                                        {%- if cell.value -%}
+                                            <span class="printGrid static-cell-value">
+                                                {%- if cell.parseJinja -%}
+                                                    {{ render_user_text(cell.value, doc, {}, send_to_jinja).get("message", "") }}
+                                                {%- else -%}
+                                                    {{ _(cell.value) }}
+                                                {%- endif -%}
+                                            </span>
+                                        {%- endif -%}
+                                        {%- for field in cell.dynamicContent or [] -%}
+                                            {{ span_tag(field, element, {}, send_to_jinja, cell.style or {}, true) }}
+                                        {%- endfor -%}
+                                    </div>
+                                </td>
+                            {%- endif -%}
+                        {%- endfor -%}
+                    </tr>
+                {%- endfor -%}
+            </tbody>
+        </table>
+    </div>
+{%- endmacro %}
