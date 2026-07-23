@@ -1,7 +1,7 @@
 {% from 'print_designer/page/print_designer/jinja/macros/spantag.html' import span_tag with context %}
 
 {% macro grid(element, send_to_jinja, heightType) -%}
-    {%- set heightType = element.get("heightType", "fixed") -%}
+    {%- set heightType = element.get("heightType", heightType) -%}
     {%- set row_count = element.rows or 1 -%}
     {%- set column_count = element.columns or 1 -%}
     {%- set grid_row_heights = element.renderedRowHeights or element.rowHeights -%}
