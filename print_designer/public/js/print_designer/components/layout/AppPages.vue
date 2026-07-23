@@ -62,10 +62,18 @@ import BaseStaticText from "../base/BaseStaticText.vue";
 import BaseDynamicText from "../base/BaseDynamicText.vue";
 import BaseImage from "../base/BaseImage.vue";
 import BaseTable from "../base/BaseTable.vue";
+import BaseGrid from "../base/BaseGrid.vue";
 import BaseBarcode from "../base/BaseBarcode.vue";
+import {
+	createGridCells,
+	createGridColumnWidths,
+	normalizeGridStructure,
+	resizeGridHeight,
+} from "../../defaultObjects";
 
 import { useDraw } from "../../composables/Draw";
 import { useElement } from "../../composables/Element";
+import { setFrappeControlValueSilently } from "../../frappeControl";
 import {
 	updateElementParameters,
 	setCurrentElement,
@@ -93,6 +101,7 @@ const isComponent = Object.freeze({
 	},
 	image: BaseImage,
 	table: BaseTable,
+	grid: BaseGrid,
 	barcode: BaseBarcode,
 });
 
@@ -256,6 +265,24 @@ const handleMouseMove = (e) => {
 					}
 				}
 			}
+		} else if (MainStore.activeControl == "grid") {
+			let width = MainStore.currentDrawListener.parameters.width;
+			let height = MainStore.currentDrawListener.parameters.height;
+			let columns = Math.max(1, Math.floor(width / 100));
+			let rows = Math.max(1, Math.floor(height / 32));
+			let grid = MainStore.lastCreatedElement;
+			if (grid.rows != rows || grid.columns != columns) {
+				grid.rows = rows;
+				grid.columns = columns;
+				grid.cells = createGridCells(rows, columns, grid.cells);
+				setFrappeControlValueSilently(MainStore.frappeControls.gridRows, grid.rows);
+				setFrappeControlValueSilently(MainStore.frappeControls.gridColumns, grid.columns);
+			}
+			grid.rowHeights = Array(rows).fill(1);
+			grid.columnWidths = createGridColumnWidths(columns);
+			grid.renderedRowHeights = [];
+			normalizeGridStructure(grid);
+			resizeGridHeight(grid, height, false);
 		}
 	}
 };
@@ -297,6 +324,8 @@ const handleMouseUp = (e) => {
 				if (MainStore.frappeControls.table?.get_value() == "") {
 					MainStore.frappeControls.table.set_focus();
 				}
+			} else if (MainStore.activeControl == "grid") {
+				MainStore.setActiveControl("MousePointer");
 			}
 		} else {
 			MainStore.currentDrawListener?.drawEventHandler.mouseup(e);
