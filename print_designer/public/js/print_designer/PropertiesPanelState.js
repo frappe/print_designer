@@ -1,6 +1,22 @@
 import { useMainStore } from "./store/MainStore";
 import { useElementStore } from "./store/ElementStore";
-import { makeFeild } from "./frappeControl";
+import { makeFeild, setFrappeControlValueSilently } from "./frappeControl";
+import {
+	canMergeGridCellDown,
+	canMergeGridCellRight,
+	createGridCells,
+	getGridCell,
+	insertGridColumn,
+	insertGridRow,
+	mergeGridCellDown,
+	mergeGridCellRight,
+	normalizeGridStructure,
+	removeGridColumn,
+	removeGridRow,
+	setGridColumnWidth,
+	setGridRowHeight,
+	splitGridCell,
+} from "./defaultObjects";
 import { storeToRefs } from "pinia";
 import {
 	parseFloatAndUnit,
@@ -8,6 +24,7 @@ import {
 	handleBorderIconClick,
 	getConditonalObject,
 	getParentPage,
+	unregisterGridDynamicContent,
 } from "./utils";
 export const createPropertiesPanel = () => {
 	const MainStore = useMainStore();
@@ -265,6 +282,9 @@ export const createPropertiesPanel = () => {
 			isLabelled: true,
 			frappeControl: (ref, name) => {
 				let styleClass = "table";
+				if (MainStore.activeControl == "grid") {
+					styleClass = "grid";
+				}
 				if (MainStore.activeControl == "text") {
 					if (MainStore.textControlType == "dynamic") {
 						styleClass = "dynamicText";
@@ -293,6 +313,36 @@ export const createPropertiesPanel = () => {
 			},
 		};
 	};
+	const getCurrentGrid = () => MainStore.getCurrentElementsValues[0];
+	const getSelectedGridCell = () => getCurrentGrid()?.selectedCell;
+	const getSelectedRowIndex = () => getSelectedGridCell()?.rowIndex ?? 0;
+	const getSelectedColumnIndex = () => getSelectedGridCell()?.columnIndex ?? 0;
+	const normalizeCurrentGrid = () => {
+		const grid = getCurrentGrid();
+		if (grid?.type == "grid") normalizeGridStructure(grid);
+		return grid;
+	};
+	const syncGridCountControls = (grid) => {
+		setFrappeControlValueSilently(MainStore.frappeControls.gridRows, grid.rows);
+		setFrappeControlValueSilently(MainStore.frappeControls.gridColumns, grid.columns);
+	};
+	const gridActionButton = (label, name, onClick, condtional = null) => ({
+		label,
+		name,
+		isLabelled: true,
+		flex: 1,
+		condtional,
+		button: {
+			label,
+			size: "sm",
+			style: "secondary",
+			margin: 5,
+			onClick: (event) => {
+				onClick();
+				event.currentTarget?.blur();
+			},
+		},
+	});
 	MainStore.propertiesPanel.push({
 		sectionCondtional: () => !!MainStore.getCurrentElementsId.length,
 		fields: [
@@ -609,6 +659,7 @@ export const createPropertiesPanel = () => {
 						}
 						if (
 							currentEl?.type === "table" ||
+							currentEl?.type === "grid" ||
 							(currentEl.type === "text" &&
 								(currentEl.isDynamic || currentEl.parseJinja))
 						) {
@@ -953,6 +1004,362 @@ export const createPropertiesPanel = () => {
 		],
 	});
 	MainStore.propertiesPanel.push({
+		title: "Grid Settings",
+		sectionCondtional: () =>
+			MainStore.getCurrentElementsId.length === 1 &&
+			MainStore.getCurrentElementsValues[0]?.type == "grid",
+		fields: [
+			[
+				{
+					label: "Rows",
+					name: "gridRows",
+					isLabelled: true,
+					labelDirection: "column",
+					frappeControl: (ref, name) => {
+						makeFeild({
+							name,
+							ref,
+							fieldtype: "Int",
+							requiredData: [MainStore.getCurrentElementsValues[0]],
+							reactiveObject: () => MainStore.getCurrentElementsValues[0],
+							propertyName: "rows",
+							onChangeCallback: (value = null) => {
+								const grid = MainStore.getCurrentElementsValues[0];
+								if (!grid) return;
+								const previousRows = grid.rows;
+								const nextRows = Math.max(1, parseInt(value) || 1);
+								unregisterGridDynamicContent(
+									grid.cells.filter((cell) => cell.rowIndex >= nextRows)
+								);
+								grid.rows = nextRows;
+								grid.cells = createGridCells(grid.rows, grid.columns, grid.cells);
+								normalizeGridStructure(grid, previousRows);
+								if (grid.selectedCell && grid.selectedCell.rowIndex >= grid.rows) {
+									grid.selectedCell = null;
+								}
+								setFrappeControlValueSilently(
+									MainStore.frappeControls[name],
+									grid.rows
+								);
+							},
+						});
+					},
+					flex: 1,
+				},
+				{
+					label: "Columns",
+					name: "gridColumns",
+					isLabelled: true,
+					labelDirection: "column",
+					frappeControl: (ref, name) => {
+						makeFeild({
+							name,
+							ref,
+							fieldtype: "Int",
+							requiredData: [MainStore.getCurrentElementsValues[0]],
+							reactiveObject: () => MainStore.getCurrentElementsValues[0],
+							propertyName: "columns",
+							onChangeCallback: (value = null) => {
+								const grid = MainStore.getCurrentElementsValues[0];
+								if (!grid) return;
+								const nextColumns = Math.max(1, parseInt(value) || 1);
+								unregisterGridDynamicContent(
+									grid.cells.filter((cell) => cell.columnIndex >= nextColumns)
+								);
+								grid.columns = nextColumns;
+								grid.cells = createGridCells(grid.rows, grid.columns, grid.cells);
+								normalizeGridStructure(grid);
+								if (
+									grid.selectedCell &&
+									grid.selectedCell.columnIndex >= grid.columns
+								) {
+									grid.selectedCell = null;
+								}
+								setFrappeControlValueSilently(
+									MainStore.frappeControls[name],
+									grid.columns
+								);
+							},
+						});
+					},
+					flex: 1,
+				},
+			],
+			[
+				gridActionButton("Row Above", "gridAddRowAbove", () => {
+					const grid = normalizeCurrentGrid();
+					const cell = getSelectedGridCell();
+					const rowIndex = cell ? cell.rowIndex : grid.rows;
+					const columnIndex = cell?.columnIndex ?? 0;
+					insertGridRow(grid, rowIndex);
+					grid.selectedCell = getGridCell(grid, rowIndex, columnIndex);
+					syncGridCountControls(grid);
+				}),
+				gridActionButton("Row Below", "gridAddRowBelow", () => {
+					const grid = normalizeCurrentGrid();
+					const cell = getSelectedGridCell();
+					const rowIndex = cell ? cell.rowIndex + (cell.rowSpan || 1) : grid.rows;
+					const columnIndex = cell?.columnIndex ?? 0;
+					insertGridRow(grid, rowIndex);
+					grid.selectedCell = getGridCell(grid, rowIndex, columnIndex);
+					syncGridCountControls(grid);
+				}),
+				gridActionButton(
+					"Delete Row",
+					"gridDeleteRow",
+					() => {
+						const grid = normalizeCurrentGrid();
+						const rowIndex = getSelectedRowIndex();
+						const columnIndex = getSelectedColumnIndex();
+						unregisterGridDynamicContent(removeGridRow(grid, rowIndex));
+						grid.selectedCell = getGridCell(
+							grid,
+							Math.min(rowIndex, grid.rows - 1),
+							Math.min(columnIndex, grid.columns - 1)
+						);
+						syncGridCountControls(grid);
+					},
+					() => !!getSelectedGridCell() && getCurrentGrid()?.rows > 1
+				),
+			],
+			[
+				gridActionButton("Column Left", "gridAddColumnLeft", () => {
+					const grid = normalizeCurrentGrid();
+					const cell = getSelectedGridCell();
+					const rowIndex = cell?.rowIndex ?? 0;
+					const columnIndex = cell ? cell.columnIndex : grid.columns;
+					insertGridColumn(grid, columnIndex);
+					grid.selectedCell = getGridCell(grid, rowIndex, columnIndex);
+					syncGridCountControls(grid);
+				}),
+				gridActionButton("Column Right", "gridAddColumnRight", () => {
+					const grid = normalizeCurrentGrid();
+					const cell = getSelectedGridCell();
+					const rowIndex = cell?.rowIndex ?? 0;
+					const columnIndex = cell
+						? cell.columnIndex + (cell.colSpan || 1)
+						: grid.columns;
+					insertGridColumn(grid, columnIndex);
+					grid.selectedCell = getGridCell(grid, rowIndex, columnIndex);
+					syncGridCountControls(grid);
+				}),
+				gridActionButton(
+					"Delete Column",
+					"gridDeleteColumn",
+					() => {
+						const grid = normalizeCurrentGrid();
+						const rowIndex = getSelectedRowIndex();
+						const columnIndex = getSelectedColumnIndex();
+						unregisterGridDynamicContent(removeGridColumn(grid, columnIndex));
+						grid.selectedCell = getGridCell(
+							grid,
+							Math.min(rowIndex, grid.rows - 1),
+							Math.min(columnIndex, grid.columns - 1)
+						);
+						syncGridCountControls(grid);
+					},
+					() => !!getSelectedGridCell() && getCurrentGrid()?.columns > 1
+				),
+			],
+			[
+				{
+					label: "Row Height px",
+					name: "gridSelectedRowHeight",
+					isLabelled: true,
+					labelDirection: "column",
+					condtional: () => !!getSelectedGridCell(),
+					frappeControl: (ref, name) => {
+						makeFeild({
+							name,
+							ref,
+							fieldtype: "Float",
+							requiredData: [getCurrentGrid(), getSelectedGridCell()],
+							reactiveObject: () => getCurrentGrid(),
+							propertyName: "selectedRowHeight",
+							assignValue: false,
+							formatValue: () =>
+								getCurrentGrid()?.rowHeights?.[getSelectedRowIndex()] ?? 0,
+							onChangeCallback: (value = null) => {
+								const grid = normalizeCurrentGrid();
+								const rowIndex = getSelectedRowIndex();
+								if (!setGridRowHeight(grid, rowIndex, value)) return;
+								setFrappeControlValueSilently(
+									MainStore.frappeControls[name],
+									grid.rowHeights[rowIndex]
+								);
+							},
+						});
+					},
+					flex: 1,
+				},
+				{
+					label: "Column Width %",
+					name: "gridSelectedColumnWidth",
+					isLabelled: true,
+					labelDirection: "column",
+					condtional: () => !!getSelectedGridCell(),
+					frappeControl: (ref, name) => {
+						makeFeild({
+							name,
+							ref,
+							fieldtype: "Float",
+							requiredData: [getCurrentGrid(), getSelectedGridCell()],
+							reactiveObject: () => getCurrentGrid(),
+							propertyName: "selectedColumnWidth",
+							assignValue: false,
+							formatValue: () =>
+								getCurrentGrid()?.columnWidths?.[getSelectedColumnIndex()] ?? 0,
+							onChangeCallback: (value = null) => {
+								const grid = normalizeCurrentGrid();
+								const columnIndex = getSelectedColumnIndex();
+								if (!setGridColumnWidth(grid, columnIndex, value)) return;
+								setFrappeControlValueSilently(
+									MainStore.frappeControls[name],
+									grid.columnWidths[columnIndex]
+								);
+							},
+						});
+					},
+					flex: 1,
+				},
+			],
+			[
+				{
+					label: "Text Flow",
+					name: "gridCellTextOverflow",
+					isLabelled: true,
+					labelDirection: "column",
+					condtional: () => !!MainStore.getCurrentElementsValues[0]?.selectedCell,
+					frappeControl: (ref, name) => {
+						makeFeild({
+							name,
+							ref,
+							fieldtype: "Select",
+							requiredData: [MainStore.getCurrentElementsValues[0]?.selectedCell],
+							reactiveObject: () =>
+								MainStore.getCurrentElementsValues[0]?.selectedCell,
+							propertyName: "textOverflow",
+							options: () => [
+								{ label: "Wrap", value: "wrap" },
+								{ label: "Trim", value: "truncate" },
+							],
+						});
+					},
+				},
+			],
+			[
+				gridActionButton(
+					"Merge Right",
+					"gridMergeRight",
+					() => mergeGridCellRight(normalizeCurrentGrid(), getSelectedGridCell()),
+					() => canMergeGridCellRight(getCurrentGrid(), getSelectedGridCell())
+				),
+				gridActionButton(
+					"Merge Down",
+					"gridMergeDown",
+					() => mergeGridCellDown(normalizeCurrentGrid(), getSelectedGridCell()),
+					() => canMergeGridCellDown(getCurrentGrid(), getSelectedGridCell())
+				),
+				gridActionButton(
+					"Split Cell",
+					"gridSplitCell",
+					() => splitGridCell(normalizeCurrentGrid(), getSelectedGridCell()),
+					() =>
+						!!getSelectedGridCell() &&
+						((getSelectedGridCell().rowSpan || 1) > 1 ||
+							(getSelectedGridCell().colSpan || 1) > 1)
+				),
+			],
+			[
+				{
+					label: "Static Label",
+					name: "gridCellLabel",
+					isLabelled: true,
+					labelDirection: "column",
+					condtional: () => !!MainStore.getCurrentElementsValues[0]?.selectedCell,
+					frappeControl: (ref, name) => {
+						makeFeild({
+							name,
+							ref,
+							fieldtype: "Data",
+							requiredData: [MainStore.getCurrentElementsValues[0]?.selectedCell],
+							reactiveObject: () =>
+								MainStore.getCurrentElementsValues[0]?.selectedCell,
+							propertyName: "label",
+						});
+					},
+					flex: 1,
+				},
+				{
+					label: "Render as Jinja",
+					name: "gridCellParseJinja",
+					isLabelled: true,
+					labelDirection: "column",
+					condtional: () => !!MainStore.getCurrentElementsValues[0]?.selectedCell,
+					frappeControl: (ref, name) => {
+						makeFeild({
+							name,
+							ref,
+							fieldtype: "Select",
+							requiredData: [MainStore.getCurrentElementsValues[0]?.selectedCell],
+							options: () => [
+								{ label: "Yes", value: "Yes" },
+								{ label: "No", value: "No" },
+							],
+							formatValue: (cell, property) => (cell?.[property] ? "Yes" : "No"),
+							onChangeCallback: (value = null) => {
+								const cell = MainStore.getCurrentElementsValues[0]?.selectedCell;
+								if (cell) cell.parseJinja = value === "Yes";
+							},
+							reactiveObject: () =>
+								MainStore.getCurrentElementsValues[0]?.selectedCell,
+							propertyName: "parseJinja",
+						});
+					},
+					flex: 1,
+				},
+			],
+			{
+				label: "Static Value",
+				name: "gridCellValue",
+				isLabelled: true,
+				labelDirection: "column",
+				condtional: () => !!MainStore.getCurrentElementsValues[0]?.selectedCell,
+				frappeControl: (ref, name) => {
+					makeFeild({
+						name,
+						ref,
+						fieldtype: "Small Text",
+						requiredData: [MainStore.getCurrentElementsValues[0]?.selectedCell],
+						reactiveObject: () => MainStore.getCurrentElementsValues[0]?.selectedCell,
+						propertyName: "value",
+					});
+				},
+			},
+			[
+				{
+					label: "Dynamic Fields",
+					name: "gridCellDynamicFields",
+					isLabelled: true,
+					condtional: () => !!MainStore.getCurrentElementsValues[0]?.selectedCell,
+					button: {
+						label: "Edit Dynamic Fields",
+						size: "sm",
+						style: "secondary",
+						margin: 15,
+						onClick: (event) => {
+							const grid = MainStore.getCurrentElementsValues[0];
+							if (!grid?.selectedCell) return;
+							grid.selectedDynamicText = null;
+							MainStore.openDynamicModal = grid.selectedCell;
+							event.target.blur();
+						},
+					},
+				},
+			],
+		],
+	});
+	MainStore.propertiesPanel.push({
 		title: "Rectangle Settings",
 		sectionCondtional: () =>
 			MainStore.getCurrentElementsId.length === 1 &&
@@ -1040,8 +1447,9 @@ export const createPropertiesPanel = () => {
 		title: "Font Settings",
 		sectionCondtional: () =>
 			(MainStore.getCurrentElementsId.length === 1 &&
-				["text", "table"].indexOf(MainStore.getCurrentElementsValues[0]?.type) != -1) ||
-			(["table", "text"].indexOf(MainStore.activeControl) != -1 &&
+				["text", "table", "grid"].indexOf(MainStore.getCurrentElementsValues[0]?.type) !=
+					-1) ||
+			(["table", "grid", "text"].indexOf(MainStore.activeControl) != -1 &&
 				MainStore.getCurrentElementsId.length === 0),
 		fields: [
 			[
@@ -1063,6 +1471,15 @@ export const createPropertiesPanel = () => {
 							requiredData: [MainStore],
 							options: () => {
 								if (
+									"grid" == MainStore.getCurrentElementsValues[0]?.type ||
+									"grid" == MainStore.activeControl
+								) {
+									return [
+										{ label: "Static Label", value: "label" },
+										{ label: "Cell Value", value: "main" },
+									];
+								}
+								if (
 									("text" == MainStore.getCurrentElementsValues[0]?.type &&
 										MainStore.getCurrentElementsValues[0]?.isDynamic) ||
 									("text" == MainStore.activeControl &&
@@ -1076,7 +1493,12 @@ export const createPropertiesPanel = () => {
 							},
 							reactiveObject: () => {
 								let styleClass = "staticText";
-								if (MainStore.textControlType == "dynamic") {
+								if (
+									MainStore.activeControl == "grid" ||
+									MainStore.getCurrentElementsValues[0]?.type == "grid"
+								) {
+									styleClass = "grid";
+								} else if (MainStore.textControlType == "dynamic") {
 									styleClass = "dynamicText";
 								}
 								return (
@@ -1108,6 +1530,9 @@ export const createPropertiesPanel = () => {
 					labelDirection: "column",
 					condtional: () => {
 						let styleClass = "table";
+						if (MainStore.activeControl == "grid") {
+							styleClass = "grid";
+						}
 						if (MainStore.activeControl == "text") {
 							if (MainStore.textControlType == "dynamic") {
 								styleClass = "dynamicText";
@@ -1142,6 +1567,9 @@ export const createPropertiesPanel = () => {
 							},
 							reactiveObject: () => {
 								let styleClass = "table";
+								if (MainStore.activeControl == "grid") {
+									styleClass = "grid";
+								}
 								if (MainStore.activeControl == "text") {
 									if (MainStore.textControlType == "dynamic") {
 										styleClass = "dynamicText";
@@ -1234,6 +1662,9 @@ export const createPropertiesPanel = () => {
 					frappeControl: (ref, name) => {
 						const MainStore = useMainStore();
 						let styleClass = "table";
+						if (MainStore.activeControl == "grid") {
+							styleClass = "grid";
+						}
 						if (MainStore.activeControl == "text") {
 							if (MainStore.textControlType == "dynamic") {
 								styleClass = "dynamicText";
@@ -1421,59 +1852,63 @@ export const createPropertiesPanel = () => {
 				return false;
 			}
 			const currentEl = MainStore.getCurrentElementsValues[0];
-			if (!currentEl || currentEl.parent?.type !== "page" || !getParentPage(currentEl)?.childrens) {
+			if (currentEl?.type == "grid" && currentEl.selectedCell) {
 				return false;
 			}
 			if (
-				ElementStore.isElementOverlapping(
-					currentEl,
-					getParentPage(currentEl).childrens
-				)
+				!currentEl ||
+				currentEl.parent?.type !== "page" ||
+				!getParentPage(currentEl)?.childrens
 			) {
+				return false;
+			}
+			if (ElementStore.isElementOverlapping(currentEl, getParentPage(currentEl).childrens)) {
 				return false;
 			}
 			return true;
 		},
 		fields: [
-				{
-					label: "Avoid Page Break",
-					name: "breakInside",
-					isLabelled: true,
-					labelDirection: "column",
-					condtional: null,
-					parentBorderBottom: true,
-					parentBorderTop: true,
-					frappeControl: (ref, name) => {
-						const MainStore = useMainStore();
-						makeFeild({
-							name: name,
-							ref: ref,
-							fieldtype: "Select",
-							requiredData: [MainStore.getCurrentElementsValues[0]],
-							options: () => [
-								{ label: "Yes", value: "avoid" },
-								{ label: "No", value: "auto" },
-							],
-							reactiveObject: () => MainStore.getCurrentElementsValues[0],
-							propertyName: "breakInside",
-							isStyle: true,
-							isFontStyle: false,
-							formatValue: (object, property, isStyle) => {
-								if (object && object[property]) {
-									return object[property];
-								}
-								return "auto";
-							},
-						});
-					},
+			{
+				label: "Avoid Page Break",
+				name: "breakInside",
+				isLabelled: true,
+				labelDirection: "column",
+				condtional: null,
+				parentBorderBottom: true,
+				parentBorderTop: true,
+				frappeControl: (ref, name) => {
+					const MainStore = useMainStore();
+					makeFeild({
+						name: name,
+						ref: ref,
+						fieldtype: "Select",
+						requiredData: [MainStore.getCurrentElementsValues[0]],
+						options: () => [
+							{ label: "Yes", value: "avoid" },
+							{ label: "No", value: "auto" },
+						],
+						reactiveObject: () => MainStore.getCurrentElementsValues[0],
+						propertyName: "breakInside",
+						isStyle: true,
+						isFontStyle: false,
+						formatValue: (object, property, isStyle) => {
+							if (object && object[property]) {
+								return object[property];
+							}
+							return "auto";
+						},
+					});
 				},
+			},
 		],
 	});
 	MainStore.propertiesPanel.push({
 		title: "Padding",
 		sectionCondtional: () =>
 			MainStore.getCurrentElementsId.length === 1 &&
-			["text", "image", "table"].indexOf(MainStore.getCurrentElementsValues[0].type) !== -1,
+			["text", "image", "table", "grid"].indexOf(
+				MainStore.getCurrentElementsValues[0].type
+			) !== -1,
 		fields: [
 			[
 				paddingInput("Top", "paddingTop", "paddingTop"),
