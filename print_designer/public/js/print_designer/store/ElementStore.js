@@ -6,6 +6,9 @@ import {
 	createDynamicText,
 	createImage,
 	createTable,
+	createGrid,
+	createGridCells,
+	normalizeGridStructure,
 	createBarcode,
 } from "../defaultObjects";
 import {
@@ -14,8 +17,76 @@ import {
 	createHeaderFooterElement,
 	getParentPage,
 } from "../utils";
+import { globalStyles as defaultGlobalStyles } from "../globalStyles";
 
 import html2canvas from "html2canvas";
+
+const DEFAULT_GLOBAL_STYLES = JSON.parse(JSON.stringify(defaultGlobalStyles));
+
+const cloneGridStyle = (value) =>
+	value && typeof value == "object" && !Array.isArray(value) ? { ...value } : {};
+
+const normalizeGridDynamicContent = (fields = [], clearValues = false) =>
+	(Array.isArray(fields) ? fields : []).map((field) => {
+		const normalizedField = {
+			...field,
+			style: cloneGridStyle(field?.style),
+			labelStyle: cloneGridStyle(field?.labelStyle),
+		};
+		if (clearValues && !normalizedField.is_static) {
+			normalizedField.value = "";
+		}
+		return normalizedField;
+	});
+
+const normalizeGridGlobalStyleSettings = (savedStyles = {}) => {
+	const savedStyleMap =
+		savedStyles && typeof savedStyles == "object" && !Array.isArray(savedStyles)
+			? savedStyles
+			: {};
+	const defaultGridStyle = cloneGridStyle(DEFAULT_GLOBAL_STYLES.grid);
+	const savedGridStyle = cloneGridStyle(savedStyleMap.grid);
+	const gridStyle = { ...defaultGridStyle, ...savedGridStyle };
+	["style", "labelStyle"].forEach((property) => {
+		gridStyle[property] = {
+			...cloneGridStyle(defaultGridStyle[property]),
+			...cloneGridStyle(savedGridStyle[property]),
+		};
+	});
+	["mainCssRule", "labelCssRule"].forEach((property) => delete gridStyle[property]);
+
+	return {
+		...savedStyleMap,
+		grid: gridStyle,
+	};
+};
+
+const normalizeGridElement = (element, { clearValues = false } = {}) => {
+	const previousRows = Math.max(parseInt(element.rows) || 1, 1);
+	const hasPersistedRowHeights =
+		Array.isArray(element.rowHeights) &&
+		element.rowHeights.some((rowHeight) => parseFloat(rowHeight) > 0);
+
+	element.styleEditMode = element.styleEditMode || "main";
+	element.style = cloneGridStyle(element.style);
+	element.labelStyle = cloneGridStyle(element.labelStyle);
+	element.classes = Array.isArray(element.classes) ? [...element.classes] : [];
+	element.rows = previousRows;
+	element.columns = Math.max(parseInt(element.columns) || 1, 1);
+	element.cells = createGridCells(element.rows, element.columns, element.cells || []).map(
+		(cell) => ({
+			...cell,
+			style: cloneGridStyle(cell.style),
+			labelStyle: cloneGridStyle(cell.labelStyle),
+			dynamicContent: normalizeGridDynamicContent(cell.dynamicContent, clearValues),
+		})
+	);
+	normalizeGridStructure(element, previousRows);
+	element._needsMeasuredRowHeights = !hasPersistedRowHeights;
+	element.selectedCell = null;
+	element.selectedDynamicText = null;
+	return element;
+};
 
 export const useElementStore = defineStore("ElementStore", {
 	state: () => ({
@@ -39,6 +110,8 @@ export const useElementStore = defineStore("ElementStore", {
 				newElement = createImage(event, element);
 			} else if (MainStore.activeControl == "table") {
 				newElement = createTable(event, element);
+			} else if (MainStore.activeControl == "grid") {
+				newElement = createGrid(event, element);
 			} else if (MainStore.activeControl == "barcode") {
 				newElement = createBarcode(event, element);
 			}
@@ -640,12 +713,13 @@ export const useElementStore = defineStore("ElementStore", {
 			delete saveEl.snapEdges;
 			delete saveEl.parent;
 			this.cleanUpDynamicContent(saveEl);
+			delete saveEl._needsMeasuredRowHeights;
 			if (saveEl.type == "table") {
 				saveEl.table = { ...saveEl.table };
 				delete saveEl.table.childfields;
 				delete saveEl.table.default_layout;
 			}
-			if (printFonts && ["text", "table"].indexOf(saveEl.type) != -1) {
+			if (printFonts && ["text", "table", "grid"].indexOf(saveEl.type) != -1) {
 				handlePrintFonts(saveEl, printFonts);
 			}
 			if (saveEl.type == "rectangle" || saveEl.type == "page") {
@@ -662,7 +736,7 @@ export const useElementStore = defineStore("ElementStore", {
 		cleanUpDynamicContent(element) {
 			const MainStore = useMainStore();
 			if (
-				["table", "image"].includes(element.type) ||
+				["table", "grid", "image"].includes(element.type) ||
 				(["text", "barcode"].includes(element.type) && element.isDynamic)
 			) {
 				if (["text", "barcode"].indexOf(element.type) != -1) {
@@ -697,6 +771,8 @@ export const useElementStore = defineStore("ElementStore", {
 						];
 						col.selectedDynamicText = null;
 					});
+				} else if (element.type === "grid") {
+					normalizeGridElement(element, { clearValues: true });
 				} else {
 					element.image = { ...element.image };
 					if (MainStore.is_standard) {
@@ -932,7 +1008,9 @@ export const useElementStore = defineStore("ElementStore", {
 			if (
 				(childElements.length == 1 && childElements[0].style.breakInside == "avoid") ||
 				childElements.some(
-					(el) => ["row", "column"].includes(el.layoutType) && el.style.breakInside == "avoid"
+					(el) =>
+						["row", "column"].includes(el.layoutType) &&
+						el.style.breakInside == "avoid"
 				)
 			) {
 				wrapper.breakInside = "avoid";
@@ -1037,6 +1115,7 @@ export const useElementStore = defineStore("ElementStore", {
 			const MainStore = useMainStore();
 			if (
 				element.type == "table" ||
+				element.type == "grid" ||
 				(["text", "image", "barcode"].indexOf(element.type) != -1 && element.isDynamic)
 			) {
 				if (["text", "barcode"].indexOf(element.type) != -1) {
@@ -1080,6 +1159,11 @@ export const useElementStore = defineStore("ElementStore", {
 						col.selectedDynamicText = null;
 						MainStore.dynamicData.push(...col.dynamicContent);
 					});
+				} else if (element.type === "grid") {
+					normalizeGridElement(element, { clearValues: true });
+					element.cells.forEach((cell) => {
+						MainStore.dynamicData.push(...cell.dynamicContent);
+					});
 				} else {
 					element.image = { ...element.image };
 					MainStore.dynamicData.push(element.image);
@@ -1110,6 +1194,12 @@ export const useElementStore = defineStore("ElementStore", {
 		loadSettings(settings) {
 			const MainStore = useMainStore();
 			if (!settings) return;
+			if (settings.globalStyles) {
+				settings = {
+					...settings,
+					globalStyles: normalizeGridGlobalStyleSettings(settings.globalStyles),
+				};
+			}
 			Object.keys(settings).forEach((key) => {
 				switch (key) {
 					case "schema_version":
