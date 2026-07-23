@@ -156,7 +156,7 @@
 					:disabled="action.disabled"
 					@click="action.run"
 				>
-					<IconsUse :name="action.icon" :size="16" />
+					<IconsUse :name="action.icon" :size="16" color="var(--gray-700)" />
 				</button>
 			</div>
 		</div>
