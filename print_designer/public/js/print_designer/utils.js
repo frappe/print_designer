@@ -608,7 +608,11 @@ const findElementByIdInTree = (id) => {
 		}
 		(element.childrens || []).forEach(walk);
 	};
-	ElementStore.Elements.forEach(walk);
+	ElementStore.Elements.forEach((page) => {
+		walk(page);
+		(page.header || []).forEach(walk);
+		(page.footer || []).forEach(walk);
+	});
 	ElementStore.Headers.forEach(walk);
 	ElementStore.Footers.forEach(walk);
 	return found;
