@@ -626,6 +626,9 @@ const resolvePasteParent = (snapshot) => {
 	return MainStore.activePage || ElementStore.Elements[0] || null;
 };
 
+/**
+ * Pastes clipboard elements into their original parent with an offset.
+ */
 export const pasteElements = () => {
 	const MainStore = useMainStore();
 	if (!MainStore.clipboard.length) return;
