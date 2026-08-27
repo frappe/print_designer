@@ -111,7 +111,7 @@ class FrappePDFGenerator:
 		exec_path = Path(chromium_dir).joinpath(*executable_name)
 		if not exec_path.exists():
 			frappe.throw(
-				f"Chromium executable not found: {exec_path}. please run bench setup-new-pdf-backend"
+				f"Chromium executable not found: {exec_path}. please run bench setup-chrome"
 			)
 
 		return str(exec_path)

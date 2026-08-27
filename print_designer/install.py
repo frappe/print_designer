@@ -97,6 +97,7 @@ def find_or_download_chromium_executable():
 		download_chromium()
 	else:
 		click.echo(f"Chromium is already set up at {exec_path}")
+		make_chromium_executable(exec_path)
 
 	if not exec_path.exists():
 		click.echo("Error while downloading chrome")
