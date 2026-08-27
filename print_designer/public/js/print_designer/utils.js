@@ -576,7 +576,13 @@ export const copyCurrentElements = () => {
 				return value;
 			})
 		);
-		// Preservamos la referencia al parent (page/rectangle) para pegar en el mismo contenedor
+		// Store the parent's id (element parents like rectangles have one).
+		// Resolving the parent at paste time — instead of holding a live
+		// reference — keeps the paste valid when the layout is rebuilt
+		// (format switch, undo/redo) or the parent is deleted.
+		snapshot._sourceParentId = element.parent?.id ?? null;
+		// Pages have no id: keep the reference only to validate at paste time
+		// that the page object is still attached to the live tree.
 		snapshot._sourceParent = element.parent;
 		return snapshot;
 	});
@@ -584,16 +590,52 @@ export const copyCurrentElements = () => {
 
 const PASTE_OFFSET = 20;
 
+/**
+ * Resuelve el parent vivo para un snapshot del clipboard.
+ *
+ * - Element parents (rectangles): resolve by id in MainStore.currentElements,
+ *   so a rebuilt layout (same id, new object) still pastes into the live
+ *   container.
+ * - Page parents: the stored reference is only used if the page object is
+ *   still attached (body Elements or the header/footer of a live page).
+ * - Stale/deleted parent: fall back to the active page so the pasted element
+ *   is not silently dropped outside the render tree.
+ */
+const resolvePasteParent = (snapshot) => {
+	const MainStore = useMainStore();
+	const ElementStore = useElementStore();
+
+	if (
+		snapshot._sourceParentId &&
+		MainStore.currentElements[snapshot._sourceParentId]
+	) {
+		return MainStore.currentElements[snapshot._sourceParentId];
+	}
+
+	const stored = snapshot._sourceParent;
+	if (
+		stored?.type === "page" &&
+		(ElementStore.Elements.includes(stored) ||
+			ElementStore.Elements.some(
+				(page) => page.header?.[0] === stored || page.footer?.[0] === stored
+			))
+	) {
+		return stored;
+	}
+
+	return MainStore.activePage || ElementStore.Elements[0] || null;
+};
+
 export const pasteElements = () => {
 	const MainStore = useMainStore();
 	if (!MainStore.clipboard.length) return;
-	
+
 	MainStore.getCurrentElementsId.forEach((id) => {
 		delete MainStore.currentElements[id];
 	});
 
 	MainStore.clipboard.forEach((snapshot) => {
-		const parent = snapshot._sourceParent;
+		const parent = resolvePasteParent(snapshot);
 		if (!parent) return;
 
 		const parentRect = parent.DOMRef ? parent.DOMRef.getBoundingClientRect() : null;
@@ -611,6 +653,7 @@ export const pasteElements = () => {
 
 		const clonedElement = { ...snapshot };
 		delete clonedElement._sourceParent;
+		delete clonedElement._sourceParentId;
 
 		clonedElement.startX = Math.max(0, newStartX);
 		clonedElement.startY = Math.max(0, newStartY);
