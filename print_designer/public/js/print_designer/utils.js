@@ -598,8 +598,10 @@ const PASTE_OFFSET = 20;
  *   container.
  * - Page parents: the stored reference is only used if the page object is
  *   still attached (body Elements or the header/footer of a live page).
- * - Stale/deleted parent: fall back to the active page so the pasted element
- *   is not silently dropped outside the render tree.
+ * - Stale/deleted parent: fall back to the active page — only if it is
+ *   still attached, since deletePage leaves activePage pointing at the
+ *   removed page — then to the first page, so the pasted element is
+ *   never dropped outside the render tree.
  */
 const resolvePasteParent = (snapshot) => {
 	const MainStore = useMainStore();
@@ -623,7 +625,14 @@ const resolvePasteParent = (snapshot) => {
 		return stored;
 	}
 
-	return MainStore.activePage || ElementStore.Elements[0] || null;
+	// deletePage splices Elements without clearing MainStore.activePage,
+	// so it may point to a removed page: only use it while still attached.
+	const active = MainStore.activePage;
+	if (active && ElementStore.Elements.includes(active)) {
+		return active;
+	}
+
+	return ElementStore.Elements[0] || null;
 };
 
 /**
