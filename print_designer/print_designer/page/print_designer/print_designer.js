@@ -1,4 +1,10 @@
 frappe.pages["print-designer"].on_page_load = function (wrapper) {
+	frappe.ui.make_app_page({
+		parent: wrapper,
+		single_column: true,
+		hide_sidebar: true,
+	});
+	wrapper.page.page_head.hide();
 	// hot reload in development
 	if (frappe.boot.developer_mode) {
 		frappe.hot_update = frappe.hot_update || [];
@@ -178,6 +184,7 @@ const load_print_designer = async (wrapper) => {
 		if (is_print_format) {
 			await set_current_doc(route[1]);
 			await frappe.require("print_designer.bundle.js");
+			frappe.print_designer?.destroy?.();
 			frappe.print_designer = new frappe.ui.PrintDesigner({
 				wrapper: $parent,
 				print_format: route[1],

@@ -61,7 +61,7 @@
 >
 <div
     style="width:100%;height:100%;
-background-image: url('{{frappe.get_url()}}{{value}}');
+background-image: url('{{frappe.get_url()}}{{value}}'); background-size: {{ element.imageFit or 'contain' }}; background-position: center; background-repeat: no-repeat;
 "
     class="image {{ element.classes | join(' ') }}"
 ></div>

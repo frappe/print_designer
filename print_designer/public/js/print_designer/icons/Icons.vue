@@ -42,19 +42,12 @@
 			</defs>
 		</symbol>
 		<symbol id="mouseTool" fill="none" viewBox="0 0 16 16">
-			<g clip-path="url(#a)">
-				<path
-					fill="var(--icon-stroke)"
-					fill-rule="evenodd"
-					d="M.646.646a.5.5 0 0 0-.119.517l4.828 14a.5.5 0 0 0 .927.046L9.1 9.102l1.781-.823 4.328-1.996a.5.5 0 0 0-.047-.927l-14-4.828a.5.5 0 0 0-.517.12Zm7.478 8.185-2.23 4.83L1.808 1.807l11.854 4.088-3.198 1.475-1.632.754-2.167-2.167a.5.5 0 1 0-.707.707L8.124 8.83Z"
-					clip-rule="evenodd"
-				/>
-			</g>
-			<defs>
-				<clipPath id="a">
-					<path fill="#fff" d="M16 0H0v16h16z" />
-				</clipPath>
-			</defs>
+			<path
+				fill="var(--icon-stroke)"
+				fill-rule="evenodd"
+				d="M.646.646a.5.5 0 0 0-.119.517l4.828 14a.5.5 0 0 0 .927.046L9.1 9.102l1.781-.823 4.328-1.996a.5.5 0 0 0-.047-.927l-14-4.828a.5.5 0 0 0-.517.12Zm7.478 8.185-2.23 4.83L1.808 1.807l11.854 4.088-3.198 1.475-1.632.754-2.167-2.167a.5.5 0 1 0-.707.707L8.124 8.83Z"
+				clip-rule="evenodd"
+			/>
 		</symbol>
 		<symbol id="textTool" fill="none" viewBox="0 0 16 16">
 			<path

@@ -111,11 +111,12 @@ const goToLastPage = () => {
 </script>
 <style scoped lang="scss">
 .header {
-	position: absolute;
+	position: fixed;
 	top: 0;
 	left: 0;
+	right: 0;
 	display: flex;
-	justify-content: space-between;
+	justify-content: flex-start;
 	align-items: center;
 	gap: 16px;
 	height: calc(var(--navbar-height) - 1px);

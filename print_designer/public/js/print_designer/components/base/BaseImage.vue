@@ -18,6 +18,7 @@
 				style,
 				style.backgroundColor == '' && { backgroundColor: 'transparent' },
 				`background-image: url('${isDynamic ? image.value : image.file_url}');`,
+				`background-size: ${imageFit?.value || props.object.imageFit || 'contain'};`,
 			]"
 			:class="['image', classes]"
 			:key="id"
@@ -81,7 +82,7 @@ const props = defineProps({
 	},
 });
 
-const { id, image, isDynamic, startX, startY, width, height, style, classes } = toRefs(
+const { id, image, isDynamic, imageFit, startX, startY, width, height, style, classes } = toRefs(
 	props.object
 );
 
