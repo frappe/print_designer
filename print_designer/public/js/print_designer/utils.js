@@ -591,11 +591,35 @@ export const copyCurrentElements = () => {
 const PASTE_OFFSET = 20;
 
 /**
+ * Finds an element by id anywhere in the live element tree
+ * (body pages, headers and footers, recursive through childrens).
+ *
+ * MainStore.currentElements cannot be used for this: it is the
+ * selection map, so an unselected parent rectangle would be missed.
+ */
+const findElementByIdInTree = (id) => {
+	const ElementStore = useElementStore();
+	let found = null;
+	const walk = (element) => {
+		if (found || !element) return;
+		if (element.id === id) {
+			found = element;
+			return;
+		}
+		(element.childrens || []).forEach(walk);
+	};
+	ElementStore.Elements.forEach(walk);
+	ElementStore.Headers.forEach(walk);
+	ElementStore.Footers.forEach(walk);
+	return found;
+};
+
+/**
  * Resuelve el parent vivo para un snapshot del clipboard.
  *
- * - Element parents (rectangles): resolve by id in MainStore.currentElements,
- *   so a rebuilt layout (same id, new object) still pastes into the live
- *   container.
+ * - Element parents (rectangles): resolve by id with a search over the
+ *   whole live tree, so a parent that is not part of the current
+ *   selection is still found and the clone stays nested.
  * - Page parents: the stored reference is only used if the page object is
  *   still attached (body Elements or the header/footer of a live page).
  * - Stale/deleted parent: fall back to the active page — only if it is
@@ -607,17 +631,19 @@ const resolvePasteParent = (snapshot) => {
 	const MainStore = useMainStore();
 	const ElementStore = useElementStore();
 
-	if (
-		snapshot._sourceParentId &&
-		MainStore.currentElements[snapshot._sourceParentId]
-	) {
-		return MainStore.currentElements[snapshot._sourceParentId];
+	if (snapshot._sourceParentId) {
+		const found = findElementByIdInTree(snapshot._sourceParentId);
+		if (found) {
+			return found;
+		}
 	}
 
 	const stored = snapshot._sourceParent;
 	if (
 		stored?.type === "page" &&
 		(ElementStore.Elements.includes(stored) ||
+			ElementStore.Headers.includes(stored) ||
+			ElementStore.Footers.includes(stored) ||
 			ElementStore.Elements.some(
 				(page) => page.header?.[0] === stored || page.footer?.[0] === stored
 			))
