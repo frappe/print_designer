@@ -558,6 +558,160 @@ export const cloneElement = () => {
 	MainStore.lastCloned = clonedElements;
 };
 
+/**
+ * Copia los elementos actualmente seleccionados al clipboard interno.
+ * Se guardan snapshots independientes (sin referencias al DOM ni al parent).
+ */
+export const copyCurrentElements = () => {
+	const MainStore = useMainStore();
+	if (!MainStore.getCurrentElementsValues.length) return;
+	MainStore.clipboard = MainStore.getCurrentElementsValues.map((element) => {
+		// Guardamos una copia plana del elemento para restaurarlo en paste
+		const snapshot = JSON.parse(
+			JSON.stringify(element, (key, value) => {
+				// Excluir referencias circulares/DOM que no son serializables
+				if (key === "DOMRef" || key === "parent" || key === "snapPoints" || key === "snapEdges") {
+					return undefined;
+				}
+				return value;
+			})
+		);
+		// Store the parent's id (element parents like rectangles have one).
+		// Resolving the parent at paste time — instead of holding a live
+		// reference — keeps the paste valid when the layout is rebuilt
+		// (format switch, undo/redo) or the parent is deleted.
+		snapshot._sourceParentId = element.parent?.id ?? null;
+		// Pages have no id: keep the reference only to validate at paste time
+		// that the page object is still attached to the live tree.
+		snapshot._sourceParent = element.parent;
+		return snapshot;
+	});
+};
+
+const PASTE_OFFSET = 20;
+
+/**
+ * Finds an element by id anywhere in the live element tree
+ * (body pages, headers and footers, recursive through childrens).
+ *
+ * MainStore.currentElements cannot be used for this: it is the
+ * selection map, so an unselected parent rectangle would be missed.
+ */
+const findElementByIdInTree = (id) => {
+	const ElementStore = useElementStore();
+	let found = null;
+	const walk = (element) => {
+		if (found || !element) return;
+		if (element.id === id) {
+			found = element;
+			return;
+		}
+		(element.childrens || []).forEach(walk);
+	};
+	ElementStore.Elements.forEach((page) => {
+		walk(page);
+		(page.header || []).forEach(walk);
+		(page.footer || []).forEach(walk);
+	});
+	ElementStore.Headers.forEach(walk);
+	ElementStore.Footers.forEach(walk);
+	return found;
+};
+
+/**
+ * Resuelve el parent vivo para un snapshot del clipboard.
+ *
+ * - Element parents (rectangles): resolve by id with a search over the
+ *   whole live tree, so a parent that is not part of the current
+ *   selection is still found and the clone stays nested.
+ * - Page parents: the stored reference is only used if the page object is
+ *   still attached (body Elements or the header/footer of a live page).
+ * - Stale/deleted parent: fall back to the active page — only if it is
+ *   still attached, since deletePage leaves activePage pointing at the
+ *   removed page — then to the first page, so the pasted element is
+ *   never dropped outside the render tree.
+ */
+const resolvePasteParent = (snapshot) => {
+	const MainStore = useMainStore();
+	const ElementStore = useElementStore();
+
+	if (snapshot._sourceParentId) {
+		const found = findElementByIdInTree(snapshot._sourceParentId);
+		if (found) {
+			return found;
+		}
+	}
+
+	const stored = snapshot._sourceParent;
+	if (
+		stored?.type === "page" &&
+		(ElementStore.Elements.includes(stored) ||
+			ElementStore.Headers.includes(stored) ||
+			ElementStore.Footers.includes(stored) ||
+			ElementStore.Elements.some(
+				(page) => page.header?.[0] === stored || page.footer?.[0] === stored
+			))
+	) {
+		return stored;
+	}
+
+	// deletePage splices Elements without clearing MainStore.activePage,
+	// so it may point to a removed page: only use it while still attached.
+	const active = MainStore.activePage;
+	if (active && ElementStore.Elements.includes(active)) {
+		return active;
+	}
+
+	return ElementStore.Elements[0] || null;
+};
+
+/**
+ * Pastes clipboard elements into their original parent with an offset.
+ */
+export const pasteElements = () => {
+	const MainStore = useMainStore();
+	if (!MainStore.clipboard.length) return;
+
+	MainStore.getCurrentElementsId.forEach((id) => {
+		delete MainStore.currentElements[id];
+	});
+
+	MainStore.clipboard.forEach((snapshot) => {
+		const parent = resolvePasteParent(snapshot);
+		if (!parent) return;
+
+		const parentRect = parent.DOMRef ? parent.DOMRef.getBoundingClientRect() : null;
+		const maxWidth = parentRect ? parentRect.width : parent.width || 0;
+		const maxHeight = parentRect ? parentRect.height : parent.height || 0;
+
+		const newStartX = Math.min(
+			snapshot.startX + PASTE_OFFSET,
+			maxWidth - snapshot.width - 1
+		);
+		const newStartY = Math.min(
+			snapshot.startY + PASTE_OFFSET,
+			maxHeight - snapshot.height - 1
+		);
+
+		const clonedElement = { ...snapshot };
+		delete clonedElement._sourceParent;
+		delete clonedElement._sourceParentId;
+
+		clonedElement.startX = Math.max(0, newStartX);
+		clonedElement.startY = Math.max(0, newStartY);
+		clonedElement.pageX = clonedElement.startX;
+		clonedElement.pageY = clonedElement.startY;
+
+		clonedElement.parent = parent;
+
+		recursiveChildrens({ element: clonedElement, isClone: true });
+
+		MainStore.currentElements[clonedElement.id] = clonedElement;
+	});
+
+	checkUpdateElementOverlapping();
+};
+
 export const getSnapPointsAndEdges = (element) => {
 	const boundingRect = {};
 	const observer = new IntersectionObserver((entries) => {
