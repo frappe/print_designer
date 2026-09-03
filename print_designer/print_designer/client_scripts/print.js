@@ -138,7 +138,6 @@ frappe.ui.form.PrintView = class PrintView extends frappe.ui.form.PrintView {
 		const pdfEl = this.createPdfEl(url, wrapperContainer);
 		const onError = () => {
 			this.print_wrapper.find(".print-designer-wrapper").hide();
-			this.inner_msg.show();
 			this.full_page_btn.show();
 			this.pdf_btn.show();
 			this.letterhead_selector.show();
@@ -175,11 +174,6 @@ frappe.ui.form.PrintView = class PrintView extends frappe.ui.form.PrintView {
 	}
 	show(frm) {
 		super.show(frm);
-		this.inner_msg = this.page.add_inner_message(`
-				<a style="line-height: 2.4" href="/app/print-designer?doctype=${this.frm.doctype}">
-					${__("Try the new Print Designer")}
-				</a>
-			`);
 	}
 	preview() {
 		let print_format = this.get_print_format();
@@ -188,7 +182,6 @@ frappe.ui.form.PrintView = class PrintView extends frappe.ui.form.PrintView {
 			print_format.print_designer_body &&
 			print_format.print_designer_settings
 		) {
-			this.inner_msg.hide();
 			this.print_wrapper.find(".print-preview-wrapper").hide();
 			this.print_wrapper.find(".preview-beta-wrapper").hide();
 			this.print_wrapper.find(".print-designer-wrapper").show();
@@ -205,7 +198,6 @@ frappe.ui.form.PrintView = class PrintView extends frappe.ui.form.PrintView {
 			return;
 		}
 		this.print_wrapper.find(".print-designer-wrapper").hide();
-		this.inner_msg.show();
 		this.full_page_btn.show();
 		this.pdf_btn.show();
 		this.print_btn.show();
@@ -227,16 +219,16 @@ frappe.ui.form.PrintView = class PrintView extends frappe.ui.form.PrintView {
 			__("Full Page"),
 			() => this.render_page("/printview?"),
 			{
-				icon: "full-page",
+				icon: "fullscreen",
 			}
 		);
 
 		this.pdf_btn = this.page.add_button(__("PDF"), () => this.render_pdf(), {
-			icon: "small-file",
+			icon: "file-text",
 		});
 
 		this.refresh_btn = this.page.add_button(__("Refresh"), () => this.refresh_print_format(), {
-			icon: "refresh",
+			icon: "refresh-cw",
 		});
 
 		this.page.add_action_icon(
