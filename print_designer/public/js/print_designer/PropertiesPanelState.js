@@ -908,6 +908,32 @@ export const createPropertiesPanel = () => {
 			],
 			[
 				{
+					label: "Table Layout",
+					name: "tableLayout",
+					isLabelled: true,
+					labelDirection: "column",
+					condtional: () => (MainStore.getCurrentElementsValues[0]?.type == "table"),
+					frappeControl: (ref, name) => {
+						const MainStore = useMainStore();
+						const ElementStore = useElementStore();
+						makeFeild({
+							name,
+							ref,
+							fieldtype: "Select",
+							requiredData: [MainStore.getCurrentElementsValues[0]],
+							propertyName: "tableLayout",
+							isStyle: false,
+							options: () => [
+								{ label: "Auto", value: "auto" },
+								{ label: "Fixed", value: "fixed" },
+							],
+						});
+					},
+					flex: 1,
+				},
+			],
+			[
+				{
 					label: "Apply Style to Header",
 					name: "applyStyleToHeader",
 					isLabelled: true,
