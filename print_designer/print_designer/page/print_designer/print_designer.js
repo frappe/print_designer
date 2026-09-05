@@ -4,7 +4,7 @@ frappe.pages["print-designer"].on_page_load = function (wrapper) {
 		single_column: true,
 		hide_sidebar: true,
 	});
-	wrapper.page.page_head.hide();
+	wrapper.page.wrapper.find(".page-head").hide();
 	// hot reload in development
 	if (frappe.boot.developer_mode) {
 		frappe.hot_update = frappe.hot_update || [];

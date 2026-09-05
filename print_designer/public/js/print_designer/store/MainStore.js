@@ -7,7 +7,7 @@ import { pageSizes } from "../pageSizes";
 export const useMainStore = defineStore("MainStore", {
 	state: () => ({
 		/**
-		 * @type {'mouse-pointer'|'text'|'rectangle'|'image'|'components'|'table'|'barcode'}  activeControl
+		 * @type {'mouse-pointer'|'text'|'rectangle'|'image'|'components'|'table'|'grid'|'barcode'}  activeControl
 		 */
 		activeControl: "mouse-pointer",
 		/**
@@ -131,6 +131,14 @@ export const useMainStore = defineStore("MainStore", {
 				aria_label: __("Table (A)"),
 				id: "table",
 				cursor: "url('/assets/print_designer/images/add-table.svg') 6 6, crosshair",
+				isDisabled: false,
+			},
+			Grid: {
+				icon: "gridTool",
+				control: "Grid",
+				aria_label: __("Grid (G)"),
+				id: "grid",
+				cursor: "crosshair",
 				isDisabled: false,
 			},
 			// Components: {
@@ -440,8 +448,13 @@ export const useMainStore = defineStore("MainStore", {
 			});
 			let styleEditMode = mapper[object.styleEditMode];
 			return !isFontStyle
-				? object.selectedColumn?.["style"] || object[styleEditMode]
+				? object.selectedCell?.[styleEditMode] ||
+						object.selectedCell?.style ||
+						object.selectedColumn?.["style"] ||
+						object[styleEditMode]
 				: object.selectedDynamicText?.[styleEditMode] ||
+						object.selectedCell?.[styleEditMode] ||
+						object.selectedCell?.style ||
 						object.selectedColumn?.["style"] ||
 						object[styleEditMode];
 		},
@@ -469,6 +482,12 @@ export const useMainStore = defineStore("MainStore", {
 				) {
 					return object.selectedDynamicText?.[styleEditMode][propertyName];
 				}
+				if (state.isValidValue(object.selectedCell?.[styleEditMode]?.[propertyName])) {
+					return object.selectedCell[styleEditMode][propertyName];
+				}
+				if (state.isValidValue(object.selectedCell?.style?.[propertyName])) {
+					return object.selectedCell.style[propertyName];
+				}
 				if (state.isValidValue(object.selectedColumn?.["style"]?.[propertyName])) {
 					return object.selectedColumn?.["style"][propertyName];
 				}
@@ -482,6 +501,12 @@ export const useMainStore = defineStore("MainStore", {
 				// we need to check if empty string incase it is background color and set as transparent
 				if (typeof object.selectedDynamicText?.[styleEditMode][propertyName] == "string") {
 					return object.selectedDynamicText?.[styleEditMode][propertyName];
+				}
+				if (typeof object.selectedCell?.[styleEditMode]?.[propertyName] == "string") {
+					return object.selectedCell[styleEditMode][propertyName];
+				}
+				if (typeof object.selectedCell?.style?.[propertyName] == "string") {
+					return object.selectedCell.style[propertyName];
 				}
 				if (typeof object.selectedColumn?.["style"][propertyName] == "string") {
 					return object.selectedColumn?.["style"][propertyName];
@@ -519,7 +544,7 @@ export const useMainStore = defineStore("MainStore", {
 	},
 	actions: {
 		/**
-		 * @param {'MousePointer'|'Text'|'Rectangle'|'Components'|'Image'|'Table'|'Barcode'}  id
+		 * @param {'MousePointer'|'Text'|'Rectangle'|'Components'|'Image'|'Table'|'Grid'|'Barcode'}  id
 		 */
 		setActiveControl(id) {
 			let control = this.controls[id];
