@@ -164,58 +164,85 @@ export const makeFeild = ({
 			);
 		} else if (
 			!isStyle &&
-			["styleEditMode"].indexOf(propertyName) != -1 &&
+			["styleEditMode", "imageFit"].indexOf(propertyName) != -1 &&
 			!MainStore.frappeControls[name].vueWatcher
 		) {
 			MainStore.frappeControls[name].vueWatcher = watch(
-				() => [
-					MainStore.getGlobalStyleObject,
-					MainStore.getCurrentElementsValues[0]?.styleEditMode,
-				],
 				() => {
-					let styleClass = "table";
-					if (MainStore.activeControl == "text") {
-						if (MainStore.textControlType == "dynamic") {
-							styleClass = "dynamicText";
-						} else {
-							styleClass = "staticText";
-						}
+					if (propertyName === "imageFit") {
+						return [
+							MainStore.getCurrentElementsValues[0],
+							MainStore.getCurrentElementsValues[0]?.imageFit,
+						];
+					} else {
+						return [
+							MainStore.getGlobalStyleObject,
+							MainStore.getCurrentElementsValues[0]?.styleEditMode,
+						];
 					}
-					nextTick(() => {
-						if (!MainStore.frappeControls[name]) return;
-						if (
-							("text" == MainStore.getCurrentElementsValues[0]?.type &&
-								MainStore.getCurrentElementsValues[0]?.isDynamic) ||
-							("text" == MainStore.activeControl &&
-								MainStore.textControlType == "dynamic")
-						) {
-							MainStore.frappeControls[name].df.options = [
-								{ label: "Label Element", value: "label" },
-								{ label: "Main Element", value: "main" },
-							];
-						} else if (
-							"text" == MainStore.getCurrentElementsValues[0]?.type ||
-							"text" == MainStore.activeControl
-						) {
-							MainStore.frappeControls[name].df.options = [
-								{ label: "Main Element", value: "main" },
-							];
-						} else {
-							MainStore.frappeControls[name].df.options = [
-								{ label: "Table Header", value: "header" },
-								{ label: "All Rows", value: "main" },
-								{ label: "Alternate Rows", value: "alt" },
-								{ label: "Field Labels", value: "label" },
-							];
+				},
+				() => {
+					if (propertyName === "imageFit") {
+						nextTick(() => {
+							if (!MainStore.frappeControls[name]) return;
+							MainStore.frappeControls[name].refresh();
+							MainStore.frappeControls[name]?.set_value(
+								MainStore.getCurrentElementsValues[0]?.imageFit ||
+								MainStore.globalStyles["image"].imageFit ||
+								"contain"
+							);
+							onChangeCallback &&
+								onChangeCallback(
+									MainStore.getCurrentElementsValues[0]?.imageFit ||
+									MainStore.globalStyles["image"].imageFit ||
+									"contain"
+								);
+						});
+					} else {
+						let styleClass = "table";
+						if (MainStore.activeControl == "text") {
+							if (MainStore.textControlType == "dynamic") {
+								styleClass = "dynamicText";
+							} else {
+								styleClass = "staticText";
+							}
 						}
-						MainStore.frappeControls[name].refresh();
-						MainStore.frappeControls[name]?.set_value(
-							MainStore.getCurrentElementsValues[0]?.styleEditMode ||
-								MainStore.globalStyles[styleClass].styleEditMode
-						);
-						onChangeCallback &&
-							onChangeCallback(formatValue(object, propertyName, isStyle));
-					});
+						nextTick(() => {
+							if (!MainStore.frappeControls[name]) return;
+							if (
+								("text" == MainStore.getCurrentElementsValues[0]?.type &&
+									MainStore.getCurrentElementsValues[0]?.isDynamic) ||
+								("text" == MainStore.activeControl &&
+									MainStore.textControlType == "dynamic")
+							) {
+								MainStore.frappeControls[name].df.options = [
+									{ label: "Label Element", value: "label" },
+									{ label: "Main Element", value: "main" },
+								];
+							} else if (
+								"text" == MainStore.getCurrentElementsValues[0]?.type ||
+								"text" == MainStore.activeControl
+							) {
+								MainStore.frappeControls[name].df.options = [
+									{ label: "Main Element", value: "main" },
+								];
+							} else {
+								MainStore.frappeControls[name].df.options = [
+									{ label: "Table Header", value: "header" },
+									{ label: "All Rows", value: "main" },
+									{ label: "Alternate Rows", value: "alt" },
+									{ label: "Field Labels", value: "label" },
+								];
+							}
+							MainStore.frappeControls[name].refresh();
+							MainStore.frappeControls[name]?.set_value(
+								MainStore.getCurrentElementsValues[0]?.styleEditMode ||
+									MainStore.globalStyles[styleClass].styleEditMode
+							);
+							onChangeCallback &&
+								onChangeCallback(formatValue(object, propertyName, isStyle));
+						});
+					}
 				},
 				{ immediate: true }
 			);

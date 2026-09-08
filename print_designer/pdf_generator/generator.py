@@ -27,11 +27,18 @@ class FrappePDFGenerator:
 		self._browsers.append(browser)
 
 	def remove_browser(self, browser):
-		self._browsers.remove(browser)
+		if browser in self._browsers:
+			self._browsers.remove(browser)
 
 	def __new__(cls):
-		# if instance or _chromium_process is not available create object else return current instance stored in cls._instance
-		if cls._instance is None or not cls._instance._chromium_process:
+		# Rebuild singleton when chromium subprocess is missing or has exited.
+		# subprocess.Popen stays truthy after the underlying process dies, so
+		# `not cls._instance._chromium_process` never trips — use poll() instead.
+		if (
+			cls._instance is None
+			or cls._instance._chromium_process is None
+			or cls._instance._chromium_process.poll() is not None
+		):
 			cls._instance = super().__new__(cls)
 		return cls._instance
 
@@ -63,7 +70,7 @@ class FrappePDFGenerator:
 			return
 
 		# only when we want to use chromium from a specific path ( incase we don't have chromium in bench folder )
-		self.CHROMIUM_BINARY_PATH = site_config.get("chromium_binary_path", "")
+		self.CHROMIUM_BINARY_PATH = site_config.get("chromium_binary_path") or site_config.get("chromium_path", "")
 		"""
 		Number of allowed open websocket connections to chromium.
 		This number will basically define how many concurrent requests can be handled by one chromium instance.
@@ -104,7 +111,7 @@ class FrappePDFGenerator:
 		exec_path = Path(chromium_dir).joinpath(*executable_name)
 		if not exec_path.exists():
 			frappe.throw(
-				f"Chromium executable not found: {exec_path}. please run bench setup-new-pdf-backend"
+				f"Chromium executable not found: {exec_path}. please run bench setup-chrome"
 			)
 
 		return str(exec_path)
