@@ -15,6 +15,24 @@ def pdf_header_footer_html(soup, head, content, styles, html_id, css):
 	if soup.find(id="__print_designer"):
 		if frappe.form_dict.get("pdf_generator", "wkhtmltopdf") == "chrome":
 			path = "print_designer/page/print_designer/jinja/header_footer.html"
+			# frappe's Browser calls clone_and_update() on the header/footer
+			# page after loading this HTML, but it does NOT inject
+			# update_page_no.js (only print_designer's own Browser does).
+			# Without the script the odd/even/last page variants stay
+			# display:none, Chrome renders a 1-page PDF and frappe's
+			# pdf_merge crashes with IndexError (pages[3]).
+			head = list(head)
+			if not any("clone_and_update" in str(tag) for tag in head):
+				script_path = frappe.get_app_path(
+					"print_designer",
+					"print_designer",
+					"page",
+					"print_designer",
+					"update_page_no.js",
+				)
+				script_tag = soup.new_tag("script")
+				script_tag.append(soup.new_string(frappe.read_file(script_path)))
+				head.append(script_tag)
 		else:
 			path = "print_designer/page/print_designer/jinja/header_footer_old.html"
 		try:
