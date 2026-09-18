@@ -2,6 +2,13 @@ import { watch, isRef, nextTick, shallowReactive } from "vue";
 import { useMainStore } from "./store/MainStore";
 import { onClickOutside } from "@vueuse/core";
 import { getConditonalObject } from "./utils";
+
+export const setFrappeControlValueSilently = (control, value) => {
+	if (!control) return;
+	control.set_input(value ?? "");
+	return Promise.resolve();
+};
+
 export const makeFeild = ({
 	name,
 	ref,
@@ -12,6 +19,7 @@ export const makeFeild = ({
 	propertyName,
 	isStyle = false,
 	isFontStyle = false,
+	assignValue = true,
 	onChangeCallback = null,
 	formatValue = (object, property, isStyle, toDB = false) => {
 		if (isStyle) {
@@ -61,7 +69,7 @@ export const makeFeild = ({
 								fieldtype == "Color") &&
 							obj_value != value
 						) {
-							object[propertyName] = value;
+							if (assignValue) object[propertyName] = value;
 							onChangeCallback && onChangeCallback(value);
 						} else if (!value && formatValue(object, propertyName, isStyle)) {
 							if (
@@ -70,7 +78,8 @@ export const makeFeild = ({
 								!value
 							)
 								return;
-							MainStore.frappeControls[name].set_value(
+							setFrappeControlValueSilently(
+								MainStore.frappeControls[name],
 								formatValue(object, propertyName, isStyle)
 							);
 							onChangeCallback && onChangeCallback();
@@ -89,7 +98,10 @@ export const makeFeild = ({
 			isRef(reactiveObject) && (object = object.value);
 			typeof reactiveObject == "function" && (object = object());
 		}
-		MainStore.frappeControls[name].set_value(formatValue(object, propertyName, isStyle));
+		setFrappeControlValueSilently(
+			MainStore.frappeControls[name],
+			formatValue(object, propertyName, isStyle)
+		);
 		if (["Link", "Autocomplete"].indexOf(fieldtype) != -1) {
 			MainStore.frappeControls[name].$input[0].onfocus = () => {
 				MainStore.frappeControls[name].$input.select();
@@ -137,11 +149,10 @@ export const makeFeild = ({
 					if (MainStore.getCurrentElementsValues.length < 2) {
 						MainStore.frappeControls[name]?.refresh();
 						nextTick(() => {
-							MainStore.frappeControls[name]?.set_value(
+							setFrappeControlValueSilently(
+								MainStore.frappeControls[name],
 								MainStore.getCurrentStyle(propertyName)
 							);
-							onChangeCallback &&
-								onChangeCallback(MainStore.getCurrentStyle(propertyName));
 						});
 					}
 				}
@@ -153,11 +164,10 @@ export const makeFeild = ({
 				(newValue) => {
 					MainStore.frappeControls[name]?.refresh();
 					nextTick(() => {
-						MainStore.frappeControls[name]?.set_value(
+						setFrappeControlValueSilently(
+							MainStore.frappeControls[name],
 							formatValue(object, propertyName, isStyle)
 						);
-						onChangeCallback &&
-							onChangeCallback(formatValue(object, propertyName, isStyle));
 					});
 				},
 				{ immediate: true }
@@ -186,20 +196,18 @@ export const makeFeild = ({
 						nextTick(() => {
 							if (!MainStore.frappeControls[name]) return;
 							MainStore.frappeControls[name].refresh();
-							MainStore.frappeControls[name]?.set_value(
+							setFrappeControlValueSilently(
+								MainStore.frappeControls[name],
 								MainStore.getCurrentElementsValues[0]?.imageFit ||
-								MainStore.globalStyles["image"].imageFit ||
-								"contain"
-							);
-							onChangeCallback &&
-								onChangeCallback(
-									MainStore.getCurrentElementsValues[0]?.imageFit ||
 									MainStore.globalStyles["image"].imageFit ||
 									"contain"
-								);
+							);
 						});
 					} else {
 						let styleClass = "table";
+						if (MainStore.activeControl == "grid") {
+							styleClass = "grid";
+						}
 						if (MainStore.activeControl == "text") {
 							if (MainStore.textControlType == "dynamic") {
 								styleClass = "dynamicText";
@@ -220,6 +228,14 @@ export const makeFeild = ({
 									{ label: "Main Element", value: "main" },
 								];
 							} else if (
+								"grid" == MainStore.getCurrentElementsValues[0]?.type ||
+								"grid" == MainStore.activeControl
+							) {
+								MainStore.frappeControls[name].df.options = [
+									{ label: "Static Label", value: "label" },
+									{ label: "Cell Value", value: "main" },
+								];
+							} else if (
 								"text" == MainStore.getCurrentElementsValues[0]?.type ||
 								"text" == MainStore.activeControl
 							) {
@@ -235,12 +251,11 @@ export const makeFeild = ({
 								];
 							}
 							MainStore.frappeControls[name].refresh();
-							MainStore.frappeControls[name]?.set_value(
+							setFrappeControlValueSilently(
+								MainStore.frappeControls[name],
 								MainStore.getCurrentElementsValues[0]?.styleEditMode ||
 									MainStore.globalStyles[styleClass].styleEditMode
 							);
-							onChangeCallback &&
-								onChangeCallback(formatValue(object, propertyName, isStyle));
 						});
 					}
 				},

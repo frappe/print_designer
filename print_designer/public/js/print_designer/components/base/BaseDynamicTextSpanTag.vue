@@ -14,7 +14,7 @@
 				},
 			]"
 			@click="selectDynamicText(true)"
-			:style="[labelStyle, field?.labelStyle]"
+			:style="[labelStyle, inheritedTextStyle, field?.labelStyle]"
 			v-html="
 				field.label ||
 				`{{ ${field.parentField ? field.parentField + '.' : ''}${field.fieldname} }}`
@@ -34,7 +34,7 @@
 				getPageClass(field),
 			]"
 			@click="selectDynamicText()"
-			:style="[field?.style]"
+			:style="[inheritedTextStyle, field?.style]"
 			v-html="parsedValue"
 		>
 		</span>
@@ -51,7 +51,7 @@
 				},
 			]"
 			@click="selectDynamicText()"
-			:style="[field?.style]"
+			:style="[inheritedTextStyle, field?.style]"
 			v-html="field.suffix"
 		>
 		</span>
@@ -61,7 +61,7 @@
 
 <script setup>
 import { useMainStore } from "../../store/MainStore";
-import { ref, watch, onMounted } from "vue";
+import { computed, ref, watch, onMounted } from "vue";
 import { getFormattedValue } from "../../utils";
 
 const selectDynamicText = (isLabel = false) => {
@@ -99,10 +99,18 @@ const props = defineProps({
 		type: Object,
 		default: null,
 	},
+	inheritedStyle: {
+		type: Object,
+		default: () => ({}),
+	},
 });
 
 const parsedValue = ref("");
 const row = ref(null);
+const inheritedTextStyle = computed(() => {
+	const inheritedColor = props.inheritedStyle?.color;
+	return inheritedColor ? { color: inheritedColor } : {};
+});
 
 onMounted(() => {
 	watch(

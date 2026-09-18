@@ -65,6 +65,85 @@
 				clip-rule="evenodd"
 			/>
 		</symbol>
+		<symbol id="gridTool" fill="none" viewBox="0 0 16 16">
+			<path
+				fill="var(--icon-stroke)"
+				fill-rule="evenodd"
+				d="M3.5 2A1.5 1.5 0 0 0 2 3.5v9A1.5 1.5 0 0 0 3.5 14h9a1.5 1.5 0 0 0 1.5-1.5v-9A1.5 1.5 0 0 0 12.5 2h-9ZM1 3.5A2.5 2.5 0 0 1 3.5 1h9A2.5 2.5 0 0 1 15 3.5v9a2.5 2.5 0 0 1-2.5 2.5h-9A2.5 2.5 0 0 1 1 12.5v-9ZM5.5 2v12h1V2h-1Zm4 0v12h1V2h-1ZM2 5.5v1h12v-1H2Zm0 4v1h12v-1H2Z"
+				clip-rule="evenodd"
+			/>
+		</symbol>
+		<symbol id="gridAddRowAbove" fill="none" viewBox="0 0 24 24">
+			<path
+				d="M4 9h16v10H4zM4 14h16M9 5h6M12 2v6"
+				stroke="var(--icon-stroke)"
+				stroke-width="1.5"
+			/>
+		</symbol>
+		<symbol id="gridAddRowBelow" fill="none" viewBox="0 0 24 24">
+			<path
+				d="M4 5h16v10H4zM4 10h16M9 19h6M12 16v6"
+				stroke="var(--icon-stroke)"
+				stroke-width="1.5"
+			/>
+		</symbol>
+		<symbol id="gridDeleteRow" fill="none" viewBox="0 0 24 24">
+			<path d="M4 7h16v10H4zM4 12h16M9 3h6" stroke="var(--icon-stroke)" stroke-width="1.5" />
+		</symbol>
+		<symbol id="gridAddColumnLeft" fill="none" viewBox="0 0 24 24">
+			<path
+				d="M9 4h10v16H9zM14 4v16M5 9v6M2 12h6"
+				stroke="var(--icon-stroke)"
+				stroke-width="1.5"
+			/>
+		</symbol>
+		<symbol id="gridAddColumnRight" fill="none" viewBox="0 0 24 24">
+			<path
+				d="M5 4h10v16H5zM10 4v16M19 9v6M16 12h6"
+				stroke="var(--icon-stroke)"
+				stroke-width="1.5"
+			/>
+		</symbol>
+		<symbol id="gridDeleteColumn" fill="none" viewBox="0 0 24 24">
+			<path
+				d="M7 4h10v16H7zM12 4v16M19 9v6"
+				stroke="var(--icon-stroke)"
+				stroke-width="1.5"
+			/>
+		</symbol>
+		<symbol id="gridMergeRight" fill="none" viewBox="0 0 24 24">
+			<path
+				d="M3 5h7v14H3zM14 5h7v14h-7zM8 12h8m-3-3 3 3-3 3"
+				stroke="var(--icon-stroke)"
+				stroke-width="1.5"
+			/>
+		</symbol>
+		<symbol id="gridMergeDown" fill="none" viewBox="0 0 24 24">
+			<path
+				d="M5 3h14v7H5zM5 14h14v7H5zM12 8v8m-3-3 3 3 3-3"
+				stroke="var(--icon-stroke)"
+				stroke-width="1.5"
+			/>
+		</symbol>
+		<symbol id="gridSplitCell" fill="none" viewBox="0 0 24 24">
+			<path
+				d="M4 4h16v16H4zM12 4v16M4 12h16"
+				stroke="var(--icon-stroke)"
+				stroke-width="1.5"
+			/>
+		</symbol>
+		<symbol id="gridWrapText" fill="none" viewBox="0 0 24 24">
+			<path
+				d="M4 6h16M4 10h13a3 3 0 0 1 0 6h-5m3-3-3 3 3 3M4 14h5"
+				stroke="var(--icon-stroke)"
+				stroke-width="1.5"
+			/>
+		</symbol>
+		<symbol id="gridTrimText" fill="none" viewBox="0 0 24 24">
+			<path d="M4 6h16M4 10h16M4 14h8" stroke="var(--icon-stroke)" stroke-width="1.5" />
+			<circle cx="15" cy="14" r="1" fill="var(--icon-stroke)" />
+			<circle cx="19" cy="14" r="1" fill="var(--icon-stroke)" />
+		</symbol>
 		<symbol id="imageTool" fill="none" viewBox="0 0 16 16">
 			<path
 				fill="var(--icon-stroke)"
