@@ -22,11 +22,18 @@ frappe.ui.form.on("Print Format", {
 						return;
 					}
 					if (frm.doc.print_format_builder_beta) {
-						frappe.set_route("print-format-builder", frm.doc.name);
+						// v17 moved the new builder onto the "print-format-builder" route
+						const frappe_major = cint(frappe.boot.versions.frappe.split(".")[0]);
+						frappe.set_route(
+							frappe_major >= 17
+								? "print-format-builder"
+								: "print-format-builder-beta",
+							frm.doc.name
+						);
 					} else if (frm.doc.print_designer) {
 						frappe.set_route("print-designer", frm.doc.name);
 					} else {
-						frappe.set_route("print-format-builder-classic", frm.doc.name);
+						frappe.set_route("print-format-builder", frm.doc.name);
 					}
 				});
 			} else if (frm.doc.custom_format && !frm.doc.raw_printing) {
