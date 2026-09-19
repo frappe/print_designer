@@ -61,6 +61,7 @@ export const useMainStore = defineStore("MainStore", {
 		isAltKey: false,
 		isShiftKey: false,
 		lastCloned: null,
+		clipboard: [],
 		currentDrawListener: null,
 		isMoved: false,
 		isHiddenFieldsVisible: false,

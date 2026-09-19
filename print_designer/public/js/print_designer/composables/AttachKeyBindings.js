@@ -1,7 +1,7 @@
 import { onMounted, onUnmounted } from "vue";
 import { useMainStore } from "../store/MainStore";
 import { useElementStore } from "../store/ElementStore";
-import { checkUpdateElementOverlapping, deleteCurrentElements } from "../utils";
+import { checkUpdateElementOverlapping, deleteCurrentElements, copyCurrentElements, pasteElements } from "../utils";
 
 export function useAttachKeyBindings() {
 	const MainStore = useMainStore();
@@ -64,6 +64,12 @@ export function useAttachKeyBindings() {
 			} else if (!e.repeat && ["l", "L"].indexOf(e.key) != -1) {
 				e.preventDefault();
 				MainStore.isLayerPanelEnabled = !MainStore.isLayerPanelEnabled;
+			} else if (!e.repeat && ["c", "C"].indexOf(e.key) != -1) {
+				e.preventDefault();
+				copyCurrentElements();
+			} else if (!e.repeat && ["v", "V"].indexOf(e.key) != -1) {
+				e.preventDefault();
+				pasteElements();
 			}
 		}
 		if (
