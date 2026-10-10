@@ -22,6 +22,9 @@
 [Website](https://frappe.io/print-designer) - [Documentation](https://docs.frappe.io/print-designer)
 </div>
 
+> [!WARNING]
+> This repository is archived and no longer maintained. To design print formats, use the Print Format Editor that is built into Frappe from version 16. See the [Print Format Editor documentation](https://docs.frappe.io/framework/user/en/printing/print-format-editor).
+
 ## Print Designer
 
 Print Designer is an open-source designing tool that allows businesses to create dynamic and professional-looking print formats. If you are looking to design print formats that enhance your brand image and streamline operational efficiency, then give it a try.
