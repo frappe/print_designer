@@ -48,6 +48,7 @@ import BaseStaticText from "./BaseStaticText.vue";
 import BaseDynamicText from "./BaseDynamicText.vue";
 import BaseImage from "./BaseImage.vue";
 import BaseTable from "./BaseTable.vue";
+import BaseGrid from "./BaseGrid.vue";
 import BaseBarcode from "./BaseBarcode.vue";
 import BaseResizeHandles from "./BaseResizeHandles.vue";
 import { toRefs } from "vue";
@@ -82,6 +83,7 @@ const isComponent = Object.freeze({
 	},
 	image: BaseImage,
 	table: BaseTable,
+	grid: BaseGrid,
 	barcode: BaseBarcode,
 });
 const { id, startX, startY, width, height, style, classes, elementType } = toRefs(props.object);

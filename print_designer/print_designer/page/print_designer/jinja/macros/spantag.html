@@ -38,22 +38,23 @@
 {%- endmacro -%}
 
 <!-- third Arg is row which is not sent outside table -->
-{% macro span_tag(field, element, row = {}, send_to_jinja = {}) -%}
+{% macro span_tag(field, element, row = {}, send_to_jinja = {}, inherited_style = {}, render_empty_label = false) -%}
     {% set span_value = spanvalue(field, element, row, send_to_jinja) %}
-    {%- if span_value or field.fieldname in ['page', 'topage', 'time', 'date'] -%}
+    {% set inherited_color = inherited_style.get('color') if inherited_style else None %}
+    {%- if span_value or (render_empty_label and field.is_labelled) or field.fieldname in ['page', 'topage', 'time', 'date'] -%}
         <span class="{% if not field.is_static and field.is_labelled %}baseSpanTag{% endif %}">
             {% if not field.is_static and field.is_labelled%}
-                <span class="{% if row %}printTable{% else %}dynamicText{% endif %} label-text labelSpanTag" style="user-select:auto; {%if element.labelStyle %}{{convert_css(element.labelStyle)}}{%endif%}{%if field.labelStyle %}{{convert_css(field.labelStyle)}}{%endif%} white-space:nowrap; ">
+                <span class="{% if row %}printTable{% else %}dynamicText{% endif %} label-text labelSpanTag" style="user-select:auto; {%if element.labelStyle %}{{convert_css(element.labelStyle)}}{%endif%}{% if inherited_color %}{{ convert_css({'color': inherited_color}) }}{% endif %}{%if field.labelStyle %}{{convert_css(field.labelStyle)}}{%endif%} white-space:nowrap; ">
                     {{ _(field.label) }}
                 </span>
             {% endif %}
             <span class="dynamic-span {% if not field.is_static and field.is_labelled %}valueSpanTag{%endif%} {{page_class(field)}}"
-                style="{%- if element.style.get('color') -%}{{ convert_css({'color': element.style.get('color')})}}{%- endif -%} {{convert_css(field.style)}} user-select:auto;">
+                style="{%- if inherited_color -%}{{ convert_css({'color': inherited_color})}}{%- elif element.style.get('color') -%}{{ convert_css({'color': element.style.get('color')})}}{%- endif -%} {{convert_css(field.style)}} user-select:auto;">
                 {{ span_value }}
             </span>
             {% if field.suffix %}
                 <span class="dynamic-span"
-                    style="{%- if element.style.get('color') -%}{{ convert_css({'color': element.style.get('color')})}}{%- endif -%} {{convert_css(field.style)}} user-select:auto;">
+                    style="{%- if inherited_color -%}{{ convert_css({'color': inherited_color})}}{%- elif element.style.get('color') -%}{{ convert_css({'color': element.style.get('color')})}}{%- endif -%} {{convert_css(field.style)}} user-select:auto;">
                     {{ _(field.suffix) }}
                 </span>
             {% endif %}

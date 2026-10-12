@@ -10,7 +10,7 @@
 				field.frappeControl(el, field.name);
 			}
 		"
-		:key="MainStore.getCurrentElementsValues[0]?.id || '' + field.name"
+		:key="getControlKey()"
 		class="frappeControl"
 	></div>
 </template>
@@ -25,6 +25,18 @@ const props = defineProps({
 		required: true,
 	},
 });
+const getControlKey = () => {
+	const element = MainStore.getCurrentElementsValues[0];
+	if (element?.type != "grid") {
+		return element?.id || "" + props.field.name;
+	}
+	return [
+		element.id,
+		element.selectedCell?.id || "no-cell",
+		element.selectedDynamicText?.id || "no-dynamic-text",
+		props.field.name,
+	].join(":");
+};
 onBeforeUnmount(() => {
 	if (MainStore.frappeControls[props.field.name]?.df.fieldtype == "Color") {
 		MainStore.frappeControls[props.field.name].$wrapper.off("show.bs.popover", "**");
