@@ -380,7 +380,7 @@ export const createPropertiesPanel = () => {
 						requiredData: () => page.value.UOM,
 						options: () => [
 							{ label: "Pixels (px)", value: "px" },
-							{ label: "Milimeter (mm)", value: "mm" },
+							{ label: "Millimeter (mm)", value: "mm" },
 							{ label: "Centimeter (cm)", value: "cm" },
 							{ label: "Inch (in)", value: "in" },
 						],
