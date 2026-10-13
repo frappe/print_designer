@@ -167,6 +167,17 @@ const set_current_doc = async (format_name) => {
 
 const load_print_designer = async (wrapper) => {
 	let route = frappe.get_route();
+	// Support `?format=<name>` (or `?print_format=<name>`) query deep-links.
+	// `/app/print-designer/<name>` already works via the path; this lets callers
+	// (e.g. "Open in Print Designer" links / PDF preview) use the query form too.
+	if (route.length <= 1 && frappe.utils.get_query_params) {
+		const qp = frappe.utils.get_query_params() || {};
+		const fmt = qp.format || qp.print_format;
+		if (fmt) {
+			frappe.set_route("print-designer", fmt);
+			return;
+		}
+	}
 	let $parent = $(wrapper);
 	let is_print_format;
 	let message = `Print Format <b>${route[1]}</b> not found. <hr/> Would you like to Create or Edit other Print Format?`;
