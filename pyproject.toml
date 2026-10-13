@@ -45,8 +45,7 @@ packages = [
     "libvulkan1",
     "libxcomposite1",
     "libxdamage1",
-    "libxfixes3",[tool.bench.frappe-dependencies]
-frappe = ">=16.0.0-dev"
+    "libxfixes3",
     "libxkbcommon0",
     "libxrandr2",
     "libasound2",
