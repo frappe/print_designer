@@ -2,7 +2,7 @@ import re
 from typing import Literal
 
 import frappe
-from frappe.model.document import BaseDocument
+from frappe.model.base_document import BaseDocument
 from frappe.utils.jinja import get_jenv
 
 
