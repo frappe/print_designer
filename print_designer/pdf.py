@@ -43,9 +43,10 @@ def pdf_header_footer_html(soup, head, content, styles, html_id, css, path=None)
 		from frappe.utils.pdf import pdf_footer_html, pdf_header_html
 
 		# same default path is defined in fw pdf_header_html function if no path is passed it will use default path
-		path = "templates/print_formats/pdf_header_footer.html"
-		if pdf_generator == "chrome":
-			path = "print_designer/pdf_generator/framework fromats/pdf_header_footer_chrome.html"
+		if not path:
+			path = "templates/print_formats/pdf_header_footer.html"
+			if pdf_generator == "chrome":
+				path = "print_designer/pdf_generator/framework fromats/pdf_header_footer_chrome.html"
 
 		if html_id == "header-html":
 			return pdf_header_html(
