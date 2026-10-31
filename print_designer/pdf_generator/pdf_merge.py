@@ -49,15 +49,18 @@ class PDFTransformer:
 		if header:
 			header_height = header.pages[0].mediabox.top
 			header_transform = body_height + footer_height
-			header_body_top = header_height + body_height + footer_height
+
+		# header_height is 0 when there is no header, so this is the same value as
+		# before for header and header+footer formats. For a footer-only format it
+		# is now non-zero instead of 0, which is what lets the body be re-framed.
+		header_body_top = header_height + body_height + footer_height
 
 		if header and not self.is_header_dynamic:
 			for h in header.pages:
 				self._transform(h, header_body_top, header_transform)
 
 		for p in body.pages:
-			if header_body_top:
-				self._transform(p, header_body_top, body_transform)
+			self._transform(p, header_body_top, body_transform)
 			if header:
 				if self.is_header_dynamic:
 					p.merge_page(self._transform(header.pages[p.page_number], header_body_top, header_transform))
