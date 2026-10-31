@@ -38,6 +38,7 @@ import { useDraggable } from "./composables/Draggable";
 import { useResizable } from "./composables/Resizable";
 import { useDropZone } from "./composables/DropZone";
 import { ref, isRef, nextTick } from "vue";
+import { normalizeGridStructure } from "./defaultObjects";
 import { getValue } from "./store/fetchMetaAndData";
 
 export const changeDraggable = (element) => {
@@ -168,6 +169,7 @@ const childrensCleanUp = (parentElement, element, isClone, isMainElement) => {
 	element.snapEdges = [];
 	if (
 		element.type == "table" ||
+		element.type == "grid" ||
 		element.type == "barcode" ||
 		(["text", "image"].indexOf(element.type) != -1 && element.isDynamic)
 	) {
@@ -201,6 +203,26 @@ const childrensCleanUp = (parentElement, element, isClone, isMainElement) => {
 				col.selectedDynamicText = null;
 				MainStore.dynamicData.push(...col.dynamicContent);
 			});
+		} else if (element.type === "grid") {
+			element.rowHeights = [...element.rowHeights];
+			element.columnWidths = [...element.columnWidths];
+			element.cells = element.cells.map((cell) => {
+				const clonedCell = {
+					...cell,
+					style: { ...cell.style },
+					labelStyle: { ...cell.labelStyle },
+					dynamicContent: cell.dynamicContent.map((field) => ({
+						...field,
+						style: { ...field.style },
+						labelStyle: { ...field.labelStyle },
+					})),
+				};
+				MainStore.dynamicData.push(...clonedCell.dynamicContent);
+				return clonedCell;
+			});
+			normalizeGridStructure(element);
+			element.selectedCell = null;
+			element.selectedDynamicText = null;
 		} else {
 			element.image = { ...element.image };
 			MainStore.dynamicData.push(element.image);
@@ -336,6 +358,16 @@ export const deleteSnapObjects = (element, recursive = false) => {
 	}
 };
 
+export const unregisterGridDynamicContent = (cells = []) => {
+	const MainStore = useMainStore();
+	cells.forEach((cell) => {
+		cell.dynamicContent.forEach((field) => {
+			const dynamicIndex = MainStore.dynamicData.indexOf(field);
+			if (dynamicIndex != -1) MainStore.dynamicData.splice(dynamicIndex, 1);
+		});
+	});
+};
+
 const deleteDynamicReferance = (curobj) => {
 	const MainStore = useMainStore();
 	if (curobj.type == "text" && curobj.isDynamic) {
@@ -348,6 +380,8 @@ const deleteDynamicReferance = (curobj) => {
 				MainStore.dynamicData.splice(MainStore.dynamicData.indexOf(el), 1);
 			});
 		});
+	} else if (curobj.type == "grid") {
+		unregisterGridDynamicContent(curobj.cells);
 	}
 };
 export const parseJinja = async (field, row) => {
@@ -882,17 +916,24 @@ export const getConditonalObject = (field) => {
 					if (field.isFontStyle) {
 						object =
 							object.selectedDynamicText?.style ||
+							object.selectedCell?.style ||
 							object.selectedColumn?.style ||
 							object.style;
 					} else {
-						object = object.selectedColumn?.style || object.style;
+						object =
+							object.selectedCell?.style ||
+							object.selectedColumn?.style ||
+							object.style;
 					}
 					break;
 				case "label":
 					if (field.isFontStyle) {
-						object = object.selectedDynamicText?.labelStyle || object.labelStyle;
+						object =
+							object.selectedDynamicText?.labelStyle ||
+							object.selectedCell?.labelStyle ||
+							object.labelStyle;
 					} else {
-						object = object.labelStyle;
+						object = object.selectedCell?.labelStyle || object.labelStyle;
 					}
 					break;
 				case "header":
@@ -985,6 +1026,9 @@ export const handlePrintFonts = (element, printFonts) => {
 		styleModes.push("headerStyle");
 		styleModes.push("altStyle");
 	}
+	if (element.type == "grid") {
+		styleModes.push("labelStyle");
+	}
 	styleModes.forEach((styleEditMode) => {
 		let globalStyleName = element.type;
 		if (globalStyleName == "text") {
@@ -1001,7 +1045,7 @@ export const handlePrintFonts = (element, printFonts) => {
 					pushFonts({ el, styleEditMode, globalStyleName });
 				}
 			});
-		} else if (element.columns) {
+		} else if (element.type == "table" && element.columns) {
 			if (["headerStyle", "altStyle"].indexOf(styleEditMode) != -1) {
 				pushFonts({ el: element, styleEditMode, globalStyleName });
 			} else {
@@ -1011,6 +1055,13 @@ export const handlePrintFonts = (element, printFonts) => {
 					});
 				});
 			}
+		} else if (element.type == "grid" && element.cells) {
+			element.cells.forEach((cell) => {
+				pushFonts({ el: cell, styleEditMode, globalStyleName });
+				cell.dynamicContent.forEach((field) => {
+					pushFonts({ el: field, styleEditMode, globalStyleName });
+				});
+			});
 		}
 	});
 };

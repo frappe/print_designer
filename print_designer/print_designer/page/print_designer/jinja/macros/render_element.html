@@ -5,6 +5,7 @@
 {% from 'print_designer/page/print_designer/jinja/macros/barcode.html' import barcode with context %}
 {% from 'print_designer/page/print_designer/jinja/macros/rectangle.html' import rectangle with context %}
 {% from 'print_designer/page/print_designer/jinja/macros/table.html' import table with context %}
+{% from 'print_designer/page/print_designer/jinja/macros/grid.html' import grid with context %}
 
 
 {% macro render_element(element, send_to_jinja, heightType = 'fixed') -%}
@@ -14,6 +15,8 @@
         {{image(element)}}
     {% elif element.type == "table" %}
         {{table(element, send_to_jinja, heightType)}}
+    {% elif element.type == "grid" %}
+        {{grid(element, send_to_jinja, heightType)}}
     {% elif element.type == "text" %}
         {% if element.isDynamic %}
             {{dynamictext(element, send_to_jinja, heightType)}}
