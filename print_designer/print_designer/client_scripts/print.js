@@ -1,33 +1,8 @@
 // TODO: revisit and properly implement this client script
+const frappe_print_page_load = frappe.pages["print"].on_page_load;
 frappe.pages["print"].on_page_load = function (wrapper) {
 	frappe.require(["pdfjs.bundle.css", "print_designer.bundle.css"]);
-	frappe.ui.make_app_page({
-		parent: wrapper,
-	});
-
-	let print_view = new frappe.ui.form.PrintView(wrapper);
-
-	$(wrapper).bind("show", () => {
-		const route = frappe.get_route();
-		const doctype = route[1];
-		const docname = route.slice(2).join("/");
-		if (!frappe.route_options || !frappe.route_options.frm) {
-			frappe.model.with_doc(doctype, docname, () => {
-				let frm = { doctype: doctype, docname: docname };
-				frm.doc = frappe.get_doc(doctype, docname);
-				frappe.model.with_doctype(doctype, () => {
-					frm.meta = frappe.get_meta(route[1]);
-					print_view.show(frm);
-				});
-			});
-		} else {
-			print_view.frm = frappe.route_options.frm.doctype
-				? frappe.route_options.frm
-				: frappe.route_options.frm.frm;
-			frappe.route_options.frm = null;
-			print_view.show(print_view.frm);
-		}
-	});
+	frappe_print_page_load(wrapper);
 };
 frappe.ui.form.PrintView = class PrintView extends frappe.ui.form.PrintView {
 	constructor(wrapper) {
