@@ -241,48 +241,20 @@ frappe.ui.form.PrintView = class PrintView extends frappe.ui.form.PrintView {
 		);
 	}
 	setup_sidebar() {
-		this.sidebar = this.page.sidebar.addClass("print-preview-sidebar");
-
-		this.print_format_item = this.add_sidebar_item({
-			fieldtype: "Link",
-			fieldname: "print_format",
-			options: "Print Format",
-			placeholder: __("Print Format"),
-			get_query: () => {
-				return { filters: { doc_type: this.frm.doctype } };
-			},
-			change: () => {
-				if (this.print_format_item.value == this.print_format_item.last_value) return;
-				this.toolbar_print_format_selector.set_value(this.print_format_item.value);
-				this.refresh_print_format();
-			},
-		});
-		this.print_format_selector = this.print_format_item.$input;
-
-		this.language_item = this.add_sidebar_item({
-			fieldtype: "Link",
-			fieldname: "language",
-			placeholder: __("Language"),
-			options: "Language",
-			change: () => {
-				if (this.language_item.value == this.language_item.last_value) return;
-				this.toolbar_language_selector.set_value(this.language_item.value);
-				this.set_user_lang();
-				this.preview();
-			},
-		});
-		this.language_selector = this.language_item.$input;
-
-		this.letterhead_selector = this.add_sidebar_item({
-			fieldtype: "Link",
-			fieldname: "letterhead",
-			options: "Letter Head",
-			placeholder: __("Letter Head"),
-			change: () => this.preview(),
-		}).$input;
-		this.sidebar_dynamic_section = $(`<div class="dynamic-settings"></div>`).appendTo(
-			this.sidebar
-		);
+		super.setup_sidebar();
+		this.print_format_item = this.print_format_field;
+		this.language_item = this.language_field;
+		for (const [field, toolbar] of [
+			[this.print_format_field, "toolbar_print_format_selector"],
+			[this.language_field, "toolbar_language_selector"],
+		]) {
+			const change = field.df.change;
+			field.df.change = (...args) => {
+				if (field.value == field.last_value) return;
+				this[toolbar]?.set_value(field.value);
+				return change(...args);
+			};
+		}
 	}
 	set_default_print_language() {
 		super.set_default_print_language();
