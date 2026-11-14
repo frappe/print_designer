@@ -53,6 +53,18 @@
 						MainStore.getCurrentElementsId &&
 						MainStore.getCurrentElementsId.includes(layer.id),
 				}"
+				v-else-if="layer.type == 'grid'"
+			>
+				<span style="padding: 0px 10px 0px 5px" class="fa fa-th"></span>
+				<span class="textlayer-text">Grid {{ layer.rows }} x {{ layer.columns }}</span>
+			</div>
+			<div
+				class="layer"
+				:class="{
+					'layer-active':
+						MainStore.getCurrentElementsId &&
+						MainStore.getCurrentElementsId.includes(layer.id),
+				}"
 				v-else
 			>
 				<span class="fa fa-square-o" style="padding: 0px 10px 0px 5px"></span> Rect
