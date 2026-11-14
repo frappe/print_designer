@@ -26,7 +26,7 @@ def check_frappe_version():
 
 	click.secho(
 		f"You're attempting to install Print Designer with Frappe version {frappe_version}. "
-		"This is not supported and will result in broken install. Please install it using Version 15 or Develop branch.",
+		"This is not supported and will result in broken install. Please install it using Version 15, Version 16, or Develop branch.",
 		fg="red",
 	)
 	raise SystemExit(1)
