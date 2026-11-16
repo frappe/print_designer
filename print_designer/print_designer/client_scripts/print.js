@@ -113,8 +113,8 @@ frappe.ui.form.PrintView = class PrintView extends frappe.ui.form.PrintView {
 		const pdfEl = this.createPdfEl(url, wrapperContainer);
 		const onError = () => {
 			this.print_wrapper.find(".print-designer-wrapper").hide();
-			this.full_page_btn.show();
-			this.pdf_btn.show();
+			this.designer_toolbar.hide();
+			this.framework_toolbar.show();
 			this.letterhead_selector.show();
 			this.sidebar_dynamic_section.show();
 			this.print_btn.show();
@@ -161,9 +161,10 @@ frappe.ui.form.PrintView = class PrintView extends frappe.ui.form.PrintView {
 			this.print_wrapper.find(".preview-beta-wrapper").hide();
 			this.print_wrapper.find(".print-designer-wrapper").show();
 			this.designer_pdf(print_format);
+			this.framework_toolbar.hide();
+			this.designer_toolbar.show();
 			this.full_page_btn.hide();
 			this.pdf_btn.hide();
-			this.page.add_menu_item("Download PDF", () => this.render_pdf());
 			this.print_btn.hide();
 			this.letterhead_selector.hide();
 			this.sidebar_dynamic_section.hide();
@@ -173,8 +174,8 @@ frappe.ui.form.PrintView = class PrintView extends frappe.ui.form.PrintView {
 			return;
 		}
 		this.print_wrapper.find(".print-designer-wrapper").hide();
-		this.full_page_btn.show();
-		this.pdf_btn.show();
+		this.designer_toolbar.hide();
+		this.framework_toolbar.show();
 		this.print_btn.show();
 		this.letterhead_selector.show();
 		this.sidebar_dynamic_section.show();
@@ -184,6 +185,15 @@ frappe.ui.form.PrintView = class PrintView extends frappe.ui.form.PrintView {
 		super.preview();
 	}
 	setup_toolbar() {
+		const toolbar_controls = () =>
+			this.page.page_actions
+				.find("button")
+				.add(this.page.menu.children())
+				.not(".primary-action");
+		const existing = toolbar_controls();
+		super.setup_toolbar();
+		this.framework_toolbar = toolbar_controls().not(existing);
+
 		this.print_btn = this.page.set_primary_action(
 			__("Print"),
 			() => this.printit(),
@@ -214,6 +224,8 @@ frappe.ui.form.PrintView = class PrintView extends frappe.ui.form.PrintView {
 			"",
 			__("Form")
 		);
+		this.page.add_menu_item(__("Download PDF"), () => this.render_pdf());
+		this.designer_toolbar = toolbar_controls().not(existing).not(this.framework_toolbar);
 	}
 	setup_sidebar() {
 		super.setup_sidebar();
